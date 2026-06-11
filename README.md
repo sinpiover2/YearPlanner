@@ -1,4 +1,8 @@
 # # Year Planner
+Starting it up
+cd "/Users/jeff_holcomb/Library/CloudStorage/Dropbox/Jeff's Curriculum/Teaching/2026-2027/Projects/Year Planner/frontend"
+
+npm run dev
 
 # Goal
 

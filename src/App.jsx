@@ -25,7 +25,6 @@ function getProjectedUnits(courseUnits, schoolCalendar) {
 
   return courseUnits.map((unit) => {
     const requiredDays = Number(unit.RequiredDays || 0);
-
     const startDay = schoolDays[cursor];
     const endDay = schoolDays[cursor + requiredDays - 1];
 
@@ -82,24 +81,18 @@ function getCourseStatus(courseId, lessons, dailyProgress) {
 }
 
 function formatVariance(variance) {
-  if (variance === 0) {
-    return "On pace";
-  }
+  if (variance === 0) return "On pace";
 
   const absoluteValue = Math.abs(variance);
   const dayLabel = absoluteValue === 1 ? "day" : "days";
 
-  if (variance > 0) {
-    return `${absoluteValue} ${dayLabel} behind pace`;
-  }
-
-  return `${absoluteValue} ${dayLabel} ahead of pace`;
+  return variance > 0
+    ? `${absoluteValue} ${dayLabel} behind pace`
+    : `${absoluteValue} ${dayLabel} ahead of pace`;
 }
 
 function formatForecastShift(variance) {
-  if (variance === 0) {
-    return "No forecast shift.";
-  }
+  if (variance === 0) return "No forecast shift.";
 
   const absoluteValue = Math.abs(variance);
   const dayLabel = absoluteValue === 1 ? "day" : "days";
@@ -109,18 +102,59 @@ function formatForecastShift(variance) {
 }
 
 function formatVarianceCompact(variance) {
-  if (variance === 0) {
-    return "On plan";
-  }
+  if (variance === 0) return "On plan";
 
   const absoluteValue = Math.abs(variance);
   const dayLabel = absoluteValue === 1 ? "day" : "days";
 
-  if (variance > 0) {
-    return `+${absoluteValue} ${dayLabel}`;
+  return variance > 0
+    ? `+${absoluteValue} ${dayLabel}`
+    : `-${absoluteValue} ${dayLabel}`;
+}
+
+function getDateKey(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
   }
 
-  return `-${absoluteValue} ${dayLabel}`;
+  return date.toISOString().slice(0, 10);
+}
+
+function shiftByInstructionalDays(dateValue, schoolCalendar, shiftDays) {
+  if (!dateValue || shiftDays === 0) {
+    return dateValue;
+  }
+
+  const schoolDays = schoolCalendar.filter((day) => day.DayType === "School");
+  const dateKey = getDateKey(dateValue);
+
+  const currentIndex = schoolDays.findIndex(
+    (day) => getDateKey(day.Date) === dateKey,
+  );
+
+  if (currentIndex < 0) {
+    return null;
+  }
+
+  const shiftedIndex = currentIndex + shiftDays;
+
+  if (shiftedIndex < 0 || shiftedIndex >= schoolDays.length) {
+    return null;
+  }
+
+  return schoolDays[shiftedIndex].Date;
+}
+
+function getCourseProjectedUnits(courseId, units, schoolCalendar) {
+  const courseUnits = units
+    .filter((unit) => unit.CourseID === courseId)
+    .sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
+
+  return getProjectedUnits(courseUnits, schoolCalendar);
 }
 
 function App() {
@@ -170,6 +204,7 @@ function App() {
 
   const math8Status = getCourseStatus("M8", lessons, dailyProgress);
   const math1Status = getCourseStatus("IM1", lessons, dailyProgress);
+
   const selectedUnit = units.find((unit) => unit.UnitID === selectedUnitId);
 
   const selectedUnitLessons = lessons
@@ -256,6 +291,7 @@ function App() {
           </div>
         </div>
       </section>
+
       <section className="panel">
         <h2>Timeline Dashboard</h2>
 
@@ -265,7 +301,6 @@ function App() {
             .sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
 
           const projectedUnits = getProjectedUnits(courseUnits, schoolCalendar);
-
           const totalDays = getRequiredDays(courseUnits);
           const optionalDays = getOptionalDays(courseUnits);
 
@@ -274,7 +309,6 @@ function App() {
               <div className="timeline-header">
                 <div>
                   <h3>{course.CourseName}</h3>
-
                   <p className="timeline-meta">
                     {totalDays} required • {optionalDays} optional
                   </p>
@@ -284,7 +318,6 @@ function App() {
               <div className="timeline-row">
                 {projectedUnits.map((unit) => {
                   const requiredDays = Number(unit.RequiredDays || 0);
-
                   const hasProjectedDates =
                     unit.projectedStart && unit.projectedEnd;
 
@@ -298,15 +331,10 @@ function App() {
                       key={unit.UnitID}
                       style={{ flexGrow: requiredDays }}
                       title={`${unit.UnitTitle}: ${requiredDays} days`}
-                      onClick={() => {
-                        console.log("Clicked unit:", unit.UnitID);
-                        setSelectedUnitId(unit.UnitID);
-                      }}
+                      onClick={() => setSelectedUnitId(unit.UnitID)}
                     >
                       <span>U{unit.UnitNumber}</span>
-
                       <strong>{unit.UnitTitle}</strong>
-
                       <small>{requiredDays}d</small>
 
                       <em
@@ -328,9 +356,11 @@ function App() {
           );
         })}
       </section>
+
       {selectedUnit && (
         <section className="panel">
           <h2>Unit Detail</h2>
+
           {(() => {
             const unitLessons = lessons.filter(
               (lesson) => lesson.UnitID === selectedUnit.UnitID,
@@ -378,28 +408,95 @@ function App() {
                   ? formatForecastShift(variance)
                   : `Unit in progress: ${actualDays} of ${plannedDays} planned days used.`;
 
+            const selectedCourseProjectedUnits = getCourseProjectedUnits(
+              selectedUnit.CourseID,
+              units,
+              schoolCalendar,
+            );
+
+            const selectedProjectedUnitIndex =
+              selectedCourseProjectedUnits.findIndex(
+                (unit) => unit.UnitID === selectedUnit.UnitID,
+              );
+
+            const impactedUnits =
+              selectedProjectedUnitIndex >= 0
+                ? selectedCourseProjectedUnits.slice(
+                    selectedProjectedUnitIndex + 1,
+                    selectedProjectedUnitIndex + 4,
+                  )
+                : [];
+
             return (
-              <div className="unit-summary">
-                <div className="summary-card">
-                  <p>Planned Days</p>
-                  <h3>{plannedDays}</h3>
+              <>
+                <div className="unit-summary">
+                  <div className="summary-card">
+                    <p>Planned Days</p>
+                    <h3>{plannedDays}</h3>
+                  </div>
+
+                  <div className="summary-card">
+                    <p>Actual Days</p>
+                    <h3>{actualDays}</h3>
+                  </div>
+
+                  <div className="summary-card">
+                    <p>Status</p>
+                    <h3>{varianceText}</h3>
+                  </div>
+
+                  <div className="summary-card forecast-impact-card">
+                    <p>Forecast Impact</p>
+                    <h3>{forecastImpactText}</h3>
+                  </div>
                 </div>
 
-                <div className="summary-card">
-                  <p>Actual Days</p>
-                  <h3>{actualDays}</h3>
-                </div>
+                {unitFinished && variance !== 0 && impactedUnits.length > 0 && (
+                  <div className="future-impact-panel">
+                    <h3>Future Impact</h3>
 
-                <div className="summary-card">
-                  <p>Status</p>
-                  <h3>{varianceText}</h3>
-                </div>
+                    <p>
+                      If this unit&apos;s pacing holds, the next units in this
+                      course move by{" "}
+                      <strong>{formatVarianceCompact(variance)}</strong>.
+                    </p>
 
-                <div className="summary-card forecast-impact-card">
-                  <p>Forecast Impact</p>
-                  <h3>{forecastImpactText}</h3>
-                </div>
-              </div>
+                    <div className="impact-list">
+                      {impactedUnits.map((unit) => {
+                        const shiftedStart = shiftByInstructionalDays(
+                          unit.projectedStart,
+                          schoolCalendar,
+                          variance,
+                        );
+
+                        const shiftedEnd = shiftByInstructionalDays(
+                          unit.projectedEnd,
+                          schoolCalendar,
+                          variance,
+                        );
+
+                        return (
+                          <div className="impact-row" key={unit.UnitID}>
+                            <strong>
+                              U{unit.UnitNumber}: {unit.UnitTitle}
+                            </strong>
+
+                            <span>
+                              {formatDate(unit.projectedStart)}–
+                              {formatDate(unit.projectedEnd)} →{" "}
+                              {shiftedStart && shiftedEnd
+                                ? `${formatDate(shiftedStart)}–${formatDate(
+                                    shiftedEnd,
+                                  )}`
+                                : "outside calendar"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
             );
           })()}
 
