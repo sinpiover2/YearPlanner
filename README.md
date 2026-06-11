@@ -1,6 +1,6 @@
 # # Year Planner
 
-## Goal
+# Goal
 
 Year Planner helps teachers understand:
 
@@ -22,11 +22,13 @@ The planner helps answer questions such as:
 
 Year Planner is a decision-support tool for teachers.
 
-It is not designed to tell teachers what to do. Teachers already make instructional decisions every day based on their students, curriculum, and professional judgment.
+Teachers make instructional decisions every day based on their students, curriculum, and professional judgment. Year Planner is not designed to replace those decisions or tell teachers what to do.
 
-Instead, Year Planner makes the consequences of those decisions visible through forecasting and scenario exploration.
+Instead, Year Planner helps make the consequences of those decisions visible through forecasting and scenario exploration.
 
-The goal is to help teachers see around corners. By showing how today's decisions affect future pacing, Year Planner helps teachers make informed choices while remaining fully in control of those choices.
+The app helps teachers see around corners. It shows how pacing choices made today can affect future units, available buffer time, and end-of-year outcomes.
+
+Year Planner does not make instructional decisions. It helps teachers understand the likely consequences of those decisions, enabling them to make informed choices while remaining fully in control of their instruction.
 
 # React + Vite
 
