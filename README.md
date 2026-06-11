@@ -1,5 +1,32 @@
-# Goal
-Year Planner helps teachers understand where they are, where they are headed, and how different pacing decisions affect the rest of the school year.
+# # Year Planner
+
+## Goal
+
+Year Planner helps teachers understand:
+
+- Where they are
+- Where they are headed
+- How today's pacing decisions affect the rest of the school year
+
+The planner helps answer questions such as:
+
+- Where am I right now?
+- Am I on track?
+- If I continue teaching at my current pace, where will I end up?
+- How much buffer time remains?
+- What happens if a lesson takes an extra day?
+- What happens if I lose instructional time to assemblies, testing, field trips, or weather?
+- What are the consequences of changing my pacing?
+
+## Purpose
+
+Year Planner is a decision-support tool for teachers.
+
+It is not designed to tell teachers what to do. Teachers already make instructional decisions every day based on their students, curriculum, and professional judgment.
+
+Instead, Year Planner makes the consequences of those decisions visible through forecasting and scenario exploration.
+
+The goal is to help teachers see around corners. By showing how today's decisions affect future pacing, Year Planner helps teachers make informed choices while remaining fully in control of those choices.
 
 # React + Vite
 
