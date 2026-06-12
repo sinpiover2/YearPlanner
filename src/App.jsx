@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { fetchPlannerData } from "./api";
+import { fetchPlannerData, saveDailyProgress } from "./api";
 
 function formatDate(value) {
   if (!value) return "—";
@@ -112,6 +112,15 @@ function formatVarianceCompact(variance) {
     : `-${absoluteValue} ${dayLabel}`;
 }
 
+function getOutcomeList(value) {
+  if (!value) return [];
+
+  return String(value)
+    .split(/\||\n/)
+    .map((outcome) => outcome.trim())
+    .filter(Boolean);
+}
+
 function getDateKey(value) {
   if (!value) return null;
 
@@ -157,10 +166,52 @@ function getCourseProjectedUnits(courseId, units, schoolCalendar) {
   return getProjectedUnits(courseUnits, schoolCalendar);
 }
 
+function getPrepareNext(courseId, lessons, dailyProgress, count = 3) {
+  const courseLessons = lessons
+    .filter((lesson) => lesson.CourseID === courseId)
+    .sort((a, b) => {
+      const unitCompare = String(a.UnitID).localeCompare(String(b.UnitID));
+
+      if (unitCompare !== 0) return unitCompare;
+
+      return Number(a.SortOrder) - Number(b.SortOrder);
+    });
+
+  const completedLessonIds = new Set(
+    dailyProgress
+      .filter((entry) => entry.CourseID === courseId && entry.Finished)
+      .map((entry) => entry.LessonID),
+  );
+
+  const currentIndex = courseLessons.findIndex(
+    (lesson) => !completedLessonIds.has(lesson.LessonID),
+  );
+
+  const currentLesson = currentIndex >= 0 ? courseLessons[currentIndex] : null;
+
+  const upcomingLessons =
+    currentIndex >= 0
+      ? courseLessons.slice(currentIndex + 1, currentIndex + 1 + count)
+      : [];
+
+  const missingResourceCount = [currentLesson, ...upcomingLessons].filter(
+    (lesson) => lesson && !lesson.PrimaryLink,
+  ).length;
+
+  return {
+    currentLesson,
+    upcomingLessons,
+    missingResourceCount,
+  };
+}
+
 function App() {
   const [plannerData, setPlannerData] = useState(null);
   const [status, setStatus] = useState("Loading planner data...");
   const [selectedUnitId, setSelectedUnitId] = useState(null);
+  const [progressInputs, setProgressInputs] = useState({});
+  const [savingLessonId, setSavingLessonId] = useState(null);
+  const [activeProgressLessonId, setActiveProgressLessonId] = useState(null);
 
   useEffect(() => {
     fetchPlannerData()
@@ -204,12 +255,42 @@ function App() {
 
   const math8Status = getCourseStatus("M8", lessons, dailyProgress);
   const math1Status = getCourseStatus("IM1", lessons, dailyProgress);
+  const math8PrepareNext = getPrepareNext("M8", lessons, dailyProgress);
+
+  const math1PrepareNext = getPrepareNext("IM1", lessons, dailyProgress);
 
   const selectedUnit = units.find((unit) => unit.UnitID === selectedUnitId);
 
   const selectedUnitLessons = lessons
     .filter((lesson) => lesson.UnitID === selectedUnitId)
     .sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
+
+  async function handleLogProgress(lesson) {
+    try {
+      setSavingLessonId(lesson.LessonID);
+
+      const input = progressInputs[lesson.LessonID] || {};
+
+      await saveDailyProgress({
+        date: new Date().toISOString(),
+        courseId: lesson.CourseID,
+        unitId: lesson.UnitID,
+        lessonId: lesson.LessonID,
+        dayFraction: Number(input.dayFraction || 1),
+        finished: Boolean(input.finished),
+        notes: "",
+      });
+
+      const refreshedData = await fetchPlannerData();
+      setPlannerData(refreshedData);
+      setActiveProgressLessonId(null);
+    } catch (error) {
+      console.error(error);
+      alert("Could not save progress.");
+    } finally {
+      setSavingLessonId(null);
+    }
+  }
 
   return (
     <main className="app">
@@ -273,7 +354,67 @@ function App() {
           </div>
         </div>
       </section>
+      <section className="panel">
+        <h2>Prepare Next</h2>
 
+        <div className="cards">
+          <div className="card prepare-card">
+            <p>Math 8</p>
+            <h3>
+              Current:{" "}
+              {math8PrepareNext.currentLesson?.LessonTitle ?? "Complete"}
+            </h3>
+
+            <div className="prepare-list">
+              <strong>Coming Up</strong>
+
+              {math8PrepareNext.upcomingLessons.length === 0 ? (
+                <span>No upcoming lessons entered.</span>
+              ) : (
+                math8PrepareNext.upcomingLessons.map((lesson) => (
+                  <span key={lesson.LessonID}>
+                    Lesson {lesson.LessonNumber}: {lesson.LessonTitle}
+                  </span>
+                ))
+              )}
+            </div>
+
+            <div className="prep-status">
+              {math8PrepareNext.missingResourceCount === 0
+                ? "All visible lessons have resource links."
+                : `${math8PrepareNext.missingResourceCount} visible lessons missing resource links.`}
+            </div>
+          </div>
+
+          <div className="card prepare-card">
+            <p>Integrated Math 1</p>
+            <h3>
+              Current:{" "}
+              {math1PrepareNext.currentLesson?.LessonTitle ?? "Complete"}
+            </h3>
+
+            <div className="prepare-list">
+              <strong>Coming Up</strong>
+
+              {math1PrepareNext.upcomingLessons.length === 0 ? (
+                <span>No upcoming lessons entered.</span>
+              ) : (
+                math1PrepareNext.upcomingLessons.map((lesson) => (
+                  <span key={lesson.LessonID}>
+                    Lesson {lesson.LessonNumber}: {lesson.LessonTitle}
+                  </span>
+                ))
+              )}
+            </div>
+
+            <div className="prep-status">
+              {math1PrepareNext.missingResourceCount === 0
+                ? "All visible lessons have resource links."
+                : `${math1PrepareNext.missingResourceCount} visible lessons missing resource links.`}
+            </div>
+          </div>
+        </div>
+      </section>
       <section className="panel">
         <h2>Forecast Preview</h2>
 
@@ -540,56 +681,141 @@ function App() {
                   actualDays - Number(lesson.PlannedDays || 0);
 
                 return (
-                  <div className="lesson-row" key={lesson.LessonID}>
-                    <strong>
-                      Lesson {lesson.LessonNumber}: {lesson.LessonTitle}
-                    </strong>
+                  <div className="lesson-table-row" key={lesson.LessonID}>
+                    <div className="lesson-main">
+                      <span
+                        className={
+                          isFinished ? "lesson-number done" : "lesson-number"
+                        }
+                      >
+                        {lesson.LessonNumber}
+                      </span>
 
-                    <p>
-                      Planned: {lesson.PlannedDays} day
-                      {Number(lesson.PlannedDays) === 1 ? "" : "s"} • Actual:{" "}
-                      {actualDays || "—"} day
-                      {actualDays === 1 ? "" : "s"} • Variance:{" "}
-                      {actualDays
-                        ? formatVarianceCompact(lessonVariance)
-                        : "Not started"}
-                    </p>
+                      <div className="lesson-title-block">
+                        <div className="lesson-title-line">
+                          <strong>{lesson.LessonTitle}</strong>
 
-                    {lesson.KeyOutcome && (
-                      <p>
-                        <strong>Outcome:</strong> {lesson.KeyOutcome}
-                      </p>
+                          {activeProgressLessonId !== lesson.LessonID && (
+                            <button
+                              className="lesson-log-inline"
+                              onClick={() =>
+                                setActiveProgressLessonId(lesson.LessonID)
+                              }
+                            >
+                              Log
+                            </button>
+                          )}
+                        </div>
+
+                        {getOutcomeList(lesson.KeyOutcome).length > 0 && (
+                          <ul className="outcome-list">
+                            {getOutcomeList(lesson.KeyOutcome).map(
+                              (outcome, index) => (
+                                <li key={`${lesson.LessonID}-outcome-${index}`}>
+                                  {outcome}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="lesson-metric">
+                      <span>Planned</span>
+                      <strong>
+                        {lesson.PlannedDays} day
+                        {Number(lesson.PlannedDays) === 1 ? "" : "s"}
+                      </strong>
+                    </div>
+
+                    <div className="lesson-metric">
+                      <span>Actual</span>
+                      <strong>
+                        {actualDays || "—"}{" "}
+                        {actualDays === 1 ? "day" : actualDays ? "days" : ""}
+                      </strong>
+                    </div>
+
+                    <div className="lesson-metric">
+                      <span>Variance</span>
+                      <strong
+                        className={lessonVariance > 0 ? "variance-warning" : ""}
+                      >
+                        {actualDays
+                          ? formatVarianceCompact(lessonVariance)
+                          : "Not started"}
+                      </strong>
+                    </div>
+
+                    <div className="lesson-metric">
+                      <span>Status</span>
+                      <em
+                        className={isFinished ? "lesson-done" : "lesson-open"}
+                      >
+                        {isFinished ? "Complete" : "Upcoming"}
+                      </em>
+                    </div>
+                    {activeProgressLessonId === lesson.LessonID && (
+                      <div className="lesson-progress-entry expanded">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          placeholder="Days"
+                          value={
+                            progressInputs[lesson.LessonID]?.dayFraction ?? ""
+                          }
+                          onChange={(e) =>
+                            setProgressInputs((prev) => ({
+                              ...prev,
+                              [lesson.LessonID]: {
+                                ...prev[lesson.LessonID],
+                                dayFraction: e.target.value,
+                              },
+                            }))
+                          }
+                        />
+
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={
+                              progressInputs[lesson.LessonID]?.finished ?? false
+                            }
+                            onChange={(e) =>
+                              setProgressInputs((prev) => ({
+                                ...prev,
+                                [lesson.LessonID]: {
+                                  ...prev[lesson.LessonID],
+                                  finished: e.target.checked,
+                                },
+                              }))
+                            }
+                          />
+                          Complete
+                        </label>
+
+                        <div className="progress-actions">
+                          <button
+                            onClick={() => handleLogProgress(lesson)}
+                            disabled={savingLessonId === lesson.LessonID}
+                          >
+                            {savingLessonId === lesson.LessonID
+                              ? "Saving..."
+                              : "Save"}
+                          </button>
+
+                          <button
+                            className="secondary-button"
+                            onClick={() => setActiveProgressLessonId(null)}
+                            disabled={savingLessonId === lesson.LessonID}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     )}
-
-                    {lesson.Description && (
-                      <p>
-                        <strong>Description:</strong> {lesson.Description}
-                      </p>
-                    )}
-
-                    {lesson.TeacherNotes && (
-                      <p>
-                        <strong>Notes:</strong> {lesson.TeacherNotes}
-                      </p>
-                    )}
-
-                    {lesson.PrimaryLink && (
-                      <p>
-                        <a
-                          href={lesson.PrimaryLink}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Open lesson resource
-                        </a>
-                      </p>
-                    )}
-
-                    <span
-                      className={isFinished ? "lesson-done" : "lesson-open"}
-                    >
-                      {isFinished ? "Complete" : "Upcoming"}
-                    </span>
                   </div>
                 );
               })
