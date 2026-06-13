@@ -192,11 +192,14 @@ button {
 
 .unit-chip-group {
   margin-bottom: 16px;
+  text-align: center;
 }
 
 .unit-chip-group span {
   display: block;
   margin-bottom: 6px;
+  text-align: center;
+  justify-content: center;
 }
 
 .unit-chip-grid {
@@ -253,7 +256,8 @@ button {
 }
 
 .view-tabs button.active-view {
-  background: #f8fafc;
+  background: #2a3753;
+  color: white;
 }
 
 .workspace-panel {
@@ -348,10 +352,15 @@ button {
 .lesson-table-head,
 .lesson-row {
   display: grid;
-  grid-template-columns: 36px minmax(360px, 1fr) 64px 64px 64px 72px;
+  grid-template-columns: 42px minmax(440px, 1fr) 64px 74px 60px 64px;
+  grid-template-areas:
+    "num lesson plan actual variance actions"
+    "editor editor editor editor editor editor";
   gap: 14px;
   align-items: center;
   padding: 10px 24px;
+  min-height: 78px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .lesson-table {
@@ -665,4 +674,161 @@ button {
   background: #111827;
   color: white;
   border-color: #111827;
+}
+.add-lesson-row {
+  padding: 16px 24px 22px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.add-lesson-button {
+  width: 100%;
+  border: 1px dashed #94a3b8;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 14px;
+  color: #334155;
+  font-weight: 900;
+}
+
+.add-lesson-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 90px minmax(220px, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-lesson-form input {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.add-lesson-form button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #2563eb;
+  color: white;
+  font-weight: 900;
+}
+
+.lesson-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.edit-link {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: underline;
+}
+.lesson-edit-form {
+  grid-column: 1 / -1;
+  background: #faf8f2;
+  border-top: 1px solid #e5e7eb;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.lesson-edit-top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.goal-editor {
+  display: grid;
+  gap: 12px;
+  max-width: 900px;
+}
+
+.goal-input-row {
+  display: grid;
+  grid-template-columns: 28px minmax(400px, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.goal-input-row strong {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.goal-input-row input {
+  padding: 10px;
+}
+
+.add-goal-button {
+  width: fit-content;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.days-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.days-box {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+}
+
+.days-input {
+  width: 120px;
+}
+.lesson-index {
+  grid-area: num;
+}
+
+.lesson-name-cell {
+  grid-area: lesson;
+}
+
+.lesson-row > strong:nth-of-type(1) {
+  grid-area: plan;
+}
+
+.lesson-row > strong:nth-of-type(2) {
+  grid-area: actual;
+}
+
+.lesson-row > strong:nth-of-type(3) {
+  grid-area: variance;
+}
+
+.lesson-actions {
+  grid-area: actions;
+}
+
+.lesson-edit-form {
+  grid-area: editor;
+
+  background: #faf8f2;
+  border-top: 1px solid #e5e7eb;
+
+  padding: 20px;
+  margin-top: 6px;
+
+  display: grid;
+  gap: 16px;
 }

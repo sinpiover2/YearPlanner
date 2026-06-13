@@ -10,7 +10,7 @@ Year Planner is a planning and forecasting tool that helps teachers reduce the m
 
 Teaching requires carrying the weight of an entire school year in your head. Teachers constantly manage today’s lessons, next week’s preparation, unit pacing, assessment timelines, school events, and end-of-year goals—all while remaining fully present for students.
 
-Year Planner helps teachers replace uncertainty with visibility.
+Year Planner helps teachers replace uncertainty with visibility, lowering teacher anxiety.
 
 By making pacing, upcoming instruction, preparation needs, student progress, and future consequences visible, Year Planner helps teachers spend less time managing information and more time focusing on students and instruction.
 

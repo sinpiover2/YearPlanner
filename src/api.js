@@ -23,3 +23,29 @@ export async function saveDailyProgress(progress) {
 
   return { ok: true };
 }
+
+export async function addLesson(lesson) {
+  await fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify({
+      action: "addLesson",
+      ...lesson,
+    }),
+  });
+
+  return { ok: true };
+}
+
+export async function updateLesson(lesson) {
+  await fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify({
+      action: "updateLesson",
+      ...lesson,
+    }),
+  });
+
+  return { ok: true };
+}
