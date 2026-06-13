@@ -49,3 +49,29 @@ export async function updateLesson(lesson) {
 
   return { ok: true };
 }
+
+export async function deleteLesson(payload) {
+  await fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify({
+      action: "deleteLesson",
+      ...payload,
+    }),
+  });
+
+  return { ok: true };
+}
+
+export async function moveLesson(payload) {
+  await fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify({
+      action: "moveLesson",
+      ...payload,
+    }),
+  });
+
+  return { ok: true };
+}

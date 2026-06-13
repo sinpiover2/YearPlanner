@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import {
   addLesson,
+  deleteLesson,
   fetchPlannerData,
+  moveLesson,
   saveDailyProgress,
   updateLesson,
-  deleteLesson,
 } from "./api";
 
 function isTrue(value) {
@@ -307,7 +308,7 @@ function App() {
   const [newLesson, setNewLesson] = useState({
     lessonTitle: "",
     plannedDays: 1,
-    keyOutcome: "",
+    keyOutcomes: [""],
   });
   const [editingLessonId, setEditingLessonId] = useState(null);
   const [editLessonDraft, setEditLessonDraft] = useState(null);
@@ -442,6 +443,31 @@ function App() {
     }));
   }
 
+  function updateNewLessonGoal(index, value) {
+    setNewLesson((prev) => ({
+      ...prev,
+      keyOutcomes: prev.keyOutcomes.map((goal, goalIndex) =>
+        goalIndex === index ? value : goal,
+      ),
+    }));
+  }
+
+  function addNewLessonGoal() {
+    setNewLesson((prev) => ({
+      ...prev,
+      keyOutcomes: [...prev.keyOutcomes, ""],
+    }));
+  }
+
+  function removeNewLessonGoal(index) {
+    setNewLesson((prev) => ({
+      ...prev,
+      keyOutcomes: prev.keyOutcomes.filter(
+        (_, goalIndex) => goalIndex !== index,
+      ),
+    }));
+  }
+
   async function handleLogProgress(lesson) {
     try {
       setSavingLessonId(lesson.LessonID);
@@ -455,7 +481,7 @@ function App() {
         lessonId: lesson.LessonID,
         dayFraction: Number(input.dayFraction || 1),
         finished: Boolean(input.finished),
-        notes: "",
+        notes: input.notes || "",
       });
 
       const refreshedData = await fetchPlannerData();
@@ -482,7 +508,10 @@ function App() {
         unitId: selectedUnit.UnitID,
         lessonTitle: newLesson.lessonTitle.trim(),
         plannedDays: Number(newLesson.plannedDays || 1),
-        keyOutcome: newLesson.keyOutcome.trim(),
+        keyOutcome: newLesson.keyOutcomes
+          .map((goal) => goal.trim())
+          .filter(Boolean)
+          .join("|"),
         primaryLink: "",
       });
 
@@ -492,7 +521,7 @@ function App() {
       setNewLesson({
         lessonTitle: "",
         plannedDays: 1,
-        keyOutcome: "",
+        keyOutcomes: [""],
       });
 
       setIsAddingLesson(false);
@@ -502,31 +531,47 @@ function App() {
     }
   }
 
+  async function handleDeleteLesson(lesson) {
+    const confirmed = window.confirm(`Delete "${lesson.LessonTitle}"?`);
+
+    if (!confirmed) return;
+
+    try {
+      await deleteLesson({
+        lessonId: lesson.LessonID,
+      });
+
+      const refreshedData = await fetchPlannerData();
+
+      setPlannerData(refreshedData);
+      setEditingLessonId(null);
+      setEditLessonDraft(null);
+    } catch (error) {
+      console.error(error);
+      alert("Could not delete lesson.");
+    }
+  }
+
+  async function handleMoveLesson(lesson, direction) {
+    try {
+      await moveLesson({
+        lessonId: lesson.LessonID,
+        unitId: lesson.UnitID,
+        direction,
+      });
+
+      const refreshedData = await fetchPlannerData();
+      setPlannerData(refreshedData);
+    } catch (error) {
+      console.error(error);
+      alert("Could not move lesson.");
+    }
+  }
+
   async function handleUpdateLesson(lesson) {
     if (!editLessonDraft.lessonTitle.trim()) {
       alert("Please enter a lesson title.");
       return;
-    }
-
-    async function handleDeleteLesson(lesson) {
-      const confirmed = window.confirm(`Delete "${lesson.LessonTitle}"?`);
-
-      if (!confirmed) return;
-
-      try {
-        await deleteLesson({
-          lessonId: lesson.LessonID,
-        });
-
-        const refreshedData = await fetchPlannerData();
-
-        setPlannerData(refreshedData);
-        setEditingLessonId(null);
-        setEditLessonDraft(null);
-      } catch (error) {
-        console.error(error);
-        alert("Could not delete lesson.");
-      }
     }
 
     try {
@@ -620,7 +665,68 @@ function App() {
 
                 {activeProgressLessonId === lesson.LessonID && (
                   <div className="lesson-progress-entry">
-                    {/* leave your existing progress form here */}
+                    <input
+                      type="number"
+                      min="0.25"
+                      max="1"
+                      step="0.25"
+                      placeholder="Days"
+                      value={progressInputs[lesson.LessonID]?.dayFraction ?? 1}
+                      onChange={(e) =>
+                        setProgressInputs((prev) => ({
+                          ...prev,
+                          [lesson.LessonID]: {
+                            ...prev[lesson.LessonID],
+                            dayFraction: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={
+                          progressInputs[lesson.LessonID]?.finished ?? false
+                        }
+                        onChange={(e) =>
+                          setProgressInputs((prev) => ({
+                            ...prev,
+                            [lesson.LessonID]: {
+                              ...prev[lesson.LessonID],
+                              finished: e.target.checked,
+                            },
+                          }))
+                        }
+                      />
+                      Finished
+                    </label>
+
+                    <textarea
+                      className="log-notes-input"
+                      placeholder="Notes — what happened today?"
+                      value={progressInputs[lesson.LessonID]?.notes ?? ""}
+                      onChange={(e) =>
+                        setProgressInputs((prev) => ({
+                          ...prev,
+                          [lesson.LessonID]: {
+                            ...prev[lesson.LessonID],
+                            notes: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+
+                    <button onClick={() => handleLogProgress(lesson)}>
+                      Save Log
+                    </button>
+
+                    <button
+                      className="secondary-button"
+                      onClick={() => setActiveProgressLessonId(null)}
+                    >
+                      Cancel
+                    </button>
                   </div>
                 )}
               </div>
@@ -722,6 +828,22 @@ function App() {
                     </button>
 
                     <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => handleMoveLesson(lesson, "up")}
+                    >
+                      Move up
+                    </button>
+
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => handleMoveLesson(lesson, "down")}
+                    >
+                      Move down
+                    </button>
+
+                    <button
                       className="delete-button"
                       onClick={() => handleDeleteLesson(lesson)}
                     >
@@ -744,51 +866,93 @@ function App() {
             </button>
           ) : (
             <div className="add-lesson-form">
-              <input
-                type="text"
-                placeholder="Lesson title"
-                value={newLesson.lessonTitle}
-                onChange={(e) =>
-                  setNewLesson((prev) => ({
-                    ...prev,
-                    lessonTitle: e.target.value,
-                  }))
-                }
-              />
+              <div className="add-lesson-top-row">
+                <input
+                  type="text"
+                  placeholder="Lesson title"
+                  value={newLesson.lessonTitle}
+                  onChange={(e) =>
+                    setNewLesson((prev) => ({
+                      ...prev,
+                      lessonTitle: e.target.value,
+                    }))
+                  }
+                />
 
-              <input
-                type="number"
-                min="0.5"
-                step="0.5"
-                value={newLesson.plannedDays}
-                onChange={(e) =>
-                  setNewLesson((prev) => ({
-                    ...prev,
-                    plannedDays: e.target.value,
-                  }))
-                }
-              />
+                <input
+                  type="number"
+                  min="0.5"
+                  step="0.5"
+                  value={newLesson.plannedDays}
+                  onChange={(e) =>
+                    setNewLesson((prev) => ({
+                      ...prev,
+                      plannedDays: e.target.value,
+                    }))
+                  }
+                />
+              </div>
 
-              <input
-                type="text"
-                placeholder="I can statement"
-                value={newLesson.keyOutcome}
-                onChange={(e) =>
-                  setNewLesson((prev) => ({
-                    ...prev,
-                    keyOutcome: e.target.value,
-                  }))
-                }
-              />
+              <div className="goal-editor">
+                <span>Learning goals</span>
 
-              <button onClick={handleAddLesson}>Add lesson</button>
+                {newLesson.keyOutcomes.map((goal, index) => (
+                  <div className="goal-input-row" key={`new-goal-${index}`}>
+                    <strong>{index + 1}</strong>
 
-              <button
-                className="secondary-button"
-                onClick={() => setIsAddingLesson(false)}
-              >
-                Cancel
-              </button>
+                    <input
+                      type="text"
+                      placeholder="I can..."
+                      value={goal}
+                      onChange={(e) =>
+                        updateNewLessonGoal(index, e.target.value)
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addNewLessonGoal();
+                        }
+                      }}
+                    />
+
+                    {newLesson.keyOutcomes.length > 1 && (
+                      <button
+                        type="button"
+                        className="remove-goal-button"
+                        onClick={() => removeNewLessonGoal(index)}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="add-goal-button"
+                  onClick={addNewLessonGoal}
+                >
+                  + Add another goal
+                </button>
+              </div>
+
+              <div className="edit-actions">
+                <button onClick={handleAddLesson}>Add lesson</button>
+
+                <button
+                  className="secondary-button"
+                  onClick={() => {
+                    setNewLesson({
+                      lessonTitle: "",
+                      plannedDays: 1,
+                      keyOutcomes: [""],
+                    });
+                    setIsAddingLesson(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
         </div>
