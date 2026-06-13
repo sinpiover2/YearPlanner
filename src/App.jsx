@@ -5,6 +5,7 @@ import {
   fetchPlannerData,
   saveDailyProgress,
   updateLesson,
+  deleteLesson,
 } from "./api";
 
 function isTrue(value) {
@@ -507,6 +508,27 @@ function App() {
       return;
     }
 
+    async function handleDeleteLesson(lesson) {
+      const confirmed = window.confirm(`Delete "${lesson.LessonTitle}"?`);
+
+      if (!confirmed) return;
+
+      try {
+        await deleteLesson({
+          lessonId: lesson.LessonID,
+        });
+
+        const refreshedData = await fetchPlannerData();
+
+        setPlannerData(refreshedData);
+        setEditingLessonId(null);
+        setEditLessonDraft(null);
+      } catch (error) {
+        console.error(error);
+        alert("Could not delete lesson.");
+      }
+    }
+
     try {
       await updateLesson({
         lessonId: lesson.LessonID,
@@ -629,22 +651,24 @@ function App() {
 
               {editingLessonId === lesson.LessonID && editLessonDraft && (
                 <div className="lesson-edit-form">
-                  <div className="lesson-edit-top-row">
-                    <label>
-                      Days
-                      <input
-                        type="number"
-                        min="0.5"
-                        step="0.5"
-                        value={editLessonDraft.plannedDays}
-                        onChange={(e) =>
-                          setEditLessonDraft((prev) => ({
-                            ...prev,
-                            plannedDays: e.target.value,
-                          }))
-                        }
-                      />
-                    </label>
+                  <div className="days-row">
+                    <div className="days-box" />
+
+                    <label>Days</label>
+
+                    <input
+                      className="days-input"
+                      type="number"
+                      min="0.5"
+                      step="0.5"
+                      value={editLessonDraft.plannedDays}
+                      onChange={(e) =>
+                        setEditLessonDraft((prev) => ({
+                          ...prev,
+                          plannedDays: e.target.value,
+                        }))
+                      }
+                    />
                   </div>
 
                   <div className="goal-editor">
@@ -695,6 +719,13 @@ function App() {
                       }}
                     >
                       Cancel
+                    </button>
+
+                    <button
+                      className="delete-button"
+                      onClick={() => handleDeleteLesson(lesson)}
+                    >
+                      Delete Lesson
                     </button>
                   </div>
                 </div>
