@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { fetchPlannerData, saveDailyProgress } from "./api";
 
+function isTrue(value) {
+  return value === true || String(value).toLowerCase() === "true";
+}
+
 function formatDate(value) {
   if (!value) return "—";
-
   const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "—";
-  }
+  if (Number.isNaN(date.getTime())) return "—";
 
   return date.toLocaleDateString("en-US", {
     month: "short",
@@ -18,12 +18,82 @@ function formatDate(value) {
   });
 }
 
+function formatVariance(variance) {
+  if (variance === 0) return "On pace";
+
+  const absoluteValue = Math.abs(variance);
+  const dayLabel = absoluteValue === 1 ? "day" : "days";
+
+  return variance > 0
+    ? `${absoluteValue} ${dayLabel} behind pace`
+    : `${absoluteValue} ${dayLabel} ahead of pace`;
+}
+
+function formatVarianceCompact(variance) {
+  if (variance === 0) return "—";
+
+  const absoluteValue = Math.abs(variance);
+
+  return variance > 0 ? `+${absoluteValue}d` : `-${absoluteValue}d`;
+}
+
+function formatForecastShift(variance) {
+  if (variance === 0) return "No forecast shift.";
+
+  const absoluteValue = Math.abs(variance);
+  const dayLabel = absoluteValue === 1 ? "day" : "days";
+  const direction = variance > 0 ? "later" : "earlier";
+
+  return `Future unit dates shift ${absoluteValue} instructional ${dayLabel} ${direction}.`;
+}
+
+function getOutcomeList(value) {
+  if (!value) return [];
+
+  return String(value)
+    .split(/\||\n/)
+    .map((outcome) => outcome.trim())
+    .filter(Boolean);
+}
+
+function getRequiredDays(courseUnits) {
+  return courseUnits.reduce(
+    (sum, unit) => sum + Number(unit.RequiredDays || 0),
+    0,
+  );
+}
+
+function getOptionalDays(courseUnits) {
+  return courseUnits.reduce(
+    (sum, unit) => sum + Number(unit.OptionalDays || 0),
+    0,
+  );
+}
+
+function sortUnits(units) {
+  return [...units].sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
+}
+
+function sortLessons(lessons, units) {
+  const unitOrder = new Map(
+    units.map((unit) => [unit.UnitID, Number(unit.SortOrder)]),
+  );
+
+  return [...lessons].sort((a, b) => {
+    const unitCompare =
+      (unitOrder.get(a.UnitID) ?? 999) - (unitOrder.get(b.UnitID) ?? 999);
+
+    if (unitCompare !== 0) return unitCompare;
+
+    return Number(a.SortOrder) - Number(b.SortOrder);
+  });
+}
+
 function getProjectedUnits(courseUnits, schoolCalendar) {
   const schoolDays = schoolCalendar.filter((day) => day.DayType === "School");
-
   let cursor = 0;
 
-  return courseUnits.map((unit) => {
+  return sortUnits(courseUnits).map((unit) => {
     const requiredDays = Number(unit.RequiredDays || 0);
     const startDay = schoolDays[cursor];
     const endDay = schoolDays[cursor + requiredDays - 1];
@@ -38,29 +108,42 @@ function getProjectedUnits(courseUnits, schoolCalendar) {
   });
 }
 
-function getCourseStatus(courseId, lessons, dailyProgress) {
-  const courseLessons = lessons
-    .filter((lesson) => lesson.CourseID === courseId)
-    .sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
+function getLessonProgress(lessonId, dailyProgress) {
+  const entries = dailyProgress.filter((entry) => entry.LessonID === lessonId);
 
-  const courseProgress = dailyProgress.filter(
-    (entry) => entry.CourseID === courseId,
+  const actualDays = entries.reduce(
+    (sum, entry) => sum + Number(entry.DayFraction || 0),
+    0,
+  );
+
+  const finished = entries.some((entry) => isTrue(entry.Finished));
+
+  return { actualDays, finished };
+}
+
+function getCourseStatus(courseId, units, lessons, dailyProgress) {
+  const courseUnits = sortUnits(
+    units.filter((unit) => unit.CourseID === courseId),
+  );
+
+  const courseLessons = sortLessons(
+    lessons.filter((lesson) => lesson.CourseID === courseId),
+    courseUnits,
   );
 
   const completedLessonIds = new Set(
-    courseProgress
-      .filter((entry) => entry.Finished)
+    dailyProgress
+      .filter((entry) => entry.CourseID === courseId && isTrue(entry.Finished))
       .map((entry) => entry.LessonID),
-  );
-
-  const actualDays = courseProgress.reduce(
-    (sum, entry) => sum + Number(entry.DayFraction || 0),
-    0,
   );
 
   const completedLessons = courseLessons.filter((lesson) =>
     completedLessonIds.has(lesson.LessonID),
   );
+
+  const actualDays = dailyProgress
+    .filter((entry) => entry.CourseID === courseId)
+    .reduce((sum, entry) => sum + Number(entry.DayFraction || 0), 0);
 
   const plannedDaysCompleted = completedLessons.reduce(
     (sum, lesson) => sum + Number(lesson.PlannedDays || 0),
@@ -80,106 +163,19 @@ function getCourseStatus(courseId, lessons, dailyProgress) {
   };
 }
 
-function formatVariance(variance) {
-  if (variance === 0) return "On pace";
-
-  const absoluteValue = Math.abs(variance);
-  const dayLabel = absoluteValue === 1 ? "day" : "days";
-
-  return variance > 0
-    ? `${absoluteValue} ${dayLabel} behind pace`
-    : `${absoluteValue} ${dayLabel} ahead of pace`;
-}
-
-function formatForecastShift(variance) {
-  if (variance === 0) return "No forecast shift.";
-
-  const absoluteValue = Math.abs(variance);
-  const dayLabel = absoluteValue === 1 ? "day" : "days";
-  const direction = variance > 0 ? "later" : "earlier";
-
-  return `Future unit dates shift ${absoluteValue} instructional ${dayLabel} ${direction}.`;
-}
-
-function formatVarianceCompact(variance) {
-  if (variance === 0) return "On plan";
-
-  const absoluteValue = Math.abs(variance);
-  const dayLabel = absoluteValue === 1 ? "day" : "days";
-
-  return variance > 0
-    ? `+${absoluteValue} ${dayLabel}`
-    : `-${absoluteValue} ${dayLabel}`;
-}
-
-function getOutcomeList(value) {
-  if (!value) return [];
-
-  return String(value)
-    .split(/\||\n/)
-    .map((outcome) => outcome.trim())
-    .filter(Boolean);
-}
-
-function getDateKey(value) {
-  if (!value) return null;
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toISOString().slice(0, 10);
-}
-
-function shiftByInstructionalDays(dateValue, schoolCalendar, shiftDays) {
-  if (!dateValue || shiftDays === 0) {
-    return dateValue;
-  }
-
-  const schoolDays = schoolCalendar.filter((day) => day.DayType === "School");
-  const dateKey = getDateKey(dateValue);
-
-  const currentIndex = schoolDays.findIndex(
-    (day) => getDateKey(day.Date) === dateKey,
+function getCourseNavigation(courseId, units, lessons, dailyProgress) {
+  const courseUnits = sortUnits(
+    units.filter((unit) => unit.CourseID === courseId),
   );
 
-  if (currentIndex < 0) {
-    return null;
-  }
-
-  const shiftedIndex = currentIndex + shiftDays;
-
-  if (shiftedIndex < 0 || shiftedIndex >= schoolDays.length) {
-    return null;
-  }
-
-  return schoolDays[shiftedIndex].Date;
-}
-
-function getCourseProjectedUnits(courseId, units, schoolCalendar) {
-  const courseUnits = units
-    .filter((unit) => unit.CourseID === courseId)
-    .sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
-
-  return getProjectedUnits(courseUnits, schoolCalendar);
-}
-
-function getPrepareNext(courseId, lessons, dailyProgress, count = 3) {
-  const courseLessons = lessons
-    .filter((lesson) => lesson.CourseID === courseId)
-    .sort((a, b) => {
-      const unitCompare = String(a.UnitID).localeCompare(String(b.UnitID));
-
-      if (unitCompare !== 0) return unitCompare;
-
-      return Number(a.SortOrder) - Number(b.SortOrder);
-    });
+  const courseLessons = sortLessons(
+    lessons.filter((lesson) => lesson.CourseID === courseId),
+    courseUnits,
+  );
 
   const completedLessonIds = new Set(
     dailyProgress
-      .filter((entry) => entry.CourseID === courseId && entry.Finished)
+      .filter((entry) => entry.CourseID === courseId && isTrue(entry.Finished))
       .map((entry) => entry.LessonID),
   );
 
@@ -189,25 +185,114 @@ function getPrepareNext(courseId, lessons, dailyProgress, count = 3) {
 
   const currentLesson = currentIndex >= 0 ? courseLessons[currentIndex] : null;
 
+  const previousLesson =
+    currentIndex > 0 ? courseLessons[currentIndex - 1] : null;
+
+  const nextLesson =
+    currentIndex >= 0 && currentIndex < courseLessons.length - 1
+      ? courseLessons[currentIndex + 1]
+      : null;
+
+  const currentUnit = currentLesson
+    ? courseUnits.find((unit) => unit.UnitID === currentLesson.UnitID)
+    : (courseUnits.at(-1) ?? null);
+
+  const currentUnitLessons = currentUnit
+    ? courseLessons.filter((lesson) => lesson.UnitID === currentUnit.UnitID)
+    : [];
+
+  const currentUnitIndex = currentLesson
+    ? currentUnitLessons.findIndex(
+        (lesson) => lesson.LessonID === currentLesson.LessonID,
+      )
+    : -1;
+
+  const completedInUnit = currentUnitLessons.filter((lesson) =>
+    completedLessonIds.has(lesson.LessonID),
+  ).length;
+
+  const plannedDays = currentUnitLessons.reduce(
+    (sum, lesson) => sum + Number(lesson.PlannedDays || 0),
+    0,
+  );
+
+  const actualDays = currentUnitLessons.reduce(
+    (sum, lesson) =>
+      sum + getLessonProgress(lesson.LessonID, dailyProgress).actualDays,
+    0,
+  );
+
+  return {
+    courseUnits,
+    courseLessons,
+    currentUnit,
+    currentUnitLessons,
+    currentLesson,
+    previousLesson,
+    nextLesson,
+    completedLessonIds,
+    currentLessonNumber: currentUnitIndex >= 0 ? currentUnitIndex + 1 : 0,
+    totalLessonsInUnit: currentUnitLessons.length,
+    completedInUnit,
+    remainingInUnit: Math.max(
+      currentUnitLessons.length - completedInUnit - (currentLesson ? 1 : 0),
+      0,
+    ),
+    plannedDays,
+    actualDays,
+    unitVariance: actualDays - plannedDays,
+  };
+}
+
+function getPrepareNext(courseId, units, lessons, dailyProgress, count = 3) {
+  const navigation = getCourseNavigation(
+    courseId,
+    units,
+    lessons,
+    dailyProgress,
+  );
+
+  const currentIndex = navigation.currentLesson
+    ? navigation.courseLessons.findIndex(
+        (lesson) => lesson.LessonID === navigation.currentLesson.LessonID,
+      )
+    : -1;
+
   const upcomingLessons =
     currentIndex >= 0
-      ? courseLessons.slice(currentIndex + 1, currentIndex + 1 + count)
+      ? navigation.courseLessons.slice(
+          currentIndex + 1,
+          currentIndex + 1 + count,
+        )
       : [];
 
-  const missingResourceCount = [currentLesson, ...upcomingLessons].filter(
-    (lesson) => lesson && !lesson.PrimaryLink,
+  const visibleLessons = [navigation.currentLesson, ...upcomingLessons].filter(
+    Boolean,
+  );
+
+  const missingResourceCount = visibleLessons.filter(
+    (lesson) => !lesson.PrimaryLink,
   ).length;
 
   return {
-    currentLesson,
+    currentLesson: navigation.currentLesson,
     upcomingLessons,
     missingResourceCount,
   };
 }
 
+function getCourseLabel(courseId) {
+  if (courseId === "M8") return "Math 8";
+  if (courseId === "IM1") return "Math 1";
+  return courseId;
+}
+
 function App() {
   const [plannerData, setPlannerData] = useState(null);
   const [status, setStatus] = useState("Loading planner data...");
+  const [activeView, setActiveView] = useState("today");
+  const [timeLens, setTimeLens] = useState("school");
+  const [selectedCourseId, setSelectedCourseId] = useState("M8");
   const [selectedUnitId, setSelectedUnitId] = useState(null);
   const [progressInputs, setProgressInputs] = useState({});
   const [savingLessonId, setSavingLessonId] = useState(null);
@@ -238,32 +323,73 @@ function App() {
   const math8Units = units.filter((unit) => unit.CourseID === "M8");
   const math1Units = units.filter((unit) => unit.CourseID === "IM1");
 
-  const getRequiredDays = (courseUnits) =>
-    courseUnits.reduce((sum, unit) => sum + Number(unit.RequiredDays || 0), 0);
-
-  const getOptionalDays = (courseUnits) =>
-    courseUnits.reduce((sum, unit) => sum + Number(unit.OptionalDays || 0), 0);
-
   const math8RequiredDays = getRequiredDays(math8Units);
   const math1RequiredDays = getRequiredDays(math1Units);
-
   const math8OptionalDays = getOptionalDays(math8Units);
   const math1OptionalDays = getOptionalDays(math1Units);
 
-  const math8Remaining = instructionalDays - math8RequiredDays;
-  const math1Remaining = instructionalDays - math1RequiredDays;
+  const math8Status = getCourseStatus("M8", units, lessons, dailyProgress);
+  const math1Status = getCourseStatus("IM1", units, lessons, dailyProgress);
 
-  const math8Status = getCourseStatus("M8", lessons, dailyProgress);
-  const math1Status = getCourseStatus("IM1", lessons, dailyProgress);
-  const math8PrepareNext = getPrepareNext("M8", lessons, dailyProgress);
+  const math8Navigation = getCourseNavigation(
+    "M8",
+    units,
+    lessons,
+    dailyProgress,
+  );
 
-  const math1PrepareNext = getPrepareNext("IM1", lessons, dailyProgress);
+  const math1Navigation = getCourseNavigation(
+    "IM1",
+    units,
+    lessons,
+    dailyProgress,
+  );
 
-  const selectedUnit = units.find((unit) => unit.UnitID === selectedUnitId);
+  const math8PrepareNext = getPrepareNext("M8", units, lessons, dailyProgress);
+  const math1PrepareNext = getPrepareNext("IM1", units, lessons, dailyProgress);
 
-  const selectedUnitLessons = lessons
-    .filter((lesson) => lesson.UnitID === selectedUnitId)
-    .sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
+  const actualDaysLogged = math8Status.actualDays + math1Status.actualDays;
+  const curriculumDaysPlanned = math8RequiredDays + math1RequiredDays;
+
+  const timeLensInfo = {
+    school: {
+      label: "School calendar loaded",
+      value: instructionalDays || "—",
+      unit: "days",
+      bar: Math.min(100, ((instructionalDays || 0) / 180) * 100),
+    },
+    curriculum: {
+      label: "Curriculum days planned",
+      value: curriculumDaysPlanned || "—",
+      unit: "days",
+      bar: Math.min(100, (curriculumDaysPlanned / 273) * 100),
+    },
+    actual: {
+      label: "Actual days logged",
+      value: actualDaysLogged || "—",
+      unit: "days",
+      bar: Math.min(100, (actualDaysLogged / 273) * 100),
+    },
+  }[timeLens];
+
+  const selectedNavigation =
+    selectedCourseId === "IM1" ? math1Navigation : math8Navigation;
+
+  const selectedStatus = selectedCourseId === "IM1" ? math1Status : math8Status;
+
+  const selectedPrepareNext =
+    selectedCourseId === "IM1" ? math1PrepareNext : math8PrepareNext;
+
+  const selectedUnit =
+    units.find((unit) => unit.UnitID === selectedUnitId) ??
+    selectedNavigation.currentUnit;
+
+  const selectedUnitLessons = selectedUnit
+    ? sortLessons(
+        lessons.filter((lesson) => lesson.UnitID === selectedUnit.UnitID),
+        units,
+      )
+    : [];
 
   async function handleLogProgress(lesson) {
     try {
@@ -292,537 +418,504 @@ function App() {
     }
   }
 
-  return (
-    <main className="app">
-      <header className="header">
-        <div>
-          <p className="eyebrow">2026–2027</p>
-          <h1>Year Planner</h1>
-          <p className="subtitle">
-            Curriculum timeline for Math 8 and Integrated Math 1
-          </p>
-        </div>
-      </header>
-
-      <section className="cards">
-        <div className="card">
-          <p>Total instructional days</p>
-          <h2>{instructionalDays || "—"}</h2>
+  function renderLessonTable(lessonList) {
+    return (
+      <div className="lesson-table">
+        <div className="lesson-table-head">
+          <span></span>
+          <span>Lesson</span>
+          <span>Plan</span>
+          <span>Actual</span>
+          <span>Var</span>
+          <span></span>
         </div>
 
-        <div className="card course-metric">
-          <p>Math 8</p>
-          <h2>{math8RequiredDays || "—"}</h2>
-          <span>
-            {math8OptionalDays} optional • {math8Remaining} buffer
-          </span>
-        </div>
+        {lessonList.map((lesson) => {
+          const { actualDays, finished } = getLessonProgress(
+            lesson.LessonID,
+            dailyProgress,
+          );
 
-        <div className="card course-metric">
-          <p>Math 1</p>
-          <h2>{math1RequiredDays || "—"}</h2>
-          <span>
-            {math1OptionalDays} optional • {math1Remaining} buffer
-          </span>
-        </div>
-      </section>
+          const isCurrent =
+            lesson.LessonID === selectedNavigation.currentLesson?.LessonID;
 
-      <section className="panel">
-        <h2>Current Status</h2>
+          const isNext =
+            lesson.LessonID === selectedNavigation.nextLesson?.LessonID;
 
-        <div className="cards">
-          <div className="card course-status">
-            <p>Math 8</p>
-            <h3>{math8Status.currentLesson?.LessonTitle ?? "Complete"}</h3>
-            <span>{math8Status.completedCount} lessons completed</span>
-            <span>
-              {math8Status.plannedDaysCompleted} planned days completed
-            </span>
-            <span>{math8Status.actualDays} actual days used</span>
-            <strong>{formatVariance(math8Status.variance)}</strong>
-          </div>
-
-          <div className="card course-status">
-            <p>Integrated Math 1</p>
-            <h3>{math1Status.currentLesson?.LessonTitle ?? "Complete"}</h3>
-            <span>{math1Status.completedCount} lessons completed</span>
-            <span>
-              {math1Status.plannedDaysCompleted} planned days completed
-            </span>
-            <span>{math1Status.actualDays} actual days used</span>
-            <strong>{formatVariance(math1Status.variance)}</strong>
-          </div>
-        </div>
-      </section>
-      <section className="panel">
-        <h2>Prepare Next</h2>
-
-        <div className="cards">
-          <div className="card prepare-card">
-            <p>Math 8</p>
-            <h3>
-              Current:{" "}
-              {math8PrepareNext.currentLesson?.LessonTitle ?? "Complete"}
-            </h3>
-
-            <div className="prepare-list">
-              <strong>Coming Up</strong>
-
-              {math8PrepareNext.upcomingLessons.length === 0 ? (
-                <span>No upcoming lessons entered.</span>
-              ) : (
-                math8PrepareNext.upcomingLessons.map((lesson) => (
-                  <span key={lesson.LessonID}>
-                    Lesson {lesson.LessonNumber}: {lesson.LessonTitle}
-                  </span>
-                ))
-              )}
-            </div>
-
-            <div className="prep-status">
-              {math8PrepareNext.missingResourceCount === 0
-                ? "All visible lessons have resource links."
-                : `${math8PrepareNext.missingResourceCount} visible lessons missing resource links.`}
-            </div>
-          </div>
-
-          <div className="card prepare-card">
-            <p>Integrated Math 1</p>
-            <h3>
-              Current:{" "}
-              {math1PrepareNext.currentLesson?.LessonTitle ?? "Complete"}
-            </h3>
-
-            <div className="prepare-list">
-              <strong>Coming Up</strong>
-
-              {math1PrepareNext.upcomingLessons.length === 0 ? (
-                <span>No upcoming lessons entered.</span>
-              ) : (
-                math1PrepareNext.upcomingLessons.map((lesson) => (
-                  <span key={lesson.LessonID}>
-                    Lesson {lesson.LessonNumber}: {lesson.LessonTitle}
-                  </span>
-                ))
-              )}
-            </div>
-
-            <div className="prep-status">
-              {math1PrepareNext.missingResourceCount === 0
-                ? "All visible lessons have resource links."
-                : `${math1PrepareNext.missingResourceCount} visible lessons missing resource links.`}
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="panel">
-        <h2>Forecast Preview</h2>
-
-        <div className="cards">
-          <div className="card course-status">
-            <p>Math 8</p>
-            <h3>{formatVariance(math8Status.variance)}</h3>
-            <span>{formatForecastShift(math8Status.variance)}</span>
-          </div>
-
-          <div className="card course-status">
-            <p>Integrated Math 1</p>
-            <h3>{formatVariance(math1Status.variance)}</h3>
-            <span>{formatForecastShift(math1Status.variance)}</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="panel">
-        <h2>Timeline Dashboard</h2>
-
-        {courses.map((course) => {
-          const courseUnits = units
-            .filter((unit) => unit.CourseID === course.CourseID)
-            .sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
-
-          const projectedUnits = getProjectedUnits(courseUnits, schoolCalendar);
-          const totalDays = getRequiredDays(courseUnits);
-          const optionalDays = getOptionalDays(courseUnits);
+          const variance = actualDays - Number(lesson.PlannedDays || 0);
+          const outcomes = getOutcomeList(lesson.KeyOutcome);
 
           return (
-            <div className="timeline-course" key={course.CourseID}>
-              <div className="timeline-header">
-                <div>
-                  <h3>{course.CourseName}</h3>
-                  <p className="timeline-meta">
-                    {totalDays} required • {optionalDays} optional
-                  </p>
-                </div>
-              </div>
+            <div
+              className={isCurrent ? "lesson-row current-row" : "lesson-row"}
+              key={lesson.LessonID}
+            >
+              <span className="lesson-index">{lesson.LessonNumber}</span>
 
-              <div className="timeline-row">
-                {projectedUnits.map((unit) => {
-                  const requiredDays = Number(unit.RequiredDays || 0);
-                  const hasProjectedDates =
-                    unit.projectedStart && unit.projectedEnd;
+              <div className="lesson-name-cell">
+                <strong>{lesson.LessonTitle}</strong>
 
-                  return (
-                    <div
-                      className={
-                        selectedUnitId === unit.UnitID
-                          ? "unit-block selected-unit"
-                          : "unit-block"
+                <span
+                  className={
+                    finished
+                      ? "lesson-pill done"
+                      : isCurrent
+                        ? "lesson-pill now"
+                        : isNext
+                          ? "lesson-pill next"
+                          : "lesson-pill upcoming"
+                  }
+                >
+                  {finished
+                    ? "Done"
+                    : isCurrent
+                      ? "Now"
+                      : isNext
+                        ? "Next"
+                        : "Upcoming"}
+                </span>
+
+                <p>
+                  {outcomes[0] ?? lesson.Description ?? "No outcome entered."}
+                </p>
+
+                {activeProgressLessonId === lesson.LessonID && (
+                  <div className="lesson-progress-entry">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      placeholder="Days"
+                      value={progressInputs[lesson.LessonID]?.dayFraction ?? ""}
+                      onChange={(e) =>
+                        setProgressInputs((prev) => ({
+                          ...prev,
+                          [lesson.LessonID]: {
+                            ...prev[lesson.LessonID],
+                            dayFraction: e.target.value,
+                          },
+                        }))
                       }
-                      key={unit.UnitID}
-                      style={{ flexGrow: requiredDays }}
-                      title={`${unit.UnitTitle}: ${requiredDays} days`}
-                      onClick={() => setSelectedUnitId(unit.UnitID)}
-                    >
-                      <span>U{unit.UnitNumber}</span>
-                      <strong>{unit.UnitTitle}</strong>
-                      <small>{requiredDays}d</small>
+                    />
 
-                      <em
-                        className={
-                          hasProjectedDates ? "date-pill" : "date-pill pending"
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={
+                          progressInputs[lesson.LessonID]?.finished ?? false
                         }
-                      >
-                        {hasProjectedDates
-                          ? `${formatDate(unit.projectedStart)}–${formatDate(
-                              unit.projectedEnd,
-                            )}`
-                          : "Pending"}
-                      </em>
-                    </div>
-                  );
-                })}
+                        onChange={(e) =>
+                          setProgressInputs((prev) => ({
+                            ...prev,
+                            [lesson.LessonID]: {
+                              ...prev[lesson.LessonID],
+                              finished: e.target.checked,
+                            },
+                          }))
+                        }
+                      />
+                      Complete
+                    </label>
+
+                    <button
+                      onClick={() => handleLogProgress(lesson)}
+                      disabled={savingLessonId === lesson.LessonID}
+                    >
+                      {savingLessonId === lesson.LessonID
+                        ? "Saving..."
+                        : "Save"}
+                    </button>
+
+                    <button
+                      className="secondary-button"
+                      onClick={() => setActiveProgressLessonId(null)}
+                      disabled={savingLessonId === lesson.LessonID}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
+
+              <strong>{lesson.PlannedDays || "—"}d</strong>
+              <strong>{actualDays || "—"}</strong>
+              <strong className={variance > 0 ? "variance-warning" : ""}>
+                {actualDays ? formatVarianceCompact(variance) : "—"}
+              </strong>
+
+              <button
+                className="log-button"
+                onClick={() => setActiveProgressLessonId(lesson.LessonID)}
+              >
+                Log
+              </button>
             </div>
           );
         })}
-      </section>
+      </div>
+    );
+  }
 
-      {selectedUnit && (
-        <section className="panel">
-          <h2>Unit Detail</h2>
+  function renderUnitChips(courseId, courseUnits) {
+    return (
+      <div className="unit-chip-grid">
+        {sortUnits(courseUnits).map((unit) => (
+          <button
+            key={unit.UnitID}
+            className={
+              selectedUnit?.UnitID === unit.UnitID
+                ? "unit-chip active"
+                : "unit-chip"
+            }
+            onClick={() => {
+              setSelectedCourseId(courseId);
+              setSelectedUnitId(unit.UnitID);
+              setActiveView("units");
+            }}
+          >
+            {unit.UnitNumber}
+          </button>
+        ))}
+      </div>
+    );
+  }
 
-          {(() => {
-            const unitLessons = lessons.filter(
-              (lesson) => lesson.UnitID === selectedUnit.UnitID,
-            );
+  return (
+    <main className="app">
+      <section className="planner-shell">
+        <aside className="sidebar">
+          <div className="sidebar-title">
+            <h1>Year Planner</h1>
+            <p>2026–27</p>
+            <small>{status}</small>
+          </div>
 
-            const plannedDays = unitLessons.reduce(
-              (sum, lesson) => sum + Number(lesson.PlannedDays || 0),
-              0,
-            );
-
-            const actualDays = unitLessons.reduce((sum, lesson) => {
-              const entries = dailyProgress.filter(
-                (entry) => entry.LessonID === lesson.LessonID,
-              );
-
-              return (
-                sum +
-                entries.reduce(
-                  (entrySum, entry) =>
-                    entrySum + Number(entry.DayFraction || 0),
-                  0,
-                )
-              );
-            }, 0);
-
-            const variance = actualDays - plannedDays;
-
-            const unitFinished =
-              unitLessons.length > 0 &&
-              unitLessons.every((lesson) =>
-                dailyProgress.some(
-                  (entry) =>
-                    entry.LessonID === lesson.LessonID && entry.Finished,
-                ),
-              );
-
-            const varianceText = unitFinished
-              ? formatVariance(variance)
-              : "In Progress";
-
-            const forecastImpactText =
-              unitLessons.length === 0
-                ? "No lesson data yet."
-                : unitFinished
-                  ? formatForecastShift(variance)
-                  : `Unit in progress: ${actualDays} of ${plannedDays} planned days used.`;
-
-            const selectedCourseProjectedUnits = getCourseProjectedUnits(
-              selectedUnit.CourseID,
-              units,
-              schoolCalendar,
-            );
-
-            const selectedProjectedUnitIndex =
-              selectedCourseProjectedUnits.findIndex(
-                (unit) => unit.UnitID === selectedUnit.UnitID,
-              );
-
-            const impactedUnits =
-              selectedProjectedUnitIndex >= 0
-                ? selectedCourseProjectedUnits.slice(
-                    selectedProjectedUnitIndex + 1,
-                    selectedProjectedUnitIndex + 4,
-                  )
-                : [];
-
-            return (
-              <>
-                <div className="unit-summary">
-                  <div className="summary-card">
-                    <p>Planned Days</p>
-                    <h3>{plannedDays}</h3>
-                  </div>
-
-                  <div className="summary-card">
-                    <p>Actual Days</p>
-                    <h3>{actualDays}</h3>
-                  </div>
-
-                  <div className="summary-card">
-                    <p>Status</p>
-                    <h3>{varianceText}</h3>
-                  </div>
-
-                  <div className="summary-card forecast-impact-card">
-                    <p>Forecast Impact</p>
-                    <h3>{forecastImpactText}</h3>
-                  </div>
-                </div>
-
-                {unitFinished && variance !== 0 && impactedUnits.length > 0 && (
-                  <div className="future-impact-panel">
-                    <h3>Future Impact</h3>
-
-                    <p>
-                      If this unit&apos;s pacing holds, the next units in this
-                      course move by{" "}
-                      <strong>{formatVarianceCompact(variance)}</strong>.
-                    </p>
-
-                    <div className="impact-list">
-                      {impactedUnits.map((unit) => {
-                        const shiftedStart = shiftByInstructionalDays(
-                          unit.projectedStart,
-                          schoolCalendar,
-                          variance,
-                        );
-
-                        const shiftedEnd = shiftByInstructionalDays(
-                          unit.projectedEnd,
-                          schoolCalendar,
-                          variance,
-                        );
-
-                        return (
-                          <div className="impact-row" key={unit.UnitID}>
-                            <strong>
-                              U{unit.UnitNumber}: {unit.UnitTitle}
-                            </strong>
-
-                            <span>
-                              {formatDate(unit.projectedStart)}–
-                              {formatDate(unit.projectedEnd)} →{" "}
-                              {shiftedStart && shiftedEnd
-                                ? `${formatDate(shiftedStart)}–${formatDate(
-                                    shiftedEnd,
-                                  )}`
-                                : "outside calendar"}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </>
-            );
-          })()}
-
-          <div className="unit-detail-header">
-            <div>
-              <h3>
-                {selectedUnit.CourseID} — U{selectedUnit.UnitNumber}
-              </h3>
-              <p>{selectedUnit.UnitTitle}</p>
-            </div>
+          <div className="time-toggle">
+            <button
+              className={timeLens === "school" ? "active-time-lens" : ""}
+              onClick={() => setTimeLens("school")}
+            >
+              School days
+            </button>
 
             <button
-              className="clear-selection"
-              onClick={() => setSelectedUnitId(null)}
+              className={timeLens === "curriculum" ? "active-time-lens" : ""}
+              onClick={() => setTimeLens("curriculum")}
             >
-              Close
+              Curriculum days
+            </button>
+
+            <button
+              className={timeLens === "actual" ? "active-time-lens" : ""}
+              onClick={() => setTimeLens("actual")}
+            >
+              Actual days
             </button>
           </div>
 
-          <div className="lesson-list">
-            {selectedUnitLessons.length === 0 ? (
-              <p className="empty-message">
-                No lessons entered for this unit yet.
+          <div className="sidebar-stat">
+            <span>{timeLensInfo.label}</span>
+            <strong>
+              {timeLensInfo.value}
+              <small> {timeLensInfo.unit}</small>
+            </strong>
+            <div className="mini-bar">
+              <div style={{ width: `${timeLensInfo.bar}%` }} />
+            </div>
+          </div>
+
+          <div className="sidebar-section-title">Courses</div>
+
+          <button
+            className={
+              selectedCourseId === "M8"
+                ? "course-sidebar-card active"
+                : "course-sidebar-card"
+            }
+            onClick={() => {
+              setSelectedCourseId("M8");
+              setSelectedUnitId(math8Navigation.currentUnit?.UnitID ?? null);
+            }}
+          >
+            <div>
+              <strong>Math 8</strong>
+              <em>{formatVarianceCompact(math8Status.variance)}</em>
+            </div>
+            <p>
+              {math8Navigation.currentUnit
+                ? `U${math8Navigation.currentUnit.UnitNumber} · ${
+                    math8Navigation.currentLesson?.LessonTitle ?? "Complete"
+                  }`
+                : "No unit selected"}
+            </p>
+            <div className="mini-bar blue">
+              <div
+                style={{
+                  width: `${Math.min(
+                    100,
+                    (math8Navigation.actualDays /
+                      Math.max(math8Navigation.plannedDays, 1)) *
+                      100,
+                  )}%`,
+                }}
+              />
+            </div>
+            <small>
+              {math8Navigation.actualDays} of {math8Navigation.plannedDays} days
+              in unit · {math8OptionalDays}d buffer
+            </small>
+          </button>
+
+          <button
+            className={
+              selectedCourseId === "IM1"
+                ? "course-sidebar-card active"
+                : "course-sidebar-card"
+            }
+            onClick={() => {
+              setSelectedCourseId("IM1");
+              setSelectedUnitId(math1Navigation.currentUnit?.UnitID ?? null);
+            }}
+          >
+            <div>
+              <strong>Math 1</strong>
+              <em className="good">
+                {formatVarianceCompact(math1Status.variance)}
+              </em>
+            </div>
+            <p>
+              {math1Navigation.currentUnit
+                ? `U${math1Navigation.currentUnit.UnitNumber} · ${
+                    math1Navigation.currentLesson?.LessonTitle ?? "Complete"
+                  }`
+                : "No unit selected"}
+            </p>
+            <div className="mini-bar green">
+              <div
+                style={{
+                  width: `${Math.min(
+                    100,
+                    (math1Navigation.actualDays /
+                      Math.max(math1Navigation.plannedDays, 1)) *
+                      100,
+                  )}%`,
+                }}
+              />
+            </div>
+            <small>
+              {math1Navigation.actualDays} of {math1Navigation.plannedDays} days
+              in unit · {math1OptionalDays}d buffer
+            </small>
+          </button>
+
+          <div className="sidebar-section-title">Timeline</div>
+
+          <div className="unit-chip-group">
+            <span>Math 8</span>
+            {renderUnitChips("M8", math8Units)}
+          </div>
+
+          <div className="unit-chip-group">
+            <span>Math 1</span>
+            {renderUnitChips("IM1", math1Units)}
+          </div>
+        </aside>
+
+        <section className="main-workspace">
+          <nav className="view-tabs">
+            <button
+              className={activeView === "today" ? "active-view" : ""}
+              onClick={() => setActiveView("today")}
+            >
+              Today
+            </button>
+
+            <button
+              className={activeView === "units" ? "active-view" : ""}
+              onClick={() => setActiveView("units")}
+            >
+              Units
+            </button>
+
+            <button
+              className={activeView === "forecast" ? "active-view" : ""}
+              onClick={() => setActiveView("forecast")}
+            >
+              Forecast
+            </button>
+          </nav>
+
+          {activeView === "today" && (
+            <section className="workspace-panel">
+              <div className="breadcrumb">
+                {getCourseLabel(selectedCourseId)} ›{" "}
+                {selectedNavigation.currentUnit
+                  ? `U${selectedNavigation.currentUnit.UnitNumber}: ${selectedNavigation.currentUnit.UnitTitle}`
+                  : "Course complete"}{" "}
+                ›{" "}
+                <strong>Lesson {selectedNavigation.currentLessonNumber}</strong>
+                <span>{formatVariance(selectedStatus.variance)}</span>
+              </div>
+
+              <header className="unit-header">
+                <div>
+                  <h2>
+                    {selectedNavigation.currentUnit?.UnitTitle ??
+                      "Course Complete"}
+                  </h2>
+                  <p>
+                    {getCourseLabel(selectedCourseId)} ·{" "}
+                    {selectedNavigation.totalLessonsInUnit} lessons ·{" "}
+                    {selectedNavigation.plannedDays} days planned
+                  </p>
+                </div>
+
+                <span className="status-pill">
+                  {selectedNavigation.currentLesson
+                    ? "In progress"
+                    : "Complete"}
+                </span>
+              </header>
+
+              <div className="unit-progress">
+                <div
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      (selectedNavigation.actualDays /
+                        Math.max(selectedNavigation.plannedDays, 1)) *
+                        100,
+                    )}%`,
+                  }}
+                />
+              </div>
+
+              <p className="progress-caption">
+                {selectedNavigation.actualDays} of{" "}
+                {selectedNavigation.plannedDays} days used
               </p>
-            ) : (
-              selectedUnitLessons.map((lesson) => {
-                const lessonProgress = dailyProgress.filter(
-                  (entry) => entry.LessonID === lesson.LessonID,
-                );
 
-                const actualDays = lessonProgress.reduce(
-                  (sum, entry) => sum + Number(entry.DayFraction || 0),
-                  0,
-                );
+              {renderLessonTable(selectedNavigation.currentUnitLessons)}
 
-                const isFinished = lessonProgress.some(
-                  (entry) => entry.Finished,
-                );
+              <div className="bottom-strip">
+                <div>
+                  <span>Pacing</span>
+                  <strong>{formatVariance(selectedStatus.variance)}</strong>
+                </div>
 
-                const lessonVariance =
-                  actualDays - Number(lesson.PlannedDays || 0);
+                <div>
+                  <span>Readiness</span>
+                  <strong>
+                    {selectedPrepareNext.missingResourceCount === 0
+                      ? "Ready"
+                      : `${selectedPrepareNext.missingResourceCount} missing links`}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Coming Next</span>
+                  <strong>
+                    {selectedNavigation.nextLesson?.LessonTitle ??
+                      "No next lesson"}
+                  </strong>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {activeView === "units" && (
+            <section className="workspace-panel">
+              <h2>Units</h2>
+
+              {courses.map((course) => {
+                const courseUnits = units.filter(
+                  (unit) => unit.CourseID === course.CourseID,
+                );
+                const projectedUnits = getProjectedUnits(
+                  courseUnits,
+                  schoolCalendar,
+                );
 
                 return (
-                  <div className="lesson-table-row" key={lesson.LessonID}>
-                    <div className="lesson-main">
-                      <span
-                        className={
-                          isFinished ? "lesson-number done" : "lesson-number"
-                        }
-                      >
-                        {lesson.LessonNumber}
-                      </span>
+                  <div className="timeline-course" key={course.CourseID}>
+                    <h3>{course.CourseName}</h3>
 
-                      <div className="lesson-title-block">
-                        <div className="lesson-title-line">
-                          <strong>{lesson.LessonTitle}</strong>
-
-                          {activeProgressLessonId !== lesson.LessonID && (
-                            <button
-                              className="lesson-log-inline"
-                              onClick={() =>
-                                setActiveProgressLessonId(lesson.LessonID)
-                              }
-                            >
-                              Log
-                            </button>
-                          )}
-                        </div>
-
-                        {getOutcomeList(lesson.KeyOutcome).length > 0 && (
-                          <ul className="outcome-list">
-                            {getOutcomeList(lesson.KeyOutcome).map(
-                              (outcome, index) => (
-                                <li key={`${lesson.LessonID}-outcome-${index}`}>
-                                  {outcome}
-                                </li>
-                              ),
-                            )}
-                          </ul>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="lesson-metric">
-                      <span>Planned</span>
-                      <strong>
-                        {lesson.PlannedDays} day
-                        {Number(lesson.PlannedDays) === 1 ? "" : "s"}
-                      </strong>
-                    </div>
-
-                    <div className="lesson-metric">
-                      <span>Actual</span>
-                      <strong>
-                        {actualDays || "—"}{" "}
-                        {actualDays === 1 ? "day" : actualDays ? "days" : ""}
-                      </strong>
-                    </div>
-
-                    <div className="lesson-metric">
-                      <span>Variance</span>
-                      <strong
-                        className={lessonVariance > 0 ? "variance-warning" : ""}
-                      >
-                        {actualDays
-                          ? formatVarianceCompact(lessonVariance)
-                          : "Not started"}
-                      </strong>
-                    </div>
-
-                    <div className="lesson-metric">
-                      <span>Status</span>
-                      <em
-                        className={isFinished ? "lesson-done" : "lesson-open"}
-                      >
-                        {isFinished ? "Complete" : "Upcoming"}
-                      </em>
-                    </div>
-                    {activeProgressLessonId === lesson.LessonID && (
-                      <div className="lesson-progress-entry expanded">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          placeholder="Days"
-                          value={
-                            progressInputs[lesson.LessonID]?.dayFraction ?? ""
+                    <div className="timeline-row">
+                      {projectedUnits.map((unit) => (
+                        <button
+                          className={
+                            selectedUnit?.UnitID === unit.UnitID
+                              ? "unit-block selected-unit"
+                              : "unit-block"
                           }
-                          onChange={(e) =>
-                            setProgressInputs((prev) => ({
-                              ...prev,
-                              [lesson.LessonID]: {
-                                ...prev[lesson.LessonID],
-                                dayFraction: e.target.value,
-                              },
-                            }))
-                          }
-                        />
-
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={
-                              progressInputs[lesson.LessonID]?.finished ?? false
-                            }
-                            onChange={(e) =>
-                              setProgressInputs((prev) => ({
-                                ...prev,
-                                [lesson.LessonID]: {
-                                  ...prev[lesson.LessonID],
-                                  finished: e.target.checked,
-                                },
-                              }))
-                            }
-                          />
-                          Complete
-                        </label>
-
-                        <div className="progress-actions">
-                          <button
-                            onClick={() => handleLogProgress(lesson)}
-                            disabled={savingLessonId === lesson.LessonID}
-                          >
-                            {savingLessonId === lesson.LessonID
-                              ? "Saving..."
-                              : "Save"}
-                          </button>
-
-                          <button
-                            className="secondary-button"
-                            onClick={() => setActiveProgressLessonId(null)}
-                            disabled={savingLessonId === lesson.LessonID}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                          key={unit.UnitID}
+                          onClick={() => {
+                            setSelectedCourseId(unit.CourseID);
+                            setSelectedUnitId(unit.UnitID);
+                          }}
+                        >
+                          <span>U{unit.UnitNumber}</span>
+                          <strong>{unit.UnitTitle}</strong>
+                          <small>{unit.RequiredDays}d</small>
+                          <em>
+                            {unit.projectedStart && unit.projectedEnd
+                              ? `${formatDate(unit.projectedStart)}–${formatDate(
+                                  unit.projectedEnd,
+                                )}`
+                              : "Pending"}
+                          </em>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 );
-              })
-            )}
-          </div>
+              })}
+
+              {selectedUnit && (
+                <>
+                  <div className="unit-header compact">
+                    <div>
+                      <h2>
+                        {getCourseLabel(selectedUnit.CourseID)} — U
+                        {selectedUnit.UnitNumber}
+                      </h2>
+                      <p>{selectedUnit.UnitTitle}</p>
+                    </div>
+                  </div>
+
+                  {renderLessonTable(selectedUnitLessons)}
+                </>
+              )}
+            </section>
+          )}
+
+          {activeView === "forecast" && (
+            <section className="workspace-panel">
+              <h2>Forecast</h2>
+
+              <div className="forecast-grid">
+                <div className="forecast-card">
+                  <span>Math 8</span>
+                  <strong>{formatVariance(math8Status.variance)}</strong>
+                  <p>{formatForecastShift(math8Status.variance)}</p>
+                  <small>
+                    {math8RequiredDays} required · {math8OptionalDays} optional
+                  </small>
+                </div>
+
+                <div className="forecast-card">
+                  <span>Math 1</span>
+                  <strong>{formatVariance(math1Status.variance)}</strong>
+                  <p>{formatForecastShift(math1Status.variance)}</p>
+                  <small>
+                    {math1RequiredDays} required · {math1OptionalDays} optional
+                  </small>
+                </div>
+              </div>
+            </section>
+          )}
         </section>
-      )}
+      </section>
     </main>
   );
 }
