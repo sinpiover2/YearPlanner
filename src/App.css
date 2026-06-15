@@ -1,3 +1,4 @@
+
 :root {
   font-family: Inter, system-ui, sans-serif;
   color: #1f2937;
@@ -15,6 +16,7 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -136,6 +138,17 @@ button {
 .sidebar-section-title {
   margin: 18px 0 8px;
   text-align: center;
+}
+
+.section-select {
+  width: 100%;
+  margin-bottom: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  padding: 9px 10px;
+  color: #111827;
+  font-weight: 750;
 }
 
 .mini-bar {
@@ -512,7 +525,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .lesson-progress-entry input,
@@ -525,7 +538,7 @@ button {
 }
 
 .lesson-progress-entry input[type="number"] {
-  width: 90px;
+  width: 110px;
 }
 
 .lesson-progress-entry label {
@@ -710,7 +723,8 @@ button {
 .lesson-progress-entry textarea:focus,
 .lesson-edit-form input:focus,
 .add-lesson-form input:focus,
-.add-lesson-form textarea:focus {
+.add-lesson-form textarea:focus,
+.section-select:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
@@ -723,6 +737,52 @@ button {
   padding: 10px 12px;
   background: white;
   color: #111827;
+}
+
+/* ---------- Compact Editor Buttons ---------- */
+
+.lesson-edit-form .add-goal-button,
+.lesson-edit-form .edit-actions button,
+.add-lesson-form .add-goal-button,
+.add-lesson-form .edit-actions button {
+  min-width: 72px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.lesson-edit-form .add-goal-button,
+.add-lesson-form .add-goal-button {
+  min-width: 116px;
+  justify-self: start;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #111827;
+}
+
+.lesson-edit-form .remove-goal-button,
+.add-lesson-form .remove-goal-button {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.lesson-edit-form .delete-button,
+.add-lesson-form .delete-button {
+  min-width: 92px;
+}
+
+.lesson-edit-form .edit-actions,
+.add-lesson-form .edit-actions {
+  align-items: center;
+  gap: 6px;
 }
 
 /* ---------- Bottom Strip ---------- */
@@ -812,12 +872,24 @@ button {
   font-size: 12px;
 }
 
-.unit-block small,
-.unit-block em {
-  display: block;
+.unit-block small {
+  display: inline;
   color: #475569;
   font-style: normal;
   font-weight: 800;
+}
+
+.unit-block em {
+  display: block;
+  margin-top: 4px;
+  color: #475569;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.unit-block small::after {
+  content: " · ";
 }
 
 /* ---------- Forecast View ---------- */
@@ -876,76 +948,4 @@ button {
   .forecast-grid {
     grid-template-columns: 1fr;
   }
-}
-.add-lesson-form .add-goal-button,
-.add-lesson-form .edit-actions button {
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.add-lesson-form .add-goal-button {
-  background: white;
-  color: #111827;
-  border: 1px solid #cbd5e1;
-}
-/* ---------- Compact lesson editor buttons ---------- */
-
-.lesson-edit-form .add-goal-button,
-.lesson-edit-form .edit-actions button,
-.add-lesson-form .add-goal-button,
-.add-lesson-form .edit-actions button {
-  padding: 4px 8px;
-  min-height: auto;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 6px;
-  line-height: 1.2;
-}
-
-.lesson-edit-form .remove-goal-button,
-.add-lesson-form .remove-goal-button {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  font-size: 14px;
-  border-radius: 6px;
-}
-
-.lesson-edit-form .edit-actions,
-.add-lesson-form .edit-actions {
-  gap: 6px;
-}
-
-/* ---------- Balanced lesson editor action buttons ---------- */
-
-.lesson-edit-form .edit-actions button,
-.add-lesson-form .edit-actions button,
-.lesson-edit-form .add-goal-button,
-.add-lesson-form .add-goal-button {
-  min-width: 72px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 7px;
-  font-size: 12px;
-  font-weight: 750;
-  line-height: 1;
-}
-
-.lesson-edit-form .add-goal-button,
-.add-lesson-form .add-goal-button {
-  min-width: 116px;
-  justify-self: start;
-}
-
-.lesson-edit-form .delete-button,
-.add-lesson-form .delete-button {
-  min-width: 92px;
-}
-
-.lesson-edit-form .edit-actions,
-.add-lesson-form .edit-actions {
-  align-items: center;
-  gap: 6px;
 }

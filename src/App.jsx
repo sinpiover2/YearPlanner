@@ -97,7 +97,9 @@ function sortLessons(lessons, units) {
 }
 
 function getProjectedUnits(courseUnits, schoolCalendar) {
-  const schoolDays = schoolCalendar.filter((day) => day.DayType === "School");
+  const schoolDays = schoolCalendar.filter((day) =>
+    isTrue(day.InstructionalDay),
+  );
   let cursor = 0;
 
   return sortUnits(courseUnits).map((unit) => {
@@ -294,12 +296,65 @@ function getCourseLabel(courseId) {
   return courseId;
 }
 
+function getSectionsForCourse(courseId, sections) {
+  return sections
+    .filter((section) => {
+      const activeValue = section.Active;
+      const isActive =
+        activeValue === undefined || activeValue === "" || isTrue(activeValue);
+
+      return section.CourseID === courseId && isActive;
+    })
+    .sort((a, b) => Number(a.SortOrder || 999) - Number(b.SortOrder || 999));
+}
+
+function getSelectedSectionForCourse(courseId, sections, selectedSectionId) {
+  const courseSections = getSectionsForCourse(courseId, sections);
+
+  return (
+    courseSections.find((section) => section.SectionID === selectedSectionId) ??
+    courseSections[0] ??
+    null
+  );
+}
+
+function getSectionMeetingDays(section, schoolCalendar, schedulePatterns) {
+  if (!section) return [];
+
+  return schoolCalendar.filter((day) => {
+    if (!isTrue(day.InstructionalDay)) return false;
+
+    const date = new Date(day.Date);
+    const dayOfWeek = date.toLocaleDateString("en-US", {
+      weekday: "long",
+      timeZone: "America/Los_Angeles",
+    });
+
+    const pattern = schedulePatterns.find(
+      (item) => item.DayOfWeek === dayOfWeek,
+    );
+
+    if (!pattern) return false;
+
+    return isTrue(pattern[section.BlockGroup]);
+  });
+}
+
+function getProgressForSection(dailyProgress, section) {
+  if (!section) return [];
+
+  return dailyProgress.filter((entry) => {
+    return entry.CourseSectionID === section.SectionID;
+  });
+}
+
 function App() {
   const [plannerData, setPlannerData] = useState(null);
   const [status, setStatus] = useState("Loading planner data...");
   const [activeView, setActiveView] = useState("today");
   const [timeLens, setTimeLens] = useState("school");
   const [selectedCourseId, setSelectedCourseId] = useState("M8");
+  const [selectedSectionId, setSelectedSectionId] = useState(null);
   const [selectedUnitId, setSelectedUnitId] = useState(null);
   const [progressInputs, setProgressInputs] = useState({});
   const [savingLessonId, setSavingLessonId] = useState(null);
@@ -328,11 +383,13 @@ function App() {
   const courses = plannerData?.courses ?? [];
   const units = plannerData?.units ?? [];
   const schoolCalendar = plannerData?.schoolCalendar ?? [];
+  const schedulePatterns = plannerData?.schedulePatterns ?? [];
+  const sections = plannerData?.sections ?? [];
   const lessons = plannerData?.lessons ?? [];
   const dailyProgress = plannerData?.dailyProgress ?? [];
 
-  const instructionalDays = schoolCalendar.filter(
-    (day) => day.DayType === "School",
+  const instructionalDays = schoolCalendar.filter((day) =>
+    isTrue(day.InstructionalDay),
   ).length;
 
   const math8Units = units.filter((unit) => unit.CourseID === "M8");
@@ -343,28 +400,95 @@ function App() {
   const math8OptionalDays = getOptionalDays(math8Units);
   const math1OptionalDays = getOptionalDays(math1Units);
 
-  const math8Status = getCourseStatus("M8", units, lessons, dailyProgress);
-  const math1Status = getCourseStatus("IM1", units, lessons, dailyProgress);
+  const math8Sections = getSectionsForCourse("M8", sections);
+  const math1Sections = getSectionsForCourse("IM1", sections);
+
+  const selectedMath8Section = getSelectedSectionForCourse(
+    "M8",
+    sections,
+    selectedSectionId,
+  );
+
+  const selectedMath1Section = getSelectedSectionForCourse(
+    "IM1",
+    sections,
+    selectedSectionId,
+  );
+
+  const selectedSection =
+    selectedCourseId === "IM1" ? selectedMath1Section : selectedMath8Section;
+
+  const selectedCourseSections =
+    selectedCourseId === "IM1" ? math1Sections : math8Sections;
+
+  const math8MeetingDays = getSectionMeetingDays(
+    selectedMath8Section,
+    schoolCalendar,
+    schedulePatterns,
+  ).length;
+
+  const math1MeetingDays = getSectionMeetingDays(
+    selectedMath1Section,
+    schoolCalendar,
+    schedulePatterns,
+  ).length;
+
+  const math8DailyProgress = getProgressForSection(
+    dailyProgress,
+    selectedMath8Section,
+  );
+
+  const math1DailyProgress = getProgressForSection(
+    dailyProgress,
+    selectedMath1Section,
+  );
+
+  const selectedDailyProgress =
+    selectedCourseId === "IM1" ? math1DailyProgress : math8DailyProgress;
+
+  const math8Status = getCourseStatus("M8", units, lessons, math8DailyProgress);
+  const math1Status = getCourseStatus(
+    "IM1",
+    units,
+    lessons,
+    math1DailyProgress,
+  );
 
   const math8Navigation = getCourseNavigation(
     "M8",
     units,
     lessons,
-    dailyProgress,
+    math8DailyProgress,
   );
 
   const math1Navigation = getCourseNavigation(
     "IM1",
     units,
     lessons,
-    dailyProgress,
+    math1DailyProgress,
   );
 
-  const math8PrepareNext = getPrepareNext("M8", units, lessons, dailyProgress);
-  const math1PrepareNext = getPrepareNext("IM1", units, lessons, dailyProgress);
+  const math8PrepareNext = getPrepareNext(
+    "M8",
+    units,
+    lessons,
+    math8DailyProgress,
+  );
 
-  const actualDaysLogged = math8Status.actualDays + math1Status.actualDays;
-  const curriculumDaysPlanned = math8RequiredDays + math1RequiredDays;
+  const math1PrepareNext = getPrepareNext(
+    "IM1",
+    units,
+    lessons,
+    math1DailyProgress,
+  );
+
+  const actualDaysLogged =
+    selectedCourseId === "IM1"
+      ? math1Status.actualDays
+      : math8Status.actualDays;
+
+  const curriculumDaysPlanned =
+    selectedCourseId === "IM1" ? math1MeetingDays : math8MeetingDays;
 
   const timeLensInfo = {
     school: {
@@ -374,16 +498,26 @@ function App() {
       bar: Math.min(100, ((instructionalDays || 0) / 180) * 100),
     },
     curriculum: {
-      label: "Curriculum days planned",
+      label: selectedSection
+        ? `${selectedSection.SectionName} meetings available`
+        : "Class meetings available",
       value: curriculumDaysPlanned || "—",
       unit: "days",
-      bar: Math.min(100, (curriculumDaysPlanned / 273) * 100),
+      bar: Math.min(
+        100,
+        (curriculumDaysPlanned / Math.max(instructionalDays, 1)) * 100,
+      ),
     },
     actual: {
-      label: "Actual days logged",
+      label: selectedSection
+        ? `${selectedSection.SectionName} days used`
+        : "Days used",
       value: actualDaysLogged || "—",
       unit: "days",
-      bar: Math.min(100, (actualDaysLogged / 273) * 100),
+      bar: Math.min(
+        100,
+        (actualDaysLogged / Math.max(curriculumDaysPlanned, 1)) * 100,
+      ),
     },
   }[timeLens];
 
@@ -474,19 +608,45 @@ function App() {
 
       const input = progressInputs[lesson.LessonID] || {};
 
-      await saveDailyProgress({
-        date: new Date().toISOString(),
-        courseId: lesson.CourseID,
-        unitId: lesson.UnitID,
-        lessonId: lesson.LessonID,
-        dayFraction: Number(input.dayFraction || 1),
-        finished: Boolean(input.finished),
-        notes: input.notes || "",
-      });
+      const targetSections =
+        selectedCourseSections.length > 0
+          ? selectedCourseSections
+          : selectedSection
+            ? [selectedSection]
+            : [];
+
+      if (targetSections.length === 0) {
+        alert("No sections are available for this course.");
+        return;
+      }
+
+      await Promise.all(
+        targetSections.map((section) =>
+          saveDailyProgress({
+            date: new Date().toISOString(),
+            courseSectionId: section.SectionID,
+            courseId: lesson.CourseID,
+            unitId: lesson.UnitID,
+            lessonId: lesson.LessonID,
+            dayFraction: Number(input.dayFraction || 0),
+            finished: Boolean(input.finished),
+            notes: input.notes || "",
+          }),
+        ),
+      );
 
       const refreshedData = await fetchPlannerData();
       setPlannerData(refreshedData);
       setActiveProgressLessonId(null);
+
+      setProgressInputs((prev) => ({
+        ...prev,
+        [lesson.LessonID]: {
+          dayFraction: "",
+          finished: false,
+          notes: "",
+        },
+      }));
     } catch (error) {
       console.error(error);
       alert("Could not save progress.");
@@ -612,7 +772,7 @@ function App() {
         {lessonList.map((lesson) => {
           const { actualDays, finished } = getLessonProgress(
             lesson.LessonID,
-            dailyProgress,
+            selectedDailyProgress,
           );
           const isCurrent =
             lesson.LessonID === selectedNavigation.currentLesson?.LessonID;
@@ -670,8 +830,8 @@ function App() {
                       min="0.25"
                       max="1"
                       step="0.25"
-                      placeholder="Days"
-                      value={progressInputs[lesson.LessonID]?.dayFraction ?? 1}
+                      placeholder="Add Days"
+                      value={progressInputs[lesson.LessonID]?.dayFraction ?? ""}
                       onChange={(e) =>
                         setProgressInputs((prev) => ({
                           ...prev,
@@ -1111,6 +1271,24 @@ function App() {
               in unit · {math1OptionalDays}d buffer
             </small>
           </button>
+
+          <div className="sidebar-section-title">Section</div>
+
+          <select
+            className="section-select"
+            value={selectedSection?.SectionID ?? ""}
+            onChange={(event) => setSelectedSectionId(event.target.value)}
+          >
+            {selectedCourseSections.length === 0 ? (
+              <option value="">No sections entered</option>
+            ) : (
+              selectedCourseSections.map((section) => (
+                <option key={section.SectionID} value={section.SectionID}>
+                  {section.SectionName}
+                </option>
+              ))
+            )}
+          </select>
 
           <div className="sidebar-section-title">Timeline</div>
 
