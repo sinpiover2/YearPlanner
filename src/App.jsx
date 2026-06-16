@@ -418,6 +418,13 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     }
   }
 
+  const visualStateClass =
+    bufferUsed > bufferDays
+      ? "needs-attention"
+      : state === "Monitoring" || state === "Needs Attention"
+        ? "monitoring"
+        : "on-track";
+
   return {
     section,
     state,
@@ -430,6 +437,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     bufferRemaining,
     recoverabilityMessage,
     currentLesson,
+    visualStateClass,
     currentLessonNumber: currentLessonIndex + 1,
     totalLessons: courseLessons.length,
   };
@@ -635,15 +643,29 @@ function App() {
   );
 
   let overallForecastMessage = "All active sections are on track.";
+  let overallForecastDetail = "No action needed right now.";
+  let overallForecastStateClass = "on-track";
 
   if (needsAttentionForecasts.length > 0) {
     overallForecastMessage = `${needsAttentionForecasts.length} section${
       needsAttentionForecasts.length === 1 ? "" : "s"
     } need attention.`;
+
+    overallForecastDetail = "Start with sections where buffer is exhausted.";
+
+    overallForecastStateClass = needsAttentionForecasts.some(
+      (forecast) => forecast.visualStateClass === "needs-attention",
+    )
+      ? "needs-attention"
+      : "monitoring";
   } else if (monitoringForecasts.length > 0) {
     overallForecastMessage = `${monitoringForecasts.length} section${
       monitoringForecasts.length === 1 ? "" : "s"
     } should be monitored.`;
+
+    overallForecastDetail = "No crisis, but pacing has started to use buffer.";
+
+    overallForecastStateClass = "monitoring";
   }
 
   const selectedUnit =
@@ -1601,8 +1623,11 @@ function App() {
               <section className="forecast-section">
                 <h3>Pacing Summary</h3>
 
-                <div className="forecast-status-banner">
-                  {overallForecastMessage}
+                <div
+                  className={`forecast-status-banner ${overallForecastStateClass}`}
+                >
+                  <strong>{overallForecastMessage}</strong>
+                  <span>{overallForecastDetail}</span>
                 </div>
 
                 {sectionForecasts.length === 0 ? (
@@ -1612,9 +1637,8 @@ function App() {
                     {sectionForecasts.map((forecast) => {
                       const section = forecast.section ?? {};
                       const state = forecast.state || "On Track";
-                      const stateClass = state
-                        .toLowerCase()
-                        .replace(/\s+/g, "-");
+                      const stateClass =
+                        forecast.visualStateClass || "on-track";
                       const variance = Number(forecast.variance || 0);
                       const forecastShift = Number(forecast.forecastShift || 0);
 
@@ -1634,29 +1658,30 @@ function App() {
                           <strong>{state}</strong>
 
                           <p>
-                            Lesson {forecast.currentLessonNumber || "—"} of{" "}
-                            {forecast.totalLessons || "—"}
+                            Now:{" "}
+                            {forecast.currentLesson?.LessonTitle ??
+                              "Course complete"}
                           </p>
 
                           <p>
                             {variance === 0
-                              ? "On pace."
+                              ? "Current pace matches plan."
                               : `${Math.abs(variance)} days ${
-                                  variance > 0 ? "behind" : "ahead"
+                                  variance > 0 ? "behind plan" : "ahead of plan"
                                 }.`}
                           </p>
 
                           <p>
                             {forecastShift === 0
-                              ? "Future units stay on schedule."
-                              : `Future units begin ${Math.abs(
+                              ? "End of year projected: On schedule."
+                              : `End of year projected: ${Math.abs(
                                   forecastShift,
-                                )} days ${forecastShift > 0 ? "later" : "earlier"}.`}
+                                )} days ${forecastShift > 0 ? "behind" : "ahead"}.`}
                           </p>
 
                           <p>
-                            {forecast.bufferRemaining || 0} of{" "}
-                            {forecast.bufferDays || 0} buffer days remaining.
+                            Buffer remaining: {forecast.bufferRemaining || 0} of{" "}
+                            {forecast.bufferDays || 0} days.
                           </p>
 
                           <em>
