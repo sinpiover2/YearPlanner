@@ -1638,7 +1638,12 @@ function App() {
                   <span>{overallForecastDetail}</span>
                 </div>
 
-                {sectionForecasts.length === 0 ? (
+                {dailyProgress.length === 0 ? (
+                  <p>
+                    Nothing to report yet. Check back after logging your first
+                    lessons.
+                  </p>
+                ) : sectionForecasts.length === 0 ? (
                   <p>No active sections are available for forecasting yet.</p>
                 ) : (
                   <div className="forecast-summary-grid">
