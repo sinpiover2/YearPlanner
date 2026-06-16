@@ -1737,6 +1737,11 @@ function App() {
                           </p>
 
                           <p>
+                            Buffer used: {formatDays(forecast.bufferUsed)} of{" "}
+                            {formatDayPhrase(forecast.bufferDays)}.
+                          </p>
+
+                          <p>
                             Buffer remaining:{" "}
                             {formatDays(forecast.bufferRemaining)} of{" "}
                             {formatDayPhrase(forecast.bufferDays)}.
