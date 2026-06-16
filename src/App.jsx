@@ -668,7 +668,12 @@ function App() {
   let overallForecastDetail = "No action needed right now.";
   let overallForecastStateClass = "on-track";
 
-  if (!hasForecastProgress) {
+  if (sectionForecasts.length === 0) {
+    overallForecastMessage =
+      "No active sections are available for forecasting.";
+    overallForecastDetail =
+      "Check the Sections sheet if this does not look right.";
+  } else if (!hasForecastProgress) {
     overallForecastMessage = "Nothing to report yet.";
     overallForecastDetail = "Check back after logging your first lessons.";
   } else if (needsAttentionForecasts.length > 0) {
@@ -1660,10 +1665,8 @@ function App() {
                   <span>{overallForecastDetail}</span>
                 </div>
 
-                {!hasForecastProgress ? null : forecastedSections.length ===
-                  0 ? (
-                  <p>No active sections are available for forecasting yet.</p>
-                ) : (
+                {sectionForecasts.length ===
+                0 ? null : !hasForecastProgress ? null : (
                   <div className="forecast-summary-grid">
                     {forecastedSections.map((forecast) => {
                       const section = forecast.section ?? {};
