@@ -52,16 +52,6 @@ function formatDays(value) {
   return number.toFixed(1).replace(/\.0$/, "");
 }
 
-function formatForecastShift(variance) {
-  if (variance === 0) return "No forecast shift.";
-
-  const absoluteValue = Math.abs(variance);
-  const dayLabel = absoluteValue === 1 ? "day" : "days";
-  const direction = variance > 0 ? "later" : "earlier";
-
-  return `Future unit dates shift ${absoluteValue} instructional ${dayLabel} ${direction}.`;
-}
-
 function getOutcomeList(value) {
   if (!value) return [];
 
