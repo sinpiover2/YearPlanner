@@ -662,12 +662,19 @@ function App() {
   let overallForecastDetail = "No action needed right now.";
   let overallForecastStateClass = "on-track";
 
-  if (needsAttentionForecasts.length > 0) {
+  if (dailyProgress.length === 0) {
+    overallForecastMessage = "Nothing to report yet.";
+    overallForecastDetail = "Check back after logging your first lessons.";
+  } else if (needsAttentionForecasts.length > 0) {
     overallForecastMessage = `${needsAttentionForecasts.length} section${
       needsAttentionForecasts.length === 1 ? "" : "s"
     } need attention.`;
 
-    overallForecastDetail = "Start with sections where buffer is exhausted.";
+    overallForecastDetail = needsAttentionForecasts.some(
+      (forecast) => forecast.visualStateClass === "needs-attention",
+    )
+      ? "Start with sections where buffer is exhausted."
+      : "Start with sections using the most buffer.";
 
     overallForecastStateClass = needsAttentionForecasts.some(
       (forecast) => forecast.visualStateClass === "needs-attention",
@@ -1646,12 +1653,8 @@ function App() {
                   <span>{overallForecastDetail}</span>
                 </div>
 
-                {dailyProgress.length === 0 ? (
-                  <p>
-                    Nothing to report yet. Check back after logging your first
-                    lessons.
-                  </p>
-                ) : sectionForecasts.length === 0 ? (
+                {dailyProgress.length === 0 ? null : sectionForecasts.length ===
+                  0 ? (
                   <p>No active sections are available for forecasting yet.</p>
                 ) : (
                   <div className="forecast-summary-grid">
