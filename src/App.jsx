@@ -673,6 +673,10 @@ function App() {
     });
 
   const hasForecastProgress = forecastedSections.length > 0;
+  const unloggedSectionCount = Math.max(
+    sectionForecasts.length - forecastedSections.length,
+    0,
+  );
 
   const needsAttentionForecasts = forecastedSections.filter(
     (forecast) => forecast.state === "Needs Attention",
@@ -682,8 +686,13 @@ function App() {
     (forecast) => forecast.state === "Monitoring",
   );
 
-  let overallForecastMessage = "All active sections are on track.";
-  let overallForecastDetail = "No action needed right now.";
+  let overallForecastMessage = "All logged sections are on track.";
+  let overallForecastDetail =
+    unloggedSectionCount > 0
+      ? `${unloggedSectionCount} active section${
+          unloggedSectionCount === 1 ? "" : "s"
+        } do not have progress logged yet.`
+      : "No action needed right now.";
   let overallForecastStateClass = "on-track";
 
   if (sectionForecasts.length === 0) {
