@@ -44,6 +44,14 @@ function formatVarianceCompact(variance) {
   return variance > 0 ? `+${absoluteValue}d` : `-${absoluteValue}d`;
 }
 
+function formatDays(value) {
+  const number = Number(value || 0);
+
+  if (Number.isInteger(number)) return String(number);
+
+  return number.toFixed(1).replace(/\.0$/, "");
+}
+
 function formatForecastShift(variance) {
   if (variance === 0) return "No forecast shift.";
 
@@ -1679,7 +1687,7 @@ function App() {
                           <p>
                             {variance === 0
                               ? "Current pace matches plan."
-                              : `${Math.abs(variance)} days ${
+                              : `${formatDays(Math.abs(variance))} days ${
                                   variance > 0 ? "behind plan" : "ahead of plan"
                                 }.`}
                           </p>
@@ -1687,14 +1695,15 @@ function App() {
                           <p>
                             {forecastShift === 0
                               ? "End of year projected: On schedule."
-                              : `End of year projected: ${Math.abs(
-                                  forecastShift,
+                              : `End of year projected: ${formatDays(
+                                  Math.abs(forecastShift),
                                 )} days ${forecastShift > 0 ? "behind" : "ahead"}.`}
                           </p>
 
                           <p>
-                            Buffer remaining: {forecast.bufferRemaining || 0} of{" "}
-                            {forecast.bufferDays || 0} days.
+                            Buffer remaining:{" "}
+                            {formatDays(forecast.bufferRemaining)} of{" "}
+                            {formatDays(forecast.bufferDays)} days.
                           </p>
 
                           <em>
