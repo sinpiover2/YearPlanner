@@ -660,10 +660,6 @@ function App() {
     (forecast) => forecast.state === "Monitoring",
   );
 
-  const onTrackForecasts = forecastedSections.filter(
-    (forecast) => forecast.state === "On Track",
-  );
-
   let overallForecastMessage = "All active sections are on track.";
   let overallForecastDetail = "No action needed right now.";
   let overallForecastStateClass = "on-track";
@@ -1665,8 +1661,7 @@ function App() {
                   <span>{overallForecastDetail}</span>
                 </div>
 
-                {sectionForecasts.length ===
-                0 ? null : !hasForecastProgress ? null : (
+                {sectionForecasts.length > 0 && hasForecastProgress && (
                   <div className="forecast-summary-grid">
                     {forecastedSections.map((forecast) => {
                       const section = forecast.section ?? {};
