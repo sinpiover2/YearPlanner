@@ -934,6 +934,30 @@ button {
   background: #fbfaf6;
 }
 
+.forecast-summary-card.on-track {
+  border-left: 6px solid #10b981;
+}
+
+.forecast-summary-card.monitoring {
+  border-left: 6px solid #f59e0b;
+}
+
+.forecast-summary-card.needs-attention {
+  border-left: 6px solid #dc2626;
+}
+
+.forecast-summary-card.on-track strong {
+  color: #047857;
+}
+
+.forecast-summary-card.monitoring strong {
+  color: #b45309;
+}
+
+.forecast-summary-card.needs-attention strong {
+  color: #b91c1c;
+}
+
 .forecast-summary-card span {
   display: block;
   color: #64748b;
