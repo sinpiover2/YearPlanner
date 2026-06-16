@@ -624,7 +624,15 @@ function App() {
   const selectedPrepareNext =
     selectedCourseId === "IM1" ? math1PrepareNext : math8PrepareNext;
 
-  const sectionForecasts = sections
+  const activeSections = sections.filter((section) => {
+    return (
+      section.Active === undefined ||
+      section.Active === "" ||
+      isTrue(section.Active)
+    );
+  });
+
+  const sectionForecasts = activeSections
     .map((section) =>
       getSectionForecast(section, units, lessons, dailyProgress),
     )
