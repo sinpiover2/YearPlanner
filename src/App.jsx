@@ -407,19 +407,16 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
   let recoverabilityMessage = "No action needed.";
 
   if (variance > 0) {
-    state = "Monitoring";
-
-    if (consumedFraction >= 0.75) {
-      state = "Needs Attention";
-      recoverabilityMessage = "Consider compressing upcoming optional lessons.";
-    } else if (consumedFraction >= 0.25) {
-      recoverabilityMessage = "Recoverable within current buffer.";
-    }
-
     if (bufferUsed > bufferDays) {
       state = "Needs Attention";
       recoverabilityMessage =
         "Buffer exhausted — schedule adjustment required.";
+    } else if (consumedFraction >= 0.6) {
+      state = "Needs Attention";
+      recoverabilityMessage = "Consider compressing upcoming optional lessons.";
+    } else if (consumedFraction >= 0.1) {
+      state = "Monitoring";
+      recoverabilityMessage = "Recoverable within current buffer.";
     }
   }
 
@@ -701,9 +698,10 @@ function App() {
     overallForecastMessage = "Nothing to report yet.";
     overallForecastDetail = "Check back after logging your first lessons.";
   } else if (needsAttentionForecasts.length > 0) {
-    overallForecastMessage = `${needsAttentionForecasts.length} section${
-      needsAttentionForecasts.length === 1 ? "" : "s"
-    } are consuming significant buffer.`;
+    overallForecastMessage =
+      needsAttentionForecasts.length === 1
+        ? "1 section is consuming significant buffer."
+        : `${needsAttentionForecasts.length} sections are consuming significant buffer.`;
 
     overallForecastDetail = needsAttentionForecasts.some(
       (forecast) => forecast.visualStateClass === "needs-attention",
@@ -717,10 +715,10 @@ function App() {
       ? "needs-attention"
       : "monitoring";
   } else if (monitoringForecasts.length > 0) {
-    overallForecastMessage = `${monitoringForecasts.length} section${
-      monitoringForecasts.length === 1 ? "" : "s"
-    } are using buffer.`;
-
+    overallForecastMessage =
+      monitoringForecasts.length === 1
+        ? "1 section is using buffer."
+        : `${monitoringForecasts.length} sections are using buffer.`;
     overallForecastDetail =
       "Recovery is still possible within the current plan.";
 
@@ -1730,24 +1728,18 @@ function App() {
 
                           <p>
                             {forecastShift === 0
-                              ? "End of year projected: On schedule."
-                              : `End of year projected: ${formatDayPhrase(
+                              ? "Projected: On schedule."
+                              : `Projected: ${formatDayPhrase(
                                   Math.abs(forecastShift),
                                 )} ${forecastShift > 0 ? "behind" : "ahead"}.`}
                           </p>
 
                           <p>
-                            Buffer used: {formatDays(forecast.bufferUsed)} of{" "}
-                            {formatDayPhrase(forecast.bufferDays)}.
+                            Buffer: {formatDays(forecast.bufferUsed)} used •{" "}
+                            {formatDays(forecast.bufferRemaining)} remaining
                           </p>
 
-                          <p>
-                            Buffer remaining:{" "}
-                            {formatDays(forecast.bufferRemaining)} of{" "}
-                            {formatDayPhrase(forecast.bufferDays)}.
-                          </p>
-
-                          <em>
+                          <em className="forecast-recommendation">
                             {forecast.recoverabilityMessage ||
                               "No action needed."}
                           </em>

@@ -553,6 +553,13 @@ button {
   resize: vertical;
 }
 
+.log-section-note {
+  flex-basis: 100%;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
 .lesson-progress-entry button,
 .secondary-button {
   border: none;
@@ -1023,38 +1030,6 @@ button {
   font-weight: 900;
 }
 
-.forecast-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  padding: 24px;
-}
-
-.forecast-card {
-  padding: 18px;
-  border: 1px solid #d7dde6;
-  border-radius: 14px;
-  background: #fbfaf6;
-}
-
-.forecast-card span {
-  color: #64748b;
-  font-weight: 900;
-}
-
-.forecast-card strong {
-  display: block;
-  margin-top: 8px;
-  color: #111827;
-  font-size: 22px;
-}
-
-.forecast-card p,
-.forecast-card small {
-  color: #475569;
-  font-weight: 700;
-}
-
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
@@ -1074,13 +1049,13 @@ button {
   }
 
   .bottom-strip,
-  .forecast-grid {
+  .forecast-summary-grid {
     grid-template-columns: 1fr;
   }
 }
-.log-section-note {
-  flex-basis: 100%;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 750;
+.forecast-recommendation {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  opacity: 0.85;
 }
