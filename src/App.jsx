@@ -52,6 +52,13 @@ function formatDays(value) {
   return number.toFixed(1).replace(/\.0$/, "");
 }
 
+function formatDayPhrase(value) {
+  const formattedValue = formatDays(value);
+  const label = Number(value) === 1 ? "day" : "days";
+
+  return `${formattedValue} ${label}`;
+}
+
 function getOutcomeList(value) {
   if (!value) return [];
 
@@ -1716,7 +1723,7 @@ function App() {
                           <p>
                             {variance === 0
                               ? "Current pace matches plan."
-                              : `${formatDays(Math.abs(variance))} days ${
+                              : `${formatDayPhrase(Math.abs(variance))} ${
                                   variance > 0 ? "behind plan" : "ahead of plan"
                                 }.`}
                           </p>
@@ -1724,15 +1731,15 @@ function App() {
                           <p>
                             {forecastShift === 0
                               ? "End of year projected: On schedule."
-                              : `End of year projected: ${formatDays(
+                              : `End of year projected: ${formatDayPhrase(
                                   Math.abs(forecastShift),
-                                )} days ${forecastShift > 0 ? "behind" : "ahead"}.`}
+                                )} ${forecastShift > 0 ? "behind" : "ahead"}.`}
                           </p>
 
                           <p>
                             Buffer remaining:{" "}
                             {formatDays(forecast.bufferRemaining)} of{" "}
-                            {formatDays(forecast.bufferDays)} days.
+                            {formatDayPhrase(forecast.bufferDays)}.
                           </p>
 
                           <em>
