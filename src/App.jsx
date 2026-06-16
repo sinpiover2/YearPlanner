@@ -634,6 +634,18 @@ function App() {
     (forecast) => forecast.state === "On Track",
   );
 
+  let overallForecastMessage = "All active sections are on track.";
+
+  if (needsAttentionForecasts.length > 0) {
+    overallForecastMessage = `${needsAttentionForecasts.length} section${
+      needsAttentionForecasts.length === 1 ? "" : "s"
+    } need attention.`;
+  } else if (monitoringForecasts.length > 0) {
+    overallForecastMessage = `${monitoringForecasts.length} section${
+      monitoringForecasts.length === 1 ? "" : "s"
+    } should be monitored.`;
+  }
+
   const selectedUnit =
     units.find((unit) => unit.UnitID === selectedUnitId) ??
     selectedNavigation.currentUnit;
@@ -1588,6 +1600,10 @@ function App() {
 
               <section className="forecast-section">
                 <h3>Pacing Summary</h3>
+
+                <div className="forecast-status-banner">
+                  {overallForecastMessage}
+                </div>
 
                 {sectionForecasts.length === 0 ? (
                   <p>No active sections are available for forecasting yet.</p>
