@@ -348,6 +348,93 @@ function getProgressForSection(dailyProgress, section) {
   });
 }
 
+function getSectionForecast(section, units, lessons, dailyProgress) {
+  if (!section) return null;
+
+  const courseUnits = sortUnits(
+    units.filter((unit) => unit.CourseID === section.CourseID),
+  );
+
+  const courseLessons = sortLessons(
+    lessons.filter((lesson) => lesson.CourseID === section.CourseID),
+    courseUnits,
+  );
+
+  const sectionProgress = getProgressForSection(dailyProgress, section);
+
+  const finishedLessonIds = new Set(
+    sectionProgress
+      .filter((entry) => isTrue(entry.Finished))
+      .map((entry) => entry.LessonID),
+  );
+
+  const actualDays = sectionProgress.reduce(
+    (sum, entry) => sum + Number(entry.DayFraction || 0),
+    0,
+  );
+
+  const plannedDaysCompleted = courseLessons
+    .filter((lesson) => finishedLessonIds.has(lesson.LessonID))
+    .reduce((sum, lesson) => sum + Number(lesson.PlannedDays || 0), 0);
+
+  const currentLesson =
+    courseLessons.find((lesson) => !finishedLessonIds.has(lesson.LessonID)) ??
+    null;
+
+  const currentLessonIndex = currentLesson
+    ? courseLessons.findIndex(
+        (lesson) => lesson.LessonID === currentLesson.LessonID,
+      )
+    : courseLessons.length - 1;
+
+  const bufferDays = courseUnits.reduce(
+    (sum, unit) => sum + Number(unit.OptionalDays || 0),
+    0,
+  );
+
+  const variance = actualDays - plannedDaysCompleted;
+  const forecastShift = variance;
+  const bufferUsed = Math.max(0, variance);
+  const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
+  const consumedFraction = bufferDays > 0 ? bufferUsed / bufferDays : 0;
+
+  let state = "On Track";
+  let recoverabilityMessage = "No action needed.";
+
+  if (variance > 0) {
+    state = "Monitoring";
+
+    if (consumedFraction >= 0.75) {
+      state = "Needs Attention";
+      recoverabilityMessage = "Consider compressing upcoming optional lessons.";
+    } else if (consumedFraction >= 0.25) {
+      recoverabilityMessage = "Recoverable within current buffer.";
+    }
+
+    if (bufferUsed > bufferDays) {
+      state = "Needs Attention";
+      recoverabilityMessage =
+        "Buffer exhausted — schedule adjustment required.";
+    }
+  }
+
+  return {
+    section,
+    state,
+    actualDays,
+    plannedDaysCompleted,
+    variance,
+    forecastShift,
+    bufferDays,
+    bufferUsed,
+    bufferRemaining,
+    recoverabilityMessage,
+    currentLesson,
+    currentLessonNumber: currentLessonIndex + 1,
+    totalLessons: courseLessons.length,
+  };
+}
+
 function App() {
   const [plannerData, setPlannerData] = useState(null);
   const [status, setStatus] = useState("Loading planner data...");
@@ -528,6 +615,24 @@ function App() {
 
   const selectedPrepareNext =
     selectedCourseId === "IM1" ? math1PrepareNext : math8PrepareNext;
+
+  const sectionForecasts = sections
+    .map((section) =>
+      getSectionForecast(section, units, lessons, dailyProgress),
+    )
+    .filter(Boolean);
+
+  const needsAttentionForecasts = sectionForecasts.filter(
+    (forecast) => forecast.state === "Needs Attention",
+  );
+
+  const monitoringForecasts = sectionForecasts.filter(
+    (forecast) => forecast.state === "Monitoring",
+  );
+
+  const onTrackForecasts = sectionForecasts.filter(
+    (forecast) => forecast.state === "On Track",
+  );
 
   const selectedUnit =
     units.find((unit) => unit.UnitID === selectedUnitId) ??
@@ -1472,28 +1577,82 @@ function App() {
           )}
 
           {activeView === "forecast" && (
-            <section className="workspace-panel">
-              <h2>Forecast</h2>
-
-              <div className="forecast-grid">
-                <div className="forecast-card">
-                  <span>Math 8</span>
-                  <strong>{formatVariance(math8Status.variance)}</strong>
-                  <p>{formatForecastShift(math8Status.variance)}</p>
-                  <small>
-                    {math8RequiredDays} required · {math8OptionalDays} optional
-                  </small>
-                </div>
-
-                <div className="forecast-card">
-                  <span>Math 1</span>
-                  <strong>{formatVariance(math1Status.variance)}</strong>
-                  <p>{formatForecastShift(math1Status.variance)}</p>
-                  <small>
-                    {math1RequiredDays} required · {math1OptionalDays} optional
-                  </small>
-                </div>
+            <section className="workspace-panel forecast-panel">
+              <div className="forecast-header">
+                <h2>Pacing Forecast</h2>
+                <p>
+                  A calm check on section pacing, buffer remaining, and whether
+                  anything needs attention.
+                </p>
               </div>
+
+              <section className="forecast-section">
+                <h3>Pacing Summary</h3>
+
+                {sectionForecasts.length === 0 ? (
+                  <p>No active sections are available for forecasting yet.</p>
+                ) : (
+                  <div className="forecast-summary-grid">
+                    {sectionForecasts.map((forecast) => {
+                      const section = forecast.section ?? {};
+                      const state = forecast.state || "On Track";
+                      const stateClass = state
+                        .toLowerCase()
+                        .replace(/\s+/g, "-");
+                      const variance = Number(forecast.variance || 0);
+                      const forecastShift = Number(forecast.forecastShift || 0);
+
+                      return (
+                        <article
+                          className={`forecast-summary-card ${stateClass}`}
+                          key={
+                            section.SectionID ||
+                            `${section.CourseID}-${section.Period}`
+                          }
+                        >
+                          <span>
+                            {getCourseLabel(section.CourseID)} · Period{" "}
+                            {section.Period || "—"}
+                          </span>
+
+                          <strong>{state}</strong>
+
+                          <p>
+                            Lesson {forecast.currentLessonNumber || "—"} of{" "}
+                            {forecast.totalLessons || "—"}
+                          </p>
+
+                          <p>
+                            {variance === 0
+                              ? "On pace."
+                              : `${Math.abs(variance)} days ${
+                                  variance > 0 ? "behind" : "ahead"
+                                }.`}
+                          </p>
+
+                          <p>
+                            {forecastShift === 0
+                              ? "Future units stay on schedule."
+                              : `Future units begin ${Math.abs(
+                                  forecastShift,
+                                )} days ${forecastShift > 0 ? "later" : "earlier"}.`}
+                          </p>
+
+                          <p>
+                            {forecast.bufferRemaining || 0} of{" "}
+                            {forecast.bufferDays || 0} buffer days remaining.
+                          </p>
+
+                          <em>
+                            {forecast.recoverabilityMessage ||
+                              "No action needed."}
+                          </em>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
             </section>
           )}
         </section>
