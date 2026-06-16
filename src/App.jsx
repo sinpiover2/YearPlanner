@@ -646,9 +646,31 @@ function App() {
     )
     .filter(Boolean);
 
-  const forecastedSections = sectionForecasts.filter(
-    (forecast) => forecast.actualDays > 0,
-  );
+  const forecastedSections = sectionForecasts
+    .filter((forecast) => forecast.actualDays > 0)
+    .sort((a, b) => {
+      const severityRank = {
+        "needs-attention": 0,
+        monitoring: 1,
+        "on-track": 2,
+      };
+
+      const severityCompare =
+        (severityRank[a.visualStateClass] ?? 3) -
+        (severityRank[b.visualStateClass] ?? 3);
+
+      if (severityCompare !== 0) return severityCompare;
+
+      const courseCompare = String(a.section.CourseID || "").localeCompare(
+        String(b.section.CourseID || ""),
+      );
+
+      if (courseCompare !== 0) return courseCompare;
+
+      return (
+        Number(a.section.SortOrder || 999) - Number(b.section.SortOrder || 999)
+      );
+    });
 
   const hasForecastProgress = forecastedSections.length > 0;
 
