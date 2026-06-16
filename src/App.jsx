@@ -646,19 +646,21 @@ function App() {
     )
     .filter(Boolean);
 
-  const hasForecastProgress = sectionForecasts.some(
+  const forecastedSections = sectionForecasts.filter(
     (forecast) => forecast.actualDays > 0,
   );
 
-  const needsAttentionForecasts = sectionForecasts.filter(
+  const hasForecastProgress = forecastedSections.length > 0;
+
+  const needsAttentionForecasts = forecastedSections.filter(
     (forecast) => forecast.state === "Needs Attention",
   );
 
-  const monitoringForecasts = sectionForecasts.filter(
+  const monitoringForecasts = forecastedSections.filter(
     (forecast) => forecast.state === "Monitoring",
   );
 
-  const onTrackForecasts = sectionForecasts.filter(
+  const onTrackForecasts = forecastedSections.filter(
     (forecast) => forecast.state === "On Track",
   );
 
@@ -1658,11 +1660,12 @@ function App() {
                   <span>{overallForecastDetail}</span>
                 </div>
 
-                {!hasForecastProgress ? null : sectionForecasts.length === 0 ? (
+                {!hasForecastProgress ? null : forecastedSections.length ===
+                  0 ? (
                   <p>No active sections are available for forecasting yet.</p>
                 ) : (
                   <div className="forecast-summary-grid">
-                    {sectionForecasts.map((forecast) => {
+                    {forecastedSections.map((forecast) => {
                       const section = forecast.section ?? {};
                       const state = forecast.state || "On Track";
                       const stateClass =
