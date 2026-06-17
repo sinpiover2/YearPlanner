@@ -402,7 +402,6 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
   const bufferUsed = Math.max(0, variance);
   const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
   const consumedFraction = bufferDays > 0 ? bufferUsed / bufferDays : 0;
-  const bufferUsedPercent = consumedFraction * 100;
   const bufferRemainingPercent =
     bufferDays > 0 ? (bufferRemaining / bufferDays) * 100 : 0;
 
@@ -440,7 +439,6 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     bufferDays,
     bufferUsed,
     bufferRemaining,
-    bufferUsedPercent,
     bufferRemainingPercent,
     recoverabilityMessage,
     currentLesson,
@@ -1781,7 +1779,12 @@ function App() {
                             </small>
                           </p>
 
-                          <div className="buffer-meter">
+                          <div
+                            className="buffer-meter"
+                            aria-label={`${formatDays(
+                              forecast.bufferRemaining,
+                            )} buffer days remaining`}
+                          >
                             <div
                               className={`buffer-meter-fill ${stateClass}`}
                               style={{
