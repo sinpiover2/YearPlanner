@@ -1037,6 +1037,46 @@ button {
   opacity: 0.85;
 }
 
+.year-outlook-strip {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 10px;
+  border: 1px solid #d7dde6;
+  border-radius: 14px;
+  background: #fbfaf6;
+}
+
+.year-outlook-segment {
+  flex: 1;
+  min-height: 38px;
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+  font-weight: 900;
+}
+
+.year-outlook-segment span {
+  color: #111827;
+  font-size: 13px;
+}
+
+.year-outlook-segment.on-track {
+  background: #d1fae5;
+}
+
+.year-outlook-segment.monitoring {
+  background: #fef3c7;
+}
+
+.year-outlook-segment.needs-attention {
+  background: #fde68a;
+}
+
+.year-outlook-segment.buffer-exhausted {
+  background: #fecaca;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
