@@ -1770,8 +1770,12 @@ function App() {
                           </p>
 
                           <p>
-                            Buffer: {formatDays(forecast.bufferUsed)} used •{" "}
-                            {formatDays(forecast.bufferRemaining)} remaining
+                            Buffer remaining:{" "}
+                            {formatDays(forecast.bufferRemaining)} days
+                            <br />
+                            <small>
+                              {formatDays(forecast.bufferUsed)} used
+                            </small>
                           </p>
 
                           <div className="buffer-meter">
