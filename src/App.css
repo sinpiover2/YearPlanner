@@ -1033,6 +1033,11 @@ button {
   font-weight: 700;
   line-height: 1.35;
 }
+.forecast-summary-card p small {
+  color: #64748b;
+  font-size: 0.85em;
+  font-weight: 800;
+}
 
 .forecast-summary-card em {
   display: block;
