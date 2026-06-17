@@ -409,7 +409,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
 
   if (variance > 0) {
     if (bufferUsed > bufferDays) {
-      state = "Needs Attention";
+      state = "Buffer Exhausted";
       recoverabilityMessage =
         "Buffer exhausted — schedule adjustment required.";
     } else if (consumedFraction >= 0.6) {
@@ -423,7 +423,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
 
   const visualStateClass =
     bufferUsed > bufferDays
-      ? "needs-attention"
+      ? "buffer-exhausted"
       : state === "Monitoring" || state === "Needs Attention"
         ? "monitoring"
         : "on-track";
@@ -646,7 +646,7 @@ function App() {
     .filter((forecast) => forecast.actualDays > 0)
     .sort((a, b) => {
       const severityRank = {
-        "needs-attention": 0,
+        "buffer-exhausted": 0,
         monitoring: 1,
         "on-track": 2,
       };
@@ -674,6 +674,10 @@ function App() {
     0,
   );
 
+  const bufferExhaustedForecasts = forecastedSections.filter(
+    (forecast) => forecast.state === "Buffer Exhausted",
+  );
+
   const needsAttentionForecasts = forecastedSections.filter(
     (forecast) => forecast.state === "Needs Attention",
   );
@@ -699,23 +703,20 @@ function App() {
   } else if (!hasForecastProgress) {
     overallForecastMessage = "Nothing to report yet.";
     overallForecastDetail = "Check back after logging your first lessons.";
+  } else if (bufferExhaustedForecasts.length > 0) {
+    overallForecastMessage =
+      bufferExhaustedForecasts.length === 1
+        ? "1 section has exhausted its buffer."
+        : `${bufferExhaustedForecasts.length} sections have exhausted their buffer.`;
+    overallForecastDetail = "Schedule adjustment is required.";
+    overallForecastStateClass = "buffer-exhausted";
   } else if (needsAttentionForecasts.length > 0) {
     overallForecastMessage =
       needsAttentionForecasts.length === 1
         ? "1 section is consuming significant buffer."
         : `${needsAttentionForecasts.length} sections are consuming significant buffer.`;
-
-    overallForecastDetail = needsAttentionForecasts.some(
-      (forecast) => forecast.visualStateClass === "needs-attention",
-    )
-      ? "Start with sections where buffer is exhausted."
-      : "Start with sections using the most buffer.";
-
-    overallForecastStateClass = needsAttentionForecasts.some(
-      (forecast) => forecast.visualStateClass === "needs-attention",
-    )
-      ? "needs-attention"
-      : "monitoring";
+    overallForecastDetail = "Start with sections using the most buffer.";
+    overallForecastStateClass = "monitoring";
   } else if (monitoringForecasts.length > 0) {
     overallForecastMessage =
       monitoringForecasts.length === 1
