@@ -1081,7 +1081,6 @@ button {
 .year-outlook-strip {
   display: flex;
   gap: 8px;
-  margin: 0 0 18px;
   padding: 10px;
   border: 1px solid #d7dde6;
   border-radius: 14px;
@@ -1090,11 +1089,18 @@ button {
 
 .year-outlook-segment {
   flex: 1;
-  min-height: 38px;
+  min-height: 46px;
   border-radius: 10px;
   padding: 8px 10px;
   text-align: center;
   font-weight: 900;
+}
+
+.year-outlook-segment strong {
+  display: block;
+  margin-top: 3px;
+  color: #475569;
+  font-size: 11px;
 }
 
 .year-outlook-segment span {
@@ -1118,6 +1124,27 @@ button {
   background: #fecaca;
 }
 
+.year-outlook-block {
+  margin: 0 0 18px;
+}
+
+.year-outlook-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.year-outlook-heading strong {
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.year-outlook-heading span {
+  color: #64748b;
+  font-size: 0.85rem;
+}
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
