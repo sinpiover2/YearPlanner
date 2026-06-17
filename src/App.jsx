@@ -403,6 +403,8 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
   const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
   const consumedFraction = bufferDays > 0 ? bufferUsed / bufferDays : 0;
   const bufferUsedPercent = consumedFraction * 100;
+  const bufferRemainingPercent =
+    bufferDays > 0 ? (bufferRemaining / bufferDays) * 100 : 0;
 
   let state = "On Track";
   let recoverabilityMessage = "No action needed.";
@@ -439,6 +441,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     bufferUsed,
     bufferRemaining,
     bufferUsedPercent,
+    bufferRemainingPercent,
     recoverabilityMessage,
     currentLesson,
     visualStateClass,
@@ -1786,7 +1789,9 @@ function App() {
                                   100,
                                   Math.max(
                                     0,
-                                    Number(forecast.bufferUsedPercent || 0),
+                                    Number(
+                                      forecast.bufferRemainingPercent || 0,
+                                    ),
                                   ),
                                 )}%`,
                               }}
