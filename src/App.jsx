@@ -402,6 +402,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
   const bufferUsed = Math.max(0, variance);
   const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
   const consumedFraction = bufferDays > 0 ? bufferUsed / bufferDays : 0;
+  const bufferUsedPercent = consumedFraction * 100;
 
   let state = "On Track";
   let recoverabilityMessage = "No action needed.";
@@ -437,6 +438,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     bufferDays,
     bufferUsed,
     bufferRemaining,
+    bufferUsedPercent,
     recoverabilityMessage,
     currentLesson,
     visualStateClass,
@@ -1687,6 +1689,38 @@ function App() {
                   <span>{overallForecastDetail}</span>
                 </div>
 
+                {forecastedSections.length > 0 && (
+                  <div
+                    className="year-outlook-strip"
+                    aria-label="Year outlook by section"
+                  >
+                    {forecastedSections.map((forecast) => {
+                      const section = forecast.section ?? {};
+                      const stateClass =
+                        forecast.visualStateClass || "on-track";
+
+                      return (
+                        <div
+                          className={`year-outlook-segment ${stateClass}`}
+                          key={`outlook-${
+                            section.SectionID ||
+                            `${section.CourseID}-${section.Period}`
+                          }`}
+                          title={`${getCourseLabel(section.CourseID)} Period ${
+                            section.Period || "—"
+                          }: ${forecast.state || "On Track"}`}
+                        >
+                          <span>
+                            {getCourseLabel(section.CourseID)} P
+                            {section.Period || "—"}
+                          </span>
+                          <strong>{forecast.state || "On Track"}</strong>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {sectionForecasts.length > 0 && hasForecastProgress && (
                   <div className="forecast-summary-grid">
                     {forecastedSections.map((forecast) => {
@@ -1738,6 +1772,21 @@ function App() {
                             Buffer: {formatDays(forecast.bufferUsed)} used •{" "}
                             {formatDays(forecast.bufferRemaining)} remaining
                           </p>
+
+                          <div className="buffer-meter">
+                            <div
+                              className={`buffer-meter-fill ${stateClass}`}
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  Math.max(
+                                    0,
+                                    Number(forecast.bufferUsedPercent || 0),
+                                  ),
+                                )}%`,
+                              }}
+                            />
+                          </div>
 
                           <em className="forecast-recommendation">
                             {forecast.recoverabilityMessage ||
