@@ -465,6 +465,13 @@ function getSectionTimeline(forecast, units, lessons) {
     0,
   );
 
+  const bufferDays = courseUnits.reduce(
+    (sum, unit) => sum + Number(unit.OptionalDays || 0),
+    0,
+  );
+
+  const totalTimelineDays = totalRequiredDays + bufferDays;
+
   const currentLessonIndex = courseLessons.findIndex(
     (lesson) => lesson.LessonID === forecast.currentLesson?.LessonID,
   );
@@ -477,10 +484,10 @@ function getSectionTimeline(forecast, units, lessons) {
       : totalRequiredDays;
 
   const currentPositionPercent =
-    totalRequiredDays > 0
+    totalTimelineDays > 0
       ? Math.min(
           100,
-          Math.max(0, (completedRequiredDays / totalRequiredDays) * 100),
+          Math.max(0, (completedRequiredDays / totalTimelineDays) * 100),
         )
       : 0;
 
@@ -488,6 +495,8 @@ function getSectionTimeline(forecast, units, lessons) {
     section,
     courseUnits,
     totalRequiredDays,
+    bufferDays,
+    totalTimelineDays,
     currentPositionPercent,
   };
 }
@@ -1809,6 +1818,13 @@ function App() {
                                 {section.Period || "—"}
                               </strong>
                               <span>{forecast.state}</span>
+                              <em className="unit-timeline-drift">
+                                {forecast.variance === 0
+                                  ? "On pace"
+                                  : `${formatDays(Math.abs(forecast.variance))}d ${
+                                      forecast.variance > 0 ? "behind" : "ahead"
+                                    }`}
+                              </em>
                             </div>
 
                             <div className="unit-timeline-track">
@@ -1817,9 +1833,9 @@ function App() {
                                   unit.RequiredDays || 0,
                                 );
                                 const widthPercent =
-                                  timeline.totalRequiredDays > 0
+                                  timeline.totalTimelineDays > 0
                                     ? (requiredDays /
-                                        timeline.totalRequiredDays) *
+                                        timeline.totalTimelineDays) *
                                       100
                                     : 0;
 
@@ -1837,6 +1853,24 @@ function App() {
                                 );
                               })}
 
+                              {timeline.bufferDays > 0 && (
+                                <div
+                                  className="unit-timeline-buffer"
+                                  style={{
+                                    width: `${
+                                      timeline.totalTimelineDays > 0
+                                        ? (timeline.bufferDays /
+                                            timeline.totalTimelineDays) *
+                                          100
+                                        : 0
+                                    }%`,
+                                  }}
+                                  title={`${timeline.bufferDays} buffer days`}
+                                >
+                                  <span>buf</span>
+                                </div>
+                              )}
+
                               <div
                                 className="unit-timeline-marker"
                                 style={{
@@ -1849,6 +1883,21 @@ function App() {
                           </div>
                         );
                       })}
+                    </div>
+
+                    <div
+                      className="unit-timeline-legend"
+                      aria-label="Timeline legend"
+                    >
+                      <span>
+                        <i className="legend-dot" />
+                        Current position
+                      </span>
+
+                      <span>
+                        <i className="legend-buffer" />
+                        Buffer days
+                      </span>
                     </div>
                   </section>
                 )}
