@@ -448,6 +448,50 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
   };
 }
 
+function getSectionTimeline(forecast, units, lessons) {
+  const section = forecast.section;
+
+  const courseUnits = sortUnits(
+    units.filter((unit) => unit.CourseID === section.CourseID),
+  );
+
+  const courseLessons = sortLessons(
+    lessons.filter((lesson) => lesson.CourseID === section.CourseID),
+    courseUnits,
+  );
+
+  const totalRequiredDays = courseUnits.reduce(
+    (sum, unit) => sum + Number(unit.RequiredDays || 0),
+    0,
+  );
+
+  const currentLessonIndex = courseLessons.findIndex(
+    (lesson) => lesson.LessonID === forecast.currentLesson?.LessonID,
+  );
+
+  const completedRequiredDays =
+    currentLessonIndex >= 0
+      ? courseLessons
+          .slice(0, currentLessonIndex)
+          .reduce((sum, lesson) => sum + Number(lesson.PlannedDays || 0), 0)
+      : totalRequiredDays;
+
+  const currentPositionPercent =
+    totalRequiredDays > 0
+      ? Math.min(
+          100,
+          Math.max(0, (completedRequiredDays / totalRequiredDays) * 100),
+        )
+      : 0;
+
+  return {
+    section,
+    courseUnits,
+    totalRequiredDays,
+    currentPositionPercent,
+  };
+}
+
 function App() {
   const [plannerData, setPlannerData] = useState(null);
   const [status, setStatus] = useState("Loading planner data...");
@@ -1692,35 +1736,121 @@ function App() {
                 </div>
 
                 {forecastedSections.length > 0 && (
-                  <div
-                    className="year-outlook-strip"
-                    aria-label="Year outlook by section"
-                  >
-                    {forecastedSections.map((forecast) => {
-                      const section = forecast.section ?? {};
-                      const stateClass =
-                        forecast.visualStateClass || "on-track";
+                  <div className="year-outlook-block">
+                    <div className="year-outlook-heading">
+                      <strong>Year Outlook</strong>
+                      <span>Quick scan by section</span>
+                    </div>
 
-                      return (
-                        <div
-                          className={`year-outlook-segment ${stateClass}`}
-                          key={`outlook-${
-                            section.SectionID ||
-                            `${section.CourseID}-${section.Period}`
-                          }`}
-                          title={`${getCourseLabel(section.CourseID)} Period ${
-                            section.Period || "—"
-                          }: ${forecast.state || "On Track"}`}
-                        >
-                          <span>
-                            {getCourseLabel(section.CourseID)} P
-                            {section.Period || "—"}
-                          </span>
-                          <strong>{forecast.state || "On Track"}</strong>
-                        </div>
-                      );
-                    })}
+                    <div
+                      className="year-outlook-strip"
+                      aria-label="Year outlook by section"
+                    >
+                      {forecastedSections.map((forecast) => {
+                        const section = forecast.section ?? {};
+                        const stateClass =
+                          forecast.visualStateClass || "on-track";
+
+                        return (
+                          <div
+                            className={`year-outlook-segment ${stateClass}`}
+                            key={`outlook-${
+                              section.SectionID ||
+                              `${section.CourseID}-${section.Period}`
+                            }`}
+                            title={`${getCourseLabel(section.CourseID)} Period ${
+                              section.Period || "—"
+                            }: ${forecast.state || "On Track"}`}
+                          >
+                            <span>
+                              {getCourseLabel(section.CourseID)} P
+                              {section.Period || "—"}
+                            </span>
+                            <strong>{forecast.state || "On Track"}</strong>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
+                )}
+
+                {forecastedSections.length > 0 && (
+                  <section className="unit-timeline-section">
+                    <div className="unit-timeline-heading">
+                      <div>
+                        <h3>Year Timeline</h3>
+                        <p>
+                          Unit pacing by section. Cards below remain the
+                          decision layer.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="unit-timeline-list">
+                      {forecastedSections.map((forecast) => {
+                        const timeline = getSectionTimeline(
+                          forecast,
+                          units,
+                          lessons,
+                        );
+                        const section = timeline.section ?? {};
+
+                        return (
+                          <div
+                            className="unit-timeline-row"
+                            key={`timeline-${
+                              section.SectionID ||
+                              `${section.CourseID}-${section.Period}`
+                            }`}
+                          >
+                            <div className="unit-timeline-label">
+                              <strong>
+                                {getCourseLabel(section.CourseID)} P
+                                {section.Period || "—"}
+                              </strong>
+                              <span>{forecast.state}</span>
+                            </div>
+
+                            <div className="unit-timeline-track">
+                              {timeline.courseUnits.map((unit) => {
+                                const requiredDays = Number(
+                                  unit.RequiredDays || 0,
+                                );
+                                const widthPercent =
+                                  timeline.totalRequiredDays > 0
+                                    ? (requiredDays /
+                                        timeline.totalRequiredDays) *
+                                      100
+                                    : 0;
+
+                                return (
+                                  <div
+                                    className="unit-timeline-block"
+                                    key={`${section.SectionID}-${unit.UnitID}`}
+                                    style={{ width: `${widthPercent}%` }}
+                                    title={`U${unit.UnitNumber}: ${
+                                      unit.UnitTitle
+                                    } · ${requiredDays} required days`}
+                                  >
+                                    <span>U{unit.UnitNumber}</span>
+                                  </div>
+                                );
+                              })}
+
+                              <div
+                                className="unit-timeline-marker"
+                                style={{
+                                  left: `${timeline.currentPositionPercent}%`,
+                                }}
+                                title="Current position"
+                                aria-label="Current position"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
                 )}
 
                 {sectionForecasts.length > 0 && hasForecastProgress && (
