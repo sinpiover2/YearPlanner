@@ -345,39 +345,6 @@ function getSectionMeetingDays(section, schoolCalendar, schedulePatterns) {
   });
 }
 
-function getExpectedPositionPercent(
-  section,
-  schoolCalendar,
-  schedulePatterns,
-  totalTimelineDays,
-  dailyProgress = [],
-) {
-  const meetingDays = getSectionMeetingDays(
-    section,
-    schoolCalendar,
-    schedulePatterns,
-  );
-
-  const progressDates = dailyProgress
-    .map((row) => row.Date)
-    .filter(Boolean)
-    .map((value) => new Date(value))
-    .filter((date) => !Number.isNaN(date.getTime()));
-
-  const referenceDate =
-    progressDates.length > 0
-      ? new Date(Math.max(...progressDates.map((date) => date.getTime())))
-      : new Date();
-
-  const elapsedMeetingDays = meetingDays.filter(
-    (day) => new Date(day.Date) <= referenceDate,
-  ).length;
-
-  return totalTimelineDays > 0
-    ? Math.min(100, (elapsedMeetingDays / totalTimelineDays) * 100)
-    : 0;
-}
-
 function getProgressForSection(dailyProgress, section) {
   if (!section) return [];
 
@@ -524,6 +491,18 @@ function getSectionTimeline(forecast, units, lessons) {
         )
       : 0;
 
+  const expectedPositionPercent =
+    totalTimelineDays > 0
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            ((completedRequiredDays + forecast.variance) / totalTimelineDays) *
+              100,
+          ),
+        )
+      : 0;
+
   return {
     section,
     courseUnits,
@@ -531,6 +510,7 @@ function getSectionTimeline(forecast, units, lessons) {
     bufferDays,
     totalTimelineDays,
     currentPositionPercent,
+    expectedPositionPercent,
   };
 }
 
@@ -1855,14 +1835,6 @@ function App() {
                         );
 
                         const section = timeline.section ?? {};
-                        const expectedPositionPercent =
-                          getExpectedPositionPercent(
-                            section,
-                            schoolCalendar,
-                            schedulePatterns,
-                            timeline.totalTimelineDays,
-                            dailyProgress,
-                          );
 
                         return (
                           <div
@@ -1934,7 +1906,7 @@ function App() {
                               <div
                                 className="unit-timeline-planned-marker"
                                 style={{
-                                  left: `${expectedPositionPercent}%`,
+                                  left: `${timeline.expectedPositionPercent}%`,
                                 }}
                                 title="Expected pace line"
                                 aria-label="Expected pace"
