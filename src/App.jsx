@@ -1795,6 +1795,19 @@ function App() {
                       </div>
                     </div>
 
+                    <div className="timeline-axis" aria-hidden="true">
+                      <span>Aug</span>
+                      <span>Sep</span>
+                      <span>Oct</span>
+                      <span>Nov</span>
+                      <span>Dec</span>
+                      <span>Jan</span>
+                      <span>Feb</span>
+                      <span>Mar</span>
+                      <span>Apr</span>
+                      <span>May</span>
+                    </div>
+
                     <div className="unit-timeline-list">
                       {forecastedSections.map((forecast) => {
                         const timeline = getSectionTimeline(
