@@ -1894,8 +1894,8 @@ function App() {
                                 style={{
                                   left: `${timeline.currentPositionPercent}%`,
                                 }}
-                                title="Current position"
-                                aria-label="Current position"
+                                title="You are here"
+                                aria-label="You are here"
                               />
                             </div>
                           </div>
@@ -1909,7 +1909,7 @@ function App() {
                     >
                       <span>
                         <i className="legend-dot" />
-                        Current position
+                        You are here
                       </span>
 
                       <span>

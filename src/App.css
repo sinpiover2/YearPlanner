@@ -1339,14 +1339,16 @@ button {
 .unit-timeline-marker {
   position: absolute;
   top: 50%;
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border: 2px solid #ffffff;
   border-radius: 999px;
   background: #111827;
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.28),
+    0 0 0 5px rgba(15, 23, 42, 0.08);
   transform: translate(-50%, -50%);
-  z-index: 3;
+  z-index: 4;
 }
 
 .unit-timeline-legend {
@@ -1368,12 +1370,14 @@ button {
 }
 
 .legend-dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border: 2px solid #ffffff;
   border-radius: 999px;
   background: #111827;
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.28),
+    0 0 0 4px rgba(15, 23, 42, 0.08);
 }
 
 .legend-buffer {
