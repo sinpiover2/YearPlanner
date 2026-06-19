@@ -1808,6 +1808,11 @@ function App() {
                       <span>May</span>
                     </div>
 
+                    <div className="timeline-breaks" aria-hidden="true">
+                      <span className="timeline-break winter-break" />
+                      <span className="timeline-break spring-break" />
+                    </div>
+
                     <div className="unit-timeline-list">
                       {forecastedSections.map((forecast) => {
                         const timeline = getSectionTimeline(

@@ -1180,7 +1180,7 @@ button {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   gap: 0;
-  margin: 0.45rem 0 0.55rem 112px;
+  margin: 0.6rem 0 0.35rem 112px;
   padding: 0 0.35rem;
   color: #94a3b8;
   font-size: 0.68rem;
@@ -1201,6 +1201,36 @@ button {
   width: 1px;
   height: 0.35rem;
   background: #e5e7eb;
+}
+
+.timeline-breaks {
+  position: relative;
+  height: 0.45rem;
+  margin: -0.05rem 0 0.05rem 112px;
+}
+
+.timeline-break {
+  position: absolute;
+  top: 0;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(148, 163, 184, 0.24) 0,
+    rgba(148, 163, 184, 0.24) 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+.winter-break {
+  left: 38.5%;
+  width: 6%;
+}
+
+.spring-break {
+  left: 70.5%;
+  width: 4%;
 }
 
 .unit-timeline-list {
@@ -1379,6 +1409,10 @@ button {
   }
 
   .timeline-axis {
+    margin-left: 0;
+  }
+
+  .timeline-breaks {
     margin-left: 0;
   }
 
