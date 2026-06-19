@@ -1936,7 +1936,7 @@ function App() {
                                 style={{
                                   left: `${expectedPositionPercent}%`,
                                 }}
-                                title="Expected pace"
+                                title="Expected pace line"
                                 aria-label="Expected pace"
                               />
 
