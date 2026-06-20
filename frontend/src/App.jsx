@@ -3,6 +3,8 @@ import "./App.css";
 import YearTimeline from "./components/YearTimeline";
 import YearOutlookStrip from "./components/YearOutlookStrip";
 import ForecastSummaryCards from "./components/ForecastSummaryCards";
+import Sidebar from "./components/Sidebar";
+import LessonTable from "./components/LessonTable";
 import {
   addLesson,
   deleteLesson,
@@ -1065,369 +1067,6 @@ function App() {
     }
   }
 
-  function renderLessonTable(lessonList) {
-    return (
-      <div className="lesson-table">
-        <div className="lesson-table-head">
-          <span></span>
-          <span>Lesson</span>
-          <span>Plan</span>
-          <span>Actual</span>
-          <span>Var</span>
-          <span></span>
-        </div>
-
-        {lessonList.map((lesson) => {
-          const { actualDays, finished } = getLessonProgress(
-            lesson.LessonID,
-            selectedDailyProgress,
-          );
-          const isCurrent =
-            lesson.LessonID === selectedNavigation.currentLesson?.LessonID;
-
-          const isNext =
-            lesson.LessonID === selectedNavigation.nextLesson?.LessonID;
-
-          const variance = actualDays - Number(lesson.PlannedDays || 0);
-          const outcomes = getOutcomeList(lesson.KeyOutcome);
-
-          return (
-            <div
-              className={isCurrent ? "lesson-row current-row" : "lesson-row"}
-              key={lesson.LessonID}
-            >
-              <span className="lesson-index">{lesson.LessonNumber}</span>
-
-              <div className="lesson-name-cell">
-                <strong>{lesson.LessonTitle}</strong>
-
-                <span
-                  className={
-                    finished
-                      ? "lesson-pill done"
-                      : isCurrent
-                        ? "lesson-pill now"
-                        : isNext
-                          ? "lesson-pill next"
-                          : "lesson-pill upcoming"
-                  }
-                >
-                  {finished
-                    ? "Done"
-                    : isCurrent
-                      ? "Now"
-                      : isNext
-                        ? "Next"
-                        : "Upcoming"}
-                </span>
-
-                {outcomes.length > 0 ? (
-                  <div className="lesson-goals-display">
-                    {outcomes.map((outcome, index) => (
-                      <p key={`${lesson.LessonID}-${index}`}>{outcome}</p>
-                    ))}
-                  </div>
-                ) : (
-                  <p>No outcome entered.</p>
-                )}
-
-                {activeProgressLessonId === lesson.LessonID && (
-                  <div className="lesson-progress-entry">
-                    <input
-                      type="number"
-                      min="0.25"
-                      max="1"
-                      step="0.25"
-                      placeholder="Add Days"
-                      value={progressInputs[lesson.LessonID]?.dayFraction ?? ""}
-                      onChange={(e) =>
-                        setProgressInputs((prev) => ({
-                          ...prev,
-                          [lesson.LessonID]: {
-                            ...prev[lesson.LessonID],
-                            dayFraction: e.target.value,
-                          },
-                        }))
-                      }
-                    />
-
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={
-                          progressInputs[lesson.LessonID]?.finished ?? false
-                        }
-                        onChange={(e) =>
-                          setProgressInputs((prev) => ({
-                            ...prev,
-                            [lesson.LessonID]: {
-                              ...prev[lesson.LessonID],
-                              finished: e.target.checked,
-                            },
-                          }))
-                        }
-                      />
-                      Finished
-                    </label>
-
-                    <textarea
-                      className="log-notes-input"
-                      placeholder="Notes — what happened today?"
-                      value={progressInputs[lesson.LessonID]?.notes ?? ""}
-                      onChange={(e) =>
-                        setProgressInputs((prev) => ({
-                          ...prev,
-                          [lesson.LessonID]: {
-                            ...prev[lesson.LessonID],
-                            notes: e.target.value,
-                          },
-                        }))
-                      }
-                    />
-
-                    <button onClick={() => handleLogProgress(lesson)}>
-                      Save Log
-                    </button>
-
-                    <button
-                      className="secondary-button"
-                      onClick={() => setActiveProgressLessonId(null)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <strong>{lesson.PlannedDays || "—"}d</strong>
-
-              <strong>{actualDays || "—"}</strong>
-
-              <strong className={variance > 0 ? "variance-warning" : ""}>
-                {actualDays ? formatVarianceCompact(variance) : "—"}
-              </strong>
-
-              <div className="lesson-actions">
-                <button
-                  className="edit-link"
-                  onClick={() => startEditingLesson(lesson)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className="log-button"
-                  onClick={() => setActiveProgressLessonId(lesson.LessonID)}
-                >
-                  Log
-                </button>
-              </div>
-
-              {editingLessonId === lesson.LessonID && editLessonDraft && (
-                <div className="lesson-edit-form">
-                  <div className="days-row">
-                    <div className="days-box" />
-
-                    <label>Days</label>
-
-                    <input
-                      className="days-input"
-                      type="number"
-                      min="0.5"
-                      step="0.5"
-                      value={editLessonDraft.plannedDays}
-                      onChange={(e) =>
-                        setEditLessonDraft((prev) => ({
-                          ...prev,
-                          plannedDays: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div className="goal-editor">
-                    <span>Learning goals</span>
-
-                    {editLessonDraft.goals.map((goal, index) => (
-                      <div className="goal-input-row" key={index}>
-                        <strong>{index + 1}</strong>
-
-                        <input
-                          type="text"
-                          value={goal}
-                          placeholder="I can..."
-                          onChange={(e) => updateGoal(index, e.target.value)}
-                        />
-
-                        {editLessonDraft.goals.length > 1 && (
-                          <button
-                            type="button"
-                            className="remove-goal-button"
-                            onClick={() => removeGoal(index)}
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      className="add-goal-button"
-                      onClick={addGoal}
-                    >
-                      + Add another goal
-                    </button>
-                  </div>
-
-                  <div className="edit-actions">
-                    <button onClick={() => handleUpdateLesson(lesson)}>
-                      Save
-                    </button>
-
-                    <button
-                      className="secondary-button"
-                      onClick={() => {
-                        setEditingLessonId(null);
-                        setEditLessonDraft(null);
-                      }}
-                    >
-                      Cancel
-                    </button>
-
-                    <button
-                      type="button"
-                      className="secondary-button"
-                      onClick={() => handleMoveLesson(lesson, "up")}
-                    >
-                      Move up
-                    </button>
-
-                    <button
-                      type="button"
-                      className="secondary-button"
-                      onClick={() => handleMoveLesson(lesson, "down")}
-                    >
-                      Move down
-                    </button>
-
-                    <button
-                      className="delete-button"
-                      onClick={() => handleDeleteLesson(lesson)}
-                    >
-                      Delete Lesson
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        <div className="add-lesson-row">
-          {!isAddingLesson ? (
-            <button
-              className="add-lesson-button"
-              onClick={() => setIsAddingLesson(true)}
-            >
-              + Add lesson
-            </button>
-          ) : (
-            <div className="add-lesson-form">
-              <div className="add-lesson-top-row">
-                <input
-                  type="text"
-                  placeholder="Lesson title"
-                  value={newLesson.lessonTitle}
-                  onChange={(e) =>
-                    setNewLesson((prev) => ({
-                      ...prev,
-                      lessonTitle: e.target.value,
-                    }))
-                  }
-                />
-
-                <input
-                  type="number"
-                  min="0.5"
-                  step="0.5"
-                  value={newLesson.plannedDays}
-                  onChange={(e) =>
-                    setNewLesson((prev) => ({
-                      ...prev,
-                      plannedDays: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-
-              <div className="goal-editor">
-                <span>Learning goals</span>
-
-                {newLesson.keyOutcomes.map((goal, index) => (
-                  <div className="goal-input-row" key={`new-goal-${index}`}>
-                    <strong>{index + 1}</strong>
-
-                    <input
-                      type="text"
-                      placeholder="I can..."
-                      value={goal}
-                      onChange={(e) =>
-                        updateNewLessonGoal(index, e.target.value)
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          addNewLessonGoal();
-                        }
-                      }}
-                    />
-
-                    {newLesson.keyOutcomes.length > 1 && (
-                      <button
-                        type="button"
-                        className="remove-goal-button"
-                        onClick={() => removeNewLessonGoal(index)}
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                ))}
-
-                <button
-                  type="button"
-                  className="add-goal-button"
-                  onClick={addNewLessonGoal}
-                >
-                  + Add another goal
-                </button>
-              </div>
-
-              <div className="edit-actions">
-                <button onClick={handleAddLesson}>Add lesson</button>
-
-                <button
-                  className="secondary-button"
-                  onClick={() => {
-                    setNewLesson({
-                      lessonTitle: "",
-                      plannedDays: 1,
-                      keyOutcomes: [""],
-                    });
-                    setIsAddingLesson(false);
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   function renderUnitChips(courseId, courseUnits) {
     return (
       <div className="unit-chip-grid">
@@ -1455,151 +1094,29 @@ function App() {
   return (
     <main className="app">
       <section className="planner-shell">
-        <aside className="sidebar">
-          <div className="sidebar-title">
-            <h1>Year Planner</h1>
-            <p>2026–27</p>
-            <small>{status}</small>
-          </div>
-
-          <div className="time-toggle">
-            <button
-              className={timeLens === "school" ? "active-time-lens" : ""}
-              onClick={() => setTimeLens("school")}
-            >
-              School days
-            </button>
-
-            <button
-              className={timeLens === "curriculum" ? "active-time-lens" : ""}
-              onClick={() => setTimeLens("curriculum")}
-            >
-              Curriculum days
-            </button>
-
-            <button
-              className={timeLens === "actual" ? "active-time-lens" : ""}
-              onClick={() => setTimeLens("actual")}
-            >
-              Actual days
-            </button>
-          </div>
-
-          <div className="sidebar-stat">
-            <span>{timeLensInfo.label}</span>
-            <strong>
-              {timeLensInfo.value}
-              <small> {timeLensInfo.unit}</small>
-            </strong>
-            <div className="mini-bar">
-              <div style={{ width: `${timeLensInfo.bar}%` }} />
-            </div>
-          </div>
-
-          <div className="sidebar-section-title">Courses</div>
-
-          <button
-            className={
-              selectedCourseId === "M8"
-                ? "course-sidebar-card active"
-                : "course-sidebar-card"
-            }
-            onClick={() => {
-              setSelectedCourseId("M8");
-              setSelectedUnitId(math8Navigation.currentUnit?.UnitID ?? null);
-            }}
-          >
-            <div>
-              <strong>Math 8</strong>
-              <em>{formatVarianceCompact(math8Status.variance)}</em>
-            </div>
-            <p>
-              {math8Navigation.currentUnit
-                ? `U${math8Navigation.currentUnit.UnitNumber} · ${
-                    math8Navigation.currentLesson?.LessonTitle ?? "Complete"
-                  }`
-                : "No unit selected"}
-            </p>
-            <div className="mini-bar blue">
-              <div
-                style={{
-                  width: `${calculateProgressPercent(math8Navigation.actualDays, math8Navigation.plannedDays)}%`,
-                }}
-              />
-            </div>
-            <small>
-              {math8Navigation.actualDays} of {math8Navigation.plannedDays} days
-              in unit · {math8OptionalDays}d buffer
-            </small>
-          </button>
-
-          <button
-            className={
-              selectedCourseId === "IM1"
-                ? "course-sidebar-card active"
-                : "course-sidebar-card"
-            }
-            onClick={() => {
-              setSelectedCourseId("IM1");
-              setSelectedUnitId(math1Navigation.currentUnit?.UnitID ?? null);
-            }}
-          >
-            <div>
-              <strong>Math 1</strong>
-              <em className="good">
-                {formatVarianceCompact(math1Status.variance)}
-              </em>
-            </div>
-            <p>
-              {math1Navigation.currentUnit
-                ? `U${math1Navigation.currentUnit.UnitNumber} · ${
-                    math1Navigation.currentLesson?.LessonTitle ?? "Complete"
-                  }`
-                : "No unit selected"}
-            </p>
-            <div className="mini-bar green">
-              <div
-                style={{
-                  width: `${calculateProgressPercent(math1Navigation.actualDays, math1Navigation.plannedDays)}%`,
-                }}
-              />
-            </div>
-            <small>
-              {math1Navigation.actualDays} of {math1Navigation.plannedDays} days
-              in unit · {math1OptionalDays}d buffer
-            </small>
-          </button>
-
-          <div className="sidebar-section-title">Section</div>
-
-          <select
-            className="section-select"
-            value={selectedSection?.SectionID ?? ""}
-            onChange={(event) => setSelectedSectionId(event.target.value)}
-          >
-            {selectedCourseSections.length === 0 ? (
-              <option value="">No sections entered</option>
-            ) : (
-              selectedCourseSections.map((section) => (
-                <option key={section.SectionID} value={section.SectionID}>
-                  {section.SectionName}
-                </option>
-              ))
-            )}
-          </select>
-
-          <div className="sidebar-section-title">Timeline</div>
-
-          <div className="unit-chip-group">
-            <span>Math 8</span>
-            {renderUnitChips("M8", math8Units)}
-          </div>
-
-          <div className="unit-chip-group">
-            <span>Math 1</span>
-            {renderUnitChips("IM1", math1Units)}
-          </div>
-        </aside>
+        <Sidebar
+          status={status}
+          timeLens={timeLens}
+          setTimeLens={setTimeLens}
+          timeLensInfo={timeLensInfo}
+          selectedCourseId={selectedCourseId}
+          setSelectedCourseId={setSelectedCourseId}
+          setSelectedUnitId={setSelectedUnitId}
+          math8Navigation={math8Navigation}
+          math1Navigation={math1Navigation}
+          math8Status={math8Status}
+          math1Status={math1Status}
+          math8OptionalDays={math8OptionalDays}
+          math1OptionalDays={math1OptionalDays}
+          calculateProgressPercent={calculateProgressPercent}
+          formatVarianceCompact={formatVarianceCompact}
+          selectedSection={selectedSection}
+          selectedCourseSections={selectedCourseSections}
+          setSelectedSectionId={setSelectedSectionId}
+          renderUnitChips={renderUnitChips}
+          math8Units={math8Units}
+          math1Units={math1Units}
+        />
 
         <section className="main-workspace">
           <nav className="view-tabs">
@@ -1670,7 +1187,38 @@ function App() {
                 {selectedNavigation.plannedDays} days used
               </p>
 
-              {renderLessonTable(selectedNavigation.currentUnitLessons)}
+              <LessonTable
+                lessonList={selectedNavigation.currentUnitLessons}
+                selectedDailyProgress={selectedDailyProgress}
+                selectedNavigation={selectedNavigation}
+                activeProgressLessonId={activeProgressLessonId}
+                progressInputs={progressInputs}
+                setProgressInputs={setProgressInputs}
+                setActiveProgressLessonId={setActiveProgressLessonId}
+                handleLogProgress={handleLogProgress}
+                editingLessonId={editingLessonId}
+                editLessonDraft={editLessonDraft}
+                setEditLessonDraft={setEditLessonDraft}
+                setEditingLessonId={setEditingLessonId}
+                startEditingLesson={startEditingLesson}
+                updateGoal={updateGoal}
+                removeGoal={removeGoal}
+                addGoal={addGoal}
+                handleUpdateLesson={handleUpdateLesson}
+                handleMoveLesson={handleMoveLesson}
+                handleDeleteLesson={handleDeleteLesson}
+                isAddingLesson={isAddingLesson}
+                setIsAddingLesson={setIsAddingLesson}
+                newLesson={newLesson}
+                setNewLesson={setNewLesson}
+                updateNewLessonGoal={updateNewLessonGoal}
+                addNewLessonGoal={addNewLessonGoal}
+                removeNewLessonGoal={removeNewLessonGoal}
+                handleAddLesson={handleAddLesson}
+                getLessonProgress={getLessonProgress}
+                getOutcomeList={getOutcomeList}
+                formatVarianceCompact={formatVarianceCompact}
+              />
 
               <div className="bottom-strip">
                 <div>
@@ -1758,7 +1306,38 @@ function App() {
                     </div>
                   </div>
 
-                  {renderLessonTable(selectedUnitLessons)}
+                  <LessonTable
+                    lessonList={selectedUnitLessons}
+                    selectedDailyProgress={selectedDailyProgress}
+                    selectedNavigation={selectedNavigation}
+                    activeProgressLessonId={activeProgressLessonId}
+                    progressInputs={progressInputs}
+                    setProgressInputs={setProgressInputs}
+                    setActiveProgressLessonId={setActiveProgressLessonId}
+                    handleLogProgress={handleLogProgress}
+                    editingLessonId={editingLessonId}
+                    editLessonDraft={editLessonDraft}
+                    setEditLessonDraft={setEditLessonDraft}
+                    setEditingLessonId={setEditingLessonId}
+                    startEditingLesson={startEditingLesson}
+                    updateGoal={updateGoal}
+                    removeGoal={removeGoal}
+                    addGoal={addGoal}
+                    handleUpdateLesson={handleUpdateLesson}
+                    handleMoveLesson={handleMoveLesson}
+                    handleDeleteLesson={handleDeleteLesson}
+                    isAddingLesson={isAddingLesson}
+                    setIsAddingLesson={setIsAddingLesson}
+                    newLesson={newLesson}
+                    setNewLesson={setNewLesson}
+                    updateNewLessonGoal={updateNewLessonGoal}
+                    addNewLessonGoal={addNewLessonGoal}
+                    removeNewLessonGoal={removeNewLessonGoal}
+                    handleAddLesson={handleAddLesson}
+                    getLessonProgress={getLessonProgress}
+                    getOutcomeList={getOutcomeList}
+                    formatVarianceCompact={formatVarianceCompact}
+                  />
                 </>
               )}
             </section>
