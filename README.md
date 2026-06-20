@@ -1,141 +1,240 @@
-# # Year Planner
-Starting it up
-cd "/Users/jeff_holcomb/Library/CloudStorage/Dropbox/Jeff's Curriculum/Teaching/2026-2027/Projects/Year Planner/frontend"
+# Year Planner
 
-npm run dev
+Teacher decision-support for curriculum pacing.
 
-#Elevator Pitch
+Year Planner is designed to help teachers answer one question:
 
-Year Planner is a planning and forecasting tool that helps teachers reduce the mental overhead of teaching.
+> Am I OK?
 
-Teaching requires carrying the weight of an entire school year in your head. Teachers constantly manage todayÕs lessons, next weekÕs preparation, unit pacing, assessment timelines, school events, and end-of-year goalsÑall while remaining fully present for students.
+It is not a reporting dashboard.
 
-Year Planner helps teachers replace uncertainty with visibility, lowering teacher anxiety.
+It is not a gradebook.
 
-By making pacing, upcoming instruction, preparation needs, student progress, and future consequences visible, Year Planner helps teachers spend less time managing information and more time focusing on students and instruction.
+It is not an LMS.
 
-The goal is not to tell teachers what to do.
+Year Planner interprets information and helps teachers understand where they are, whether they should care, and what happens if nothing changes.
 
-The goal is to help teachers see around corners.
+---
+
+??? apps-script
+??? archive
+??? Claude Design
+?ÊÊ ??? Design Philosophy.md
+?ÊÊ ??? Forecast.jpg
+?ÊÊ ??? Written Specifications for Forcast Tab.md
+??? data
+??? docs
+?ÊÊ ??? Architecture
+?ÊÊ ?ÊÊ ??? API_REFERENCE.md
+?ÊÊ ?ÊÊ ??? ARCHITECTURE.md
+?ÊÊ ?ÊÊ ??? DESIGN_PHILOSOPHY.md
+?ÊÊ ?ÊÊ ??? Forecast Architecture.md
+?ÊÊ ?ÊÊ ??? Guiding Principles.md
+?ÊÊ ?ÊÊ ??? Sheet Structure.md
+?ÊÊ ?ÊÊ ??? System Inventory.md
+?ÊÊ ??? Color Scheme Reference.md
+?ÊÊ ??? History
+?ÊÊ ?ÊÊ ??? BUILD_LOG.md
+?ÊÊ ?ÊÊ ??? Decisions.md
+?ÊÊ ?ÊÊ ??? FORECAST_V1.md
+?ÊÊ ?ÊÊ ??? Phase2-ForecastVisualizations.md
+?ÊÊ ??? Reference
+?ÊÊ ?ÊÊ ??? Component Inventory.md
+?ÊÊ ?ÊÊ ??? Requirements.md
+?ÊÊ ??? Releases
+?ÊÊ ?ÊÊ ??? v0.9.md
+?ÊÊ ??? Roadmap
+?ÊÊ     ??? Project_Status.md
+?ÊÊ     ??? roadmap.md
+??? frontend
+?ÊÊ ??? eslint.config.js
+?ÊÊ ??? index.html
+?ÊÊ ??? package-lock.json
+?ÊÊ ??? package.json
+?ÊÊ ??? public
+?ÊÊ ?ÊÊ ??? favicon.svg
+?ÊÊ ?ÊÊ ??? icons.svg
+?ÊÊ ??? README.md
+?ÊÊ ??? src
+?ÊÊ ?ÊÊ ??? api.js
+?ÊÊ ?ÊÊ ??? App.css
+?ÊÊ ?ÊÊ ??? App.jsx
+?ÊÊ ?ÊÊ ??? assets
+?ÊÊ ?ÊÊ ?ÊÊ ??? hero.png
+?ÊÊ ?ÊÊ ?ÊÊ ??? react.svg
+?ÊÊ ?ÊÊ ?ÊÊ ??? vite.svg
+?ÊÊ ?ÊÊ ??? index.css
+?ÊÊ ?ÊÊ ??? main.jsx
+?ÊÊ ??? vite.config.js
+??? README.md
+??? Repository Map.jpg
+
+# Philosophy
+
+Most teachers are fine most of the time.
+
+The default emotional state is calm.
+
+Information appears in this order:
+
+1. Reality
+2. Consequence
+3. Recommendation
+
+Timeline = orientation.
+
+Cards = interpretation.
+
+Compression is kindness.
+
+Stability is kindness.
+
+---
+
+# Current Features
+
+### Today
+
+Daily instructional navigation.
+
+Answers:
+
+> Am I OK today?
+
+---
+
+### Units
+
+Medium-term planning.
+
+Answers:
+
+> Am I OK in this unit?
+
+---
+
+### Forecast
+
+Long-range pacing awareness.
+
+Answers:
+
+> Am I OK this year?
+
+Includes:
+
+- Year Outlook
+- Year Timeline
+- Forecast Cards
+- Buffer calculations
+- Section-aware forecasting
+
+---
+
+# Technology Stack
+
+Frontend:
+
+- React
+- Vite
+
+Backend:
+
+- Google Apps Script
+
+Data Store:
+
+- Google Sheets
+
+Hosting:
+
+- Vercel
+
+---
+
+# Architecture
+
+```text
+React Frontend
+        ?
+Apps Script Endpoint
+        ?
+Google Sheets
+```
+
+Google Sheets stores facts.
+
+The application provides interpretation.
+
+---
+
+# Repository Structure
+
+```text
+frontend/
+apps-script/
+docs/
+data/
+archive/
+```
+
+---
+
+# Core Documents
+
+- Design Philosophy.md
+- Architecture.md
+- Requirements.md
+- Major Decisions.md
+- Guiding Principles.md
+- Color Scheme Reference.md
+
+---
+
+# Current Status
+
+Phase 2 Ð Forecast Visualizations
+
+Current sprint:
+
+**Sprint 2.2c Ð Timeline Integration**
+
+Visual design is converging.
+
+Forecast logic is considered trustworthy.
+
+---
+
+# Long-Term Vision
+
+The application ultimately consists of four layers:
+
+```text
+Banner
 
 ?
 
-Goal
-
-Year Planner helps teachers understand:
-
-* Where they are
-* Where they are headed
-* How todayÕs decisions affect the rest of the school year
-
-A teacher should be able to open the app at 7:00 AM and immediately know what they need to teach, prepare, and watch out for.
-
-The planner helps answer questions such as:
-
-* What am I teaching today?
-* Is anything not ready?
-* Am I on pace?
-* Is todayÕs schedule normal?
-* What comes next?
-* Where are my students right now?
-* Which learning goals need continued development?
-* If I continue teaching at my current pace, where will I end up?
-* How much buffer time remains?
-* What happens if a lesson takes an extra day?
-* What happens if I lose instructional time to assemblies, testing, field trips, or weather?
-* What are the consequences of changing my pacing?
-
-Year Planner supports teachers across multiple planning horizons:
-
-* Today
-* This week
-* This unit
-* This trimester or semester
-* This year
-
-At every horizon, the planner should help answer:
-
-1. Where am I?
-2. What comes next?
-3. Am I okay?
-4. What requires attention?
+Year Outlook
 
 ?
 
-Core Design Principle
-
-Year Planner is designed to reduce the mental overhead of teaching.
-
-The technical problem is curriculum planning.
-
-The human problem is carrying the weight of an entire school year in your head.
-
-Year PlannerÕs job is to carry some of that weight for you.
-
-Teaching requires managing a large amount of future-oriented information in working memory. Teachers constantly track pacing, upcoming lessons, student understanding, interventions, assessments, materials, school events, and instructional decisions.
-
-Year Planner reduces that cognitive load by making important information visible at the moment it is needed.
-
-The goal is not to automate teacher judgment.
-
-The goal is to support teacher judgment.
-
-Every feature should answer one question:
-
-Does this reduce the mental overhead of teaching?
-
-If the answer is yes, it belongs in Year Planner.
-
-If the answer is no, it is probably dashboard decoration.
+Year Timeline
 
 ?
 
-Purpose
+Forecast Cards
+```
 
-Year Planner is a decision-support tool for teachers.
+Timeline provides orientation.
 
-Teachers make instructional decisions every day based on their students, curriculum, and professional judgment. Year Planner is not designed to replace those decisions or tell teachers what to do.
+Cards provide interpretation.
 
-Instead, Year Planner helps make the consequences of those decisions visible through forecasting, progress monitoring, preparation support, and scenario exploration.
+The goal is to compress an entire school year into something a teacher can understand in one or two seconds and think:
 
-The planner helps teachers see around corners. It shows how decisions made today can affect future lessons, future units, available buffer time, preparation needs, student learning, and end-of-year outcomes.
+> I know where I am.
 
-Year Planner does not make instructional decisions.
+without having to think very hard.
 
-It helps teachers understand the likely consequences of those decisions so they can make informed choices while remaining fully in control of their instruction.
+---
 
-?
-
-Non-Goals
-
-Year Planner is not:
-
-* A gradebook
-* A lesson authoring tool
-* A curriculum marketplace
-* A curriculum replacement
-* An AI that tells teachers what to teach
-* An AI that makes instructional decisions
-* An administrative compliance system
-
-Teachers remain responsible for instructional decisions.
-
-Year Planner exists to make important information visible, not to make decisions.
-Year Planner exists to make important information visible, not to make decisions.
-
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+*"The best designs disappear."*
