@@ -79,24 +79,49 @@ function YearTimeline({
                     aria-hidden="true"
                   />
 
-                  {timeline.courseUnits.map((unit) => {
-                    const requiredDays = Number(unit.RequiredDays || 0);
-                    const widthPercent =
-                      timeline.totalTimelineDays > 0
-                        ? (requiredDays / timeline.totalTimelineDays) * 100
-                        : 0;
+                  {(() => {
+                    let consumedRequiredDays = 0;
 
-                    return (
-                      <div
-                        className="unit-timeline-block"
-                        key={`${section.SectionID}-${unit.UnitID}`}
-                        style={{ width: `${widthPercent}%` }}
-                        title={`U${unit.UnitNumber}: ${unit.UnitTitle} · ${requiredDays} required days`}
-                      >
-                        <span>U{unit.UnitNumber}</span>
-                      </div>
-                    );
-                  })}
+                    return timeline.courseUnits.map((unit) => {
+                      const requiredDays = Number(unit.RequiredDays || 0);
+                      const widthPercent =
+                        timeline.totalTimelineDays > 0
+                          ? (requiredDays / timeline.totalTimelineDays) * 100
+                          : 0;
+
+                      const completedInUnit = Math.min(
+                        Math.max(
+                          Number(timeline.completedRequiredDays || 0) -
+                            consumedRequiredDays,
+                          0,
+                        ),
+                        requiredDays,
+                      );
+
+                      const completedPercent =
+                        requiredDays > 0
+                          ? (completedInUnit / requiredDays) * 100
+                          : 0;
+
+                      consumedRequiredDays += requiredDays;
+
+                      return (
+                        <div
+                          className="unit-timeline-block"
+                          key={`${section.SectionID}-${unit.UnitID}`}
+                          style={{ width: `${widthPercent}%` }}
+                          title={`U${unit.UnitNumber}: ${unit.UnitTitle} · ${requiredDays} required days`}
+                        >
+                          <span
+                            className="unit-timeline-block-fill"
+                            style={{ width: `${completedPercent}%` }}
+                            aria-hidden="true"
+                          />
+                          <span>U{unit.UnitNumber}</span>
+                        </div>
+                      );
+                    });
+                  })()}
 
                   {timeline.bufferDays > 0 && (
                     <div

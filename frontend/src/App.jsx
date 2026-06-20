@@ -428,6 +428,7 @@ function getSectionTimeline(forecast, units, lessons) {
     section,
     courseUnits,
     totalRequiredDays,
+    completedRequiredDays,
     bufferDays,
     totalTimelineDays,
     currentPositionPercent,
