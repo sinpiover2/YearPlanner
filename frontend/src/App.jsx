@@ -1,9 +1,24 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Sidebar from "./components/Sidebar";
 import TodayView from "./components/TodayView";
 import UnitsView from "./components/UnitsView";
 import ForecastView from "./components/ForecastView";
+import {
+  isTrue,
+  formatDate,
+  formatVariance,
+  formatVarianceCompact,
+  formatDays,
+  formatDayPhrase,
+  calculateProgressPercent,
+  getOutcomeList,
+  getRequiredDays,
+  getOptionalDays,
+  sortUnits,
+  sortLessons,
+  getCourseLabel,
+} from "./utils/plannerUtils";
 import {
   addLesson,
   deleteLesson,
@@ -12,102 +27,6 @@ import {
   saveDailyProgress,
   updateLesson,
 } from "./api";
-
-function isTrue(value) {
-  return value === true || String(value).toLowerCase() === "true";
-}
-
-function formatDate(value) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "America/Los_Angeles",
-  });
-}
-
-function formatVariance(variance) {
-  if (variance === 0) return "On pace";
-
-  const absoluteValue = Math.abs(variance);
-  const dayLabel = absoluteValue === 1 ? "day" : "days";
-
-  return variance > 0
-    ? `${absoluteValue} ${dayLabel} behind pace`
-    : `${absoluteValue} ${dayLabel} ahead of pace`;
-}
-
-function formatVarianceCompact(variance) {
-  if (variance === 0) return "—";
-
-  const absoluteValue = Math.abs(variance);
-
-  return variance > 0 ? `+${absoluteValue}d` : `-${absoluteValue}d`;
-}
-
-function formatDays(value) {
-  const number = Number(value || 0);
-
-  if (Number.isInteger(number)) return String(number);
-
-  return number.toFixed(1).replace(/\.0$/, "");
-}
-
-function formatDayPhrase(value) {
-  const formattedValue = formatDays(value);
-  const label = Number(value) === 1 ? "day" : "days";
-
-  return `${formattedValue} ${label}`;
-}
-
-function calculateProgressPercent(actual, planned) {
-  return Math.min(100, (actual / Math.max(planned, 1)) * 100);
-}
-
-function getOutcomeList(value) {
-  if (!value) return [];
-
-  return String(value)
-    .split(/\||\n/)
-    .map((outcome) => outcome.trim())
-    .filter(Boolean);
-}
-
-function getRequiredDays(courseUnits) {
-  return courseUnits.reduce(
-    (sum, unit) => sum + Number(unit.RequiredDays || 0),
-    0,
-  );
-}
-
-function getOptionalDays(courseUnits) {
-  return courseUnits.reduce(
-    (sum, unit) => sum + Number(unit.OptionalDays || 0),
-    0,
-  );
-}
-
-function sortUnits(units) {
-  return [...units].sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
-}
-
-function sortLessons(lessons, units) {
-  const unitOrder = new Map(
-    units.map((unit) => [unit.UnitID, Number(unit.SortOrder)]),
-  );
-
-  return [...lessons].sort((a, b) => {
-    const unitCompare =
-      (unitOrder.get(a.UnitID) ?? 999) - (unitOrder.get(b.UnitID) ?? 999);
-
-    if (unitCompare !== 0) return unitCompare;
-
-    return Number(a.SortOrder) - Number(b.SortOrder);
-  });
-}
 
 function getProjectedUnits(courseUnits, schoolCalendar) {
   const schoolDays = schoolCalendar.filter((day) =>
@@ -301,12 +220,6 @@ function getPrepareNext(courseId, units, lessons, dailyProgress, count = 3) {
     upcomingLessons,
     missingResourceCount,
   };
-}
-
-function getCourseLabel(courseId) {
-  if (courseId === "M8") return "Math 8";
-  if (courseId === "IM1") return "Math 1";
-  return courseId;
 }
 
 function getSectionsForCourse(courseId, sections) {
@@ -1244,6 +1157,6 @@ function App() {
   );
 }
 
-export { getSectionTimeline, getCourseLabel, formatDays, formatDayPhrase };
+export { getSectionTimeline };
 
 export default App;

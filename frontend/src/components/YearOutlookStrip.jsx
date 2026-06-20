@@ -1,4 +1,4 @@
-import { getCourseLabel } from "../App";
+import { getCourseLabel } from "../utils/plannerUtils";
 
 function YearOutlookStrip({ forecastedSections }) {
   if (forecastedSections.length === 0) return null;

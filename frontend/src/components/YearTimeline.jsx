@@ -1,5 +1,6 @@
 import { Fragment } from "react";
-import { getSectionTimeline, getCourseLabel, formatDays } from "../App";
+import { getSectionTimeline } from "../App";
+import { getCourseLabel, formatDays } from "../utils/plannerUtils";
 
 function YearTimeline({
   forecastedSections,

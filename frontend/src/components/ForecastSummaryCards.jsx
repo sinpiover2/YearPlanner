@@ -1,4 +1,8 @@
-import { getCourseLabel, formatDayPhrase, formatDays } from "../App";
+import {
+  getCourseLabel,
+  formatDayPhrase,
+  formatDays,
+} from "../utils/plannerUtils";
 
 function ForecastSummaryCards({
   forecastedSections,
