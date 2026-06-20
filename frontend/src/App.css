@@ -1292,6 +1292,7 @@ button {
   grid-template-columns: 112px 1fr;
   align-items: center;
   gap: 0.7rem;
+  padding-bottom: 0.3rem;
 }
 
 .unit-timeline-label strong {
@@ -1325,7 +1326,7 @@ button {
   position: relative;
   display: flex;
   min-height: 26px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   background: #f3f1ea;
@@ -1404,15 +1405,15 @@ button {
 
 .unit-timeline-marker {
   position: absolute;
-  top: 50%;
-  width: 10px;
-  height: 10px;
+  top: calc(100% + 3px);
+  width: 9px;
+  height: 9px;
   border: 2px solid #f8fafc;
   border-radius: 999px;
   background: #111827;
   box-shadow:
     0 0 0 1px rgba(15, 23, 42, 0.28),
-    0 0 0 5px rgba(15, 23, 42, 0.08);
+    0 0 0 4px rgba(15, 23, 42, 0.08);
   transform: translate(-50%, -50%);
   z-index: 4;
 }
