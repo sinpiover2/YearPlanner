@@ -59,6 +59,10 @@ function formatDayPhrase(value) {
   return `${formattedValue} ${label}`;
 }
 
+function calculateProgressPercent(actual, planned) {
+  return Math.min(100, (actual / Math.max(planned, 1)) * 100);
+}
+
 function getOutcomeList(value) {
   if (!value) return [];
 
@@ -1670,12 +1674,7 @@ function App() {
             <div className="mini-bar blue">
               <div
                 style={{
-                  width: `${Math.min(
-                    100,
-                    (math8Navigation.actualDays /
-                      Math.max(math8Navigation.plannedDays, 1)) *
-                      100,
-                  )}%`,
+                  width: `${calculateProgressPercent(math8Navigation.actualDays, math8Navigation.plannedDays)}%`,
                 }}
               />
             </div>
@@ -1712,12 +1711,7 @@ function App() {
             <div className="mini-bar green">
               <div
                 style={{
-                  width: `${Math.min(
-                    100,
-                    (math1Navigation.actualDays /
-                      Math.max(math1Navigation.plannedDays, 1)) *
-                      100,
-                  )}%`,
+                  width: `${calculateProgressPercent(math1Navigation.actualDays, math1Navigation.plannedDays)}%`,
                 }}
               />
             </div>
@@ -1817,12 +1811,7 @@ function App() {
               <div className="unit-progress">
                 <div
                   style={{
-                    width: `${Math.min(
-                      100,
-                      (selectedNavigation.actualDays /
-                        Math.max(selectedNavigation.plannedDays, 1)) *
-                        100,
-                    )}%`,
+                    width: `${calculateProgressPercent(selectedNavigation.actualDays, selectedNavigation.plannedDays)}%`,
                   }}
                 />
               </div>
