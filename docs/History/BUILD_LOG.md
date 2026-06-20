@@ -5,7 +5,15 @@ This document records major milestones and discoveries.
 Its purpose is to preserve how the project evolved.
 
 ---
+# 2026-06-20
 
+## Repository Consolidation
+
+Moved Git repository root from:
+
+```text
+frontend/.git
+--
 # 2026-06-07
 
 ## Project Creation
