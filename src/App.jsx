@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import "./App.css";
 import {
   addLesson,
@@ -514,6 +514,40 @@ function getSectionTimeline(forecast, units, lessons) {
   };
 }
 
+function getTimelineSyncSummary(forecasts) {
+  const byCourse = forecasts.reduce((groups, forecast) => {
+    const courseId = forecast.section?.CourseID || "UNKNOWN";
+    if (!groups[courseId]) groups[courseId] = [];
+    groups[courseId].push(forecast);
+    return groups;
+  }, {});
+
+  return Object.entries(byCourse).map(([courseId, courseForecasts]) => {
+    const sortedForecasts = [...courseForecasts].sort(
+      (a, b) =>
+        Number(a.section?.Period || 999) - Number(b.section?.Period || 999),
+    );
+
+    const variances = sortedForecasts.map((forecast) =>
+      Number(forecast.variance || 0),
+    );
+
+    const spread = Math.max(...variances) - Math.min(...variances);
+
+    const sectionLabels = sortedForecasts
+      .map((forecast) => `P${forecast.section?.Period || "—"}`)
+      .join("/");
+
+    return {
+      courseId,
+      message:
+        spread <= 0.1
+          ? `${sectionLabels} synchronized`
+          : `${sectionLabels} diverging`,
+    };
+  });
+}
+
 function App() {
   const [plannerData, setPlannerData] = useState(null);
   const [status, setStatus] = useState("Loading planner data...");
@@ -735,6 +769,7 @@ function App() {
       );
     });
 
+  const timelineSyncSummaries = getTimelineSyncSummary(forecastedSections);
   const hasForecastProgress = forecastedSections.length > 0;
   const unloggedSectionCount = Math.max(
     sectionForecasts.length - forecastedSections.length,
@@ -1768,7 +1803,7 @@ function App() {
                       className="year-outlook-strip"
                       aria-label="Year outlook by section"
                     >
-                      {forecastedSections.map((forecast) => {
+                      {forecastedSections.map((forecast, index) => {
                         const section = forecast.section ?? {};
                         const stateClass =
                           forecast.visualStateClass || "on-track";
@@ -1827,7 +1862,7 @@ function App() {
                     </div>
 
                     <div className="unit-timeline-list">
-                      {forecastedSections.map((forecast) => {
+                      {forecastedSections.map((forecast, index) => {
                         const timeline = getSectionTimeline(
                           forecast,
                           units,
@@ -1836,92 +1871,109 @@ function App() {
 
                         const section = timeline.section ?? {};
 
+                        const previousForecast = forecastedSections[index - 1];
+                        const isFirstCourseRow =
+                          previousForecast?.section?.CourseID !==
+                          section.CourseID;
+                        const courseSyncSummary = timelineSyncSummaries.find(
+                          (summary) => summary.courseId === section.CourseID,
+                        );
+
                         return (
-                          <div
-                            className="unit-timeline-row"
-                            key={`timeline-${
+                          <Fragment
+                            key={`timeline-group-${
                               section.SectionID ||
                               `${section.CourseID}-${section.Period}`
                             }`}
                           >
-                            <div className="unit-timeline-label">
-                              <strong>
-                                {getCourseLabel(section.CourseID)} P
-                                {section.Period || "—"}
-                              </strong>
-                              <span>{forecast.state}</span>
-                              <em className="unit-timeline-drift">
-                                {forecast.variance === 0
-                                  ? "On pace"
-                                  : `${formatDays(Math.abs(forecast.variance))}d ${
-                                      forecast.variance > 0 ? "behind" : "ahead"
-                                    }`}
-                              </em>
-                            </div>
+                            {isFirstCourseRow && (
+                              <div className="unit-timeline-course-row">
+                                <strong>
+                                  {getCourseLabel(section.CourseID)}
+                                </strong>
+                                <span>{courseSyncSummary?.message}</span>
+                              </div>
+                            )}
 
-                            <div className="unit-timeline-track">
-                              {timeline.courseUnits.map((unit) => {
-                                const requiredDays = Number(
-                                  unit.RequiredDays || 0,
-                                );
-                                const widthPercent =
-                                  timeline.totalTimelineDays > 0
-                                    ? (requiredDays /
-                                        timeline.totalTimelineDays) *
-                                      100
-                                    : 0;
+                            <div className="unit-timeline-row">
+                              <div className="unit-timeline-label">
+                                <strong>P{section.Period || "—"}</strong>
+                                <span>{forecast.state}</span>
+                                <em className="unit-timeline-drift">
+                                  {forecast.variance === 0
+                                    ? "On pace"
+                                    : `${formatDays(Math.abs(forecast.variance))}d ${
+                                        forecast.variance > 0
+                                          ? "behind"
+                                          : "ahead"
+                                      }`}
+                                </em>
+                              </div>
 
-                                return (
+                              <div className="unit-timeline-track">
+                                {timeline.courseUnits.map((unit) => {
+                                  const requiredDays = Number(
+                                    unit.RequiredDays || 0,
+                                  );
+                                  const widthPercent =
+                                    timeline.totalTimelineDays > 0
+                                      ? (requiredDays /
+                                          timeline.totalTimelineDays) *
+                                        100
+                                      : 0;
+
+                                  return (
+                                    <div
+                                      className="unit-timeline-block"
+                                      key={`${section.SectionID}-${unit.UnitID}`}
+                                      style={{ width: `${widthPercent}%` }}
+                                      title={`U${unit.UnitNumber}: ${
+                                        unit.UnitTitle
+                                      } · ${requiredDays} required days`}
+                                    >
+                                      <span>U{unit.UnitNumber}</span>
+                                    </div>
+                                  );
+                                })}
+
+                                {timeline.bufferDays > 0 && (
                                   <div
-                                    className="unit-timeline-block"
-                                    key={`${section.SectionID}-${unit.UnitID}`}
-                                    style={{ width: `${widthPercent}%` }}
-                                    title={`U${unit.UnitNumber}: ${
-                                      unit.UnitTitle
-                                    } · ${requiredDays} required days`}
+                                    className="unit-timeline-buffer"
+                                    style={{
+                                      width: `${
+                                        timeline.totalTimelineDays > 0
+                                          ? (timeline.bufferDays /
+                                              timeline.totalTimelineDays) *
+                                            100
+                                          : 0
+                                      }%`,
+                                    }}
+                                    title={`${timeline.bufferDays} buffer days`}
                                   >
-                                    <span>U{unit.UnitNumber}</span>
+                                    <span>buf</span>
                                   </div>
-                                );
-                              })}
+                                )}
 
-                              {timeline.bufferDays > 0 && (
                                 <div
-                                  className="unit-timeline-buffer"
+                                  className="unit-timeline-planned-marker"
                                   style={{
-                                    width: `${
-                                      timeline.totalTimelineDays > 0
-                                        ? (timeline.bufferDays /
-                                            timeline.totalTimelineDays) *
-                                          100
-                                        : 0
-                                    }%`,
+                                    left: `${timeline.expectedPositionPercent}%`,
                                   }}
-                                  title={`${timeline.bufferDays} buffer days`}
-                                >
-                                  <span>buf</span>
-                                </div>
-                              )}
+                                  title="Expected pace line"
+                                  aria-label="Expected pace"
+                                />
 
-                              <div
-                                className="unit-timeline-planned-marker"
-                                style={{
-                                  left: `${timeline.expectedPositionPercent}%`,
-                                }}
-                                title="Expected pace line"
-                                aria-label="Expected pace"
-                              />
-
-                              <div
-                                className="unit-timeline-marker"
-                                style={{
-                                  left: `${timeline.currentPositionPercent}%`,
-                                }}
-                                title="You are here"
-                                aria-label="You are here"
-                              />
+                                <div
+                                  className="unit-timeline-marker"
+                                  style={{
+                                    left: `${timeline.currentPositionPercent}%`,
+                                  }}
+                                  title="You are here"
+                                  aria-label="You are here"
+                                />
+                              </div>
                             </div>
-                          </div>
+                          </Fragment>
                         );
                       })}
                     </div>
