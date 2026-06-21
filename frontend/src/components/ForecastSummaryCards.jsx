@@ -21,6 +21,55 @@ function sortForecastsBySeverity(forecastedSections) {
     .map(({ forecast }) => forecast);
 }
 
+function ForecastSummaryCard({ summary }) {
+  return (
+    <article
+      className={`forecast-summary-card ${summary.stateClass}`}
+      key={summary.key}
+    >
+      <div className="forecast-card-header">
+        <span>{summary.heading}</span>
+
+        <strong>{summary.state}</strong>
+      </div>
+
+      <div className="forecast-card-current">
+        <p>Current lesson: {summary.currentLessonText}</p>
+      </div>
+
+      <div className="forecast-card-projection">
+        <span className="forecast-card-section-label">Projection</span>
+        <p>{summary.projectedText}</p>
+      </div>
+
+      <div className="forecast-card-action">
+        <span className="forecast-card-section-label">Recommendation</span>
+        <em className="forecast-recommendation">{summary.recommendation}</em>
+      </div>
+
+      <div className="forecast-card-supporting-info">
+        <span className="forecast-card-section-label">Details</span>
+        <p>{summary.paceText}</p>
+
+        <p>
+          Buffer remaining: {summary.bufferRemainingText} days
+          <br />
+          <small>{summary.bufferUsedText} used</small>
+        </p>
+
+        <div className="buffer-meter" aria-label={summary.bufferAriaLabel}>
+          <div
+            className={`buffer-meter-fill ${summary.stateClass}`}
+            style={{
+              width: `${summary.meterWidth}%`,
+            }}
+          />
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function ForecastSummaryCards({
   forecastedSections,
   sectionForecasts,
@@ -28,65 +77,15 @@ function ForecastSummaryCards({
 }) {
   if (!(sectionForecasts.length > 0 && hasForecastProgress)) return null;
 
+  const summaries = sortForecastsBySeverity(forecastedSections).map(
+    (forecast) => getForecastCardSummary(forecast),
+  );
+
   return (
     <div className="forecast-summary-grid">
-      {sortForecastsBySeverity(forecastedSections).map((forecast) => {
-        const summary = getForecastCardSummary(forecast);
-
-        return (
-          <article
-            className={`forecast-summary-card ${summary.stateClass}`}
-            key={summary.key}
-          >
-            <div className="forecast-card-header">
-              <span>{summary.heading}</span>
-
-              <strong>{summary.state}</strong>
-            </div>
-
-            <div className="forecast-card-current">
-              <p>Current lesson: {summary.currentLessonText}</p>
-            </div>
-
-            <div className="forecast-card-projection">
-              <span className="forecast-card-section-label">Projection</span>
-              <p>{summary.projectedText}</p>
-            </div>
-
-            <div className="forecast-card-action">
-              <span className="forecast-card-section-label">
-                Recommendation
-              </span>
-              <em className="forecast-recommendation">
-                {summary.recommendation}
-              </em>
-            </div>
-
-            <div className="forecast-card-supporting-info">
-              <span className="forecast-card-section-label">Details</span>
-              <p>{summary.paceText}</p>
-
-              <p>
-                Buffer remaining: {summary.bufferRemainingText} days
-                <br />
-                <small>{summary.bufferUsedText} used</small>
-              </p>
-
-              <div
-                className="buffer-meter"
-                aria-label={summary.bufferAriaLabel}
-              >
-                <div
-                  className={`buffer-meter-fill ${summary.stateClass}`}
-                  style={{
-                    width: `${summary.meterWidth}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </article>
-        );
-      })}
+      {summaries.map((summary) => (
+        <ForecastSummaryCard summary={summary} key={summary.key} />
+      ))}
     </div>
   );
 }
