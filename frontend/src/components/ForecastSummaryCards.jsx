@@ -21,12 +21,15 @@ function sortForecastsBySeverity(forecastedSections) {
     .map(({ forecast }) => forecast);
 }
 
+function getForecastCardSummaries(forecastedSections) {
+  return sortForecastsBySeverity(forecastedSections).map((forecast) =>
+    getForecastCardSummary(forecast),
+  );
+}
+
 function ForecastSummaryCard({ summary }) {
   return (
-    <article
-      className={`forecast-summary-card ${summary.stateClass}`}
-      key={summary.key}
-    >
+    <article className={`forecast-summary-card ${summary.stateClass}`}>
       <div className="forecast-card-header">
         <span>{summary.heading}</span>
 
@@ -77,9 +80,7 @@ function ForecastSummaryCards({
 }) {
   if (!(sectionForecasts.length > 0 && hasForecastProgress)) return null;
 
-  const summaries = sortForecastsBySeverity(forecastedSections).map(
-    (forecast) => getForecastCardSummary(forecast),
-  );
+  const summaries = getForecastCardSummaries(forecastedSections);
 
   return (
     <div className="forecast-summary-grid">
