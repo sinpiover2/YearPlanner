@@ -1,8 +1,4 @@
-import {
-  getCourseLabel,
-  formatDayPhrase,
-  formatDays,
-} from "../utils/plannerUtils";
+import { getForecastCardSummary } from "../utils/forecastCardUtils";
 
 function ForecastSummaryCards({
   forecastedSections,
@@ -14,70 +10,54 @@ function ForecastSummaryCards({
   return (
     <div className="forecast-summary-grid">
       {forecastedSections.map((forecast) => {
-        const section = forecast.section ?? {};
-        const state = forecast.state || "On Track";
-        const stateClass = forecast.visualStateClass || "on-track";
-        const variance = Number(forecast.variance || 0);
-        const forecastShift = Number(forecast.forecastShift || 0);
+        const summary = getForecastCardSummary(forecast);
 
         return (
           <article
-            className={`forecast-summary-card ${stateClass}`}
-            key={section.SectionID || `${section.CourseID}-${section.Period}`}
+            className={`forecast-summary-card ${summary.stateClass}`}
+            key={summary.key}
           >
-            <span>
-              {getCourseLabel(section.CourseID)} · Period{" "}
-              {section.Period || "—"}
-            </span>
+            <div>
+              <span>{summary.heading}</span>
 
-            <strong>{state}</strong>
-
-            <p>
-              Now: {forecast.currentLesson?.LessonTitle ?? "Course complete"}
-            </p>
-
-            <p>
-              {variance === 0
-                ? "Current pace matches plan."
-                : `${formatDayPhrase(Math.abs(variance))} ${
-                    variance > 0 ? "behind plan" : "ahead of plan"
-                  }.`}
-            </p>
-
-            <p>
-              {forecastShift === 0
-                ? "Projected: On schedule."
-                : `Projected: ${formatDayPhrase(Math.abs(forecastShift))} ${
-                    forecastShift > 0 ? "behind" : "ahead"
-                  }.`}
-            </p>
-
-            <p>
-              Buffer remaining: {formatDays(forecast.bufferRemaining)} days
-              <br />
-              <small>{formatDays(forecast.bufferUsed)} used</small>
-            </p>
-
-            <div
-              className="buffer-meter"
-              aria-label={`${formatDays(
-                forecast.bufferRemaining,
-              )} buffer days remaining`}
-            >
-              <div
-                className={`buffer-meter-fill ${stateClass}`}
-                style={{
-                  width: `${Math.min(
-                    100,
-                    Math.max(0, Number(forecast.bufferRemainingPercent || 0)),
-                  )}%`,
-                }}
-              />
+              <strong>{summary.state}</strong>
             </div>
 
-            <em className="forecast-recommendation">
-              {forecast.recoverabilityMessage || "No action needed."}
-            </em>
+            <div>
+              <p>Current lesson: {summary.currentLessonText}</p>
+            </div>
+
+            <div>
+              <p>{summary.projectedText}</p>
+            </div>
+
+            <div>
+              <em className="forecast-recommendation">
+                {summary.recommendation}
+              </em>
+            </div>
+
+            <div>
+              <p>{summary.paceText}</p>
+
+              <p>
+                Buffer remaining: {summary.bufferRemainingText} days
+                <br />
+                <small>{summary.bufferUsedText} used</small>
+              </p>
+
+              <div
+                className="buffer-meter"
+                aria-label={summary.bufferAriaLabel}
+              >
+                <div
+                  className={`buffer-meter-fill ${summary.stateClass}`}
+                  style={{
+                    width: `${summary.meterWidth}%`,
+                  }}
+                />
+              </div>
+            </div>
           </article>
         );
       })}
