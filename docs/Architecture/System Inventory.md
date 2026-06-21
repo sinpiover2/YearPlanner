@@ -12,6 +12,8 @@ Core question:
 
 > Am I OK?
 
+The system is designed to provide calm, actionable information rather than act as a reporting dashboard.
+
 ---
 
 ## Ownership
@@ -35,7 +37,8 @@ Primary branch:
 Current development stage:
 
 - Phase 2 Ð Forecast Visualizations
-- Sprint 2.2c Ð Timeline Integration
+- Sprint 2.2c complete
+- Sprint 2.3 Ð Forecast Interpretation (next)
 
 ---
 
@@ -52,11 +55,16 @@ Main folder:
 
 - `frontend`
 
-Main files:
+Primary files:
 
 - `src/App.jsx`
 - `src/App.css`
 - `src/api.js`
+
+Utility files:
+
+- `src/utils/plannerUtils.js`
+- `src/utils/forecastUtils.js`
 
 Local development:
 
@@ -110,11 +118,12 @@ Primary styling.
 
 Responsibilities:
 
-- Layout
+- Overall layout
 - Typography
-- Timeline appearance
-- Forecast cards
 - Sidebar
+- Forecast page
+- Timeline appearance
+- Card styling
 
 ---
 
@@ -131,23 +140,38 @@ Responsibilities:
 
 ---
 
+## plannerUtils.js
+
+Responsibilities:
+
+- Shared calculations
+- Timeline positioning
+- Progress percentages
+- Forecast helper functions
+
+Purpose:
+
+Reduce duplication and isolate calculation logic from UI.
+
+---
+
 # Data Model
 
 The model is hierarchical.
 
 ```text
 Course
- ?
+?
 Section
- ?
+?
 Unit
- ?
+?
 Lesson
- ?
+?
 DailyProgress
 ```
 
-Forecasting occurs at the section level.
+Forecasting occurs primarily at the section level.
 
 ---
 
@@ -208,7 +232,7 @@ Unit definitions.
 
 Contains:
 
-- Unit names
+- Unit titles
 - Required days
 - Optional days
 - Course associations
@@ -291,25 +315,17 @@ Returns:
 
 Logs instructional progress.
 
----
-
 ### addLesson
 
 Creates a lesson.
-
----
 
 ### updateLesson
 
 Updates a lesson.
 
----
-
 ### deleteLesson
 
 Deletes a lesson.
-
----
 
 ### moveLesson
 
@@ -323,7 +339,11 @@ Moves lessons up or down.
 
 Purpose:
 
-Provide context.
+Provide overall context.
+
+Answers:
+
+> Is anything demanding attention?
 
 ---
 
@@ -331,7 +351,7 @@ Provide context.
 
 Purpose:
 
-Provide summary.
+Provide quick section-level summary.
 
 ---
 
@@ -343,12 +363,20 @@ Provide orientation.
 
 Shows:
 
-- Unit lengths
 - Month positions
+- Unit lengths
 - Current position
 - Expected position
-- Optional buffers
-- Synchronization summaries
+- Buffer days
+- Winter break
+- Spring break
+- Section synchronization summaries
+
+### Design Principle
+
+Timeline supplies context.
+
+It is **not** the decision layer.
 
 ---
 
@@ -363,6 +391,8 @@ Cards answer:
 - Should I care?
 - What happens if nothing changes?
 - Can I fix this?
+
+The cards are the primary decision layer.
 
 ---
 
@@ -389,6 +419,8 @@ Question:
 - Needs Attention
 - Buffer Exhausted
 
+These represent increasing urgency.
+
 ---
 
 # Current Architecture
@@ -397,44 +429,42 @@ Forecast page structure:
 
 ```text
 Banner
-
 ?
-
 Year Outlook
-
 ?
-
 Year Timeline
-
 ?
-
 Forecast Cards
 ```
+
+### Philosophy
 
 Timeline = orientation.
 
 Cards = interpretation.
 
+Most teachers should be reassured that things are fine.
+
 ---
 
 # Development Routine
 
-Terminal 1
+### Terminal 1
 
 ```bash
 npm run dev
 ```
 
-Terminal 2
+### Terminal 2
 
 ```bash
 git status
-git add ...
+git add .
 git commit -m "..."
 git push
 ```
 
-Terminal 3
+### Terminal 3
 
 ```bash
 npm run build
@@ -444,17 +474,22 @@ npm run build
 
 # Current Status
 
-Forecast logic is considered trustworthy.
+Forecast calculations are considered trustworthy.
 
-Visual design is converging.
+Timeline architecture is considered largely complete.
 
-The project is transitioning from experimentation toward the timeline's final form.
+The interface has shifted from experimentation toward refinement and interpretation.
 
-Current focus:
+---
 
-- Remove separate break row.
-- Integrate breaks directly into tracks.
-- Tighten vertical spacing.
-- Add dark progress fill inside units.
-- Move toward squared track geometry.
-- Preserve stable period rows.
+# Current Focus
+
+## Sprint 2.3 Ñ Forecast Interpretation
+
+Improve the cards so they clearly answer:
+
+- Should I care?
+- What happens if nothing changes?
+- What should I do?
+
+The project is beginning the transition from visualization toward true decision support.

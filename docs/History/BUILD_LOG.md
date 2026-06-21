@@ -330,3 +330,26 @@ Breaks are terrain, not decorations.
 The most important improvements have come from removing things rather than adding them.
 
 Invisible design is successful design.
+
+## Sprint 2.2c — Timeline Refinement and Refactoring
+
+Completed:
+
+- Refactored planner calculations into utility functions.
+- Eliminated duplicated inline calculations.
+- Built and verified with Vite.
+- Added section divergence summaries.
+- Added year axis (Aug–May).
+- Added winter and spring break overlays.
+- Added expected pace marker.
+- Added current position marker.
+- Added buffer segment styling.
+- Improved visual contrast of completed portions of units.
+- Reduced visual clutter and simplified spacing.
+- Moved current-position marker below the bars for readability.
+- Verified production builds after each change.
+- Adopted GitHub Copilot workflow.
+
+Result:
+
+Timeline now provides context rather than serving as the primary decision layer. Cards below the timeline remain the place where teachers make decisions.
