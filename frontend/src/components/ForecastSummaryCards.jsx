@@ -1,20 +1,14 @@
 import { getForecastCardSummary } from "../utils/forecastCardUtils";
 
-function ForecastSummaryCards({
-  forecastedSections,
-  sectionForecasts,
-  hasForecastProgress,
-}) {
-  if (!(sectionForecasts.length > 0 && hasForecastProgress)) return null;
+const severityOrder = {
+  "Buffer Exhausted": 0,
+  "Needs Attention": 1,
+  Monitoring: 2,
+  "On Track": 3,
+};
 
-  const severityOrder = {
-    "Buffer Exhausted": 0,
-    "Needs Attention": 1,
-    Monitoring: 2,
-    "On Track": 3,
-  };
-
-  const sortedForecasts = forecastedSections
+function sortForecastsBySeverity(forecastedSections) {
+  return forecastedSections
     .map((forecast, index) => ({ forecast, index }))
     .sort((a, b) => {
       const aSeverity = severityOrder[a.forecast.state || "On Track"] ?? 3;
@@ -25,10 +19,18 @@ function ForecastSummaryCards({
       return a.index - b.index;
     })
     .map(({ forecast }) => forecast);
+}
+
+function ForecastSummaryCards({
+  forecastedSections,
+  sectionForecasts,
+  hasForecastProgress,
+}) {
+  if (!(sectionForecasts.length > 0 && hasForecastProgress)) return null;
 
   return (
     <div className="forecast-summary-grid">
-      {sortedForecasts.map((forecast) => {
+      {sortForecastsBySeverity(forecastedSections).map((forecast) => {
         const summary = getForecastCardSummary(forecast);
 
         return (
@@ -47,16 +49,21 @@ function ForecastSummaryCards({
             </div>
 
             <div className="forecast-card-projection">
+              <span className="forecast-card-section-label">Projection</span>
               <p>{summary.projectedText}</p>
             </div>
 
             <div className="forecast-card-action">
+              <span className="forecast-card-section-label">
+                Recommendation
+              </span>
               <em className="forecast-recommendation">
                 {summary.recommendation}
               </em>
             </div>
 
             <div className="forecast-card-supporting-info">
+              <span className="forecast-card-section-label">Details</span>
               <p>{summary.paceText}</p>
 
               <p>
