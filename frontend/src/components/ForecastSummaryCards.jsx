@@ -7,6 +7,10 @@ const severityOrder = {
   "On Track": 3,
 };
 
+function isOnTrackForecast(forecast) {
+  return (forecast.state || "On Track") === "On Track";
+}
+
 function sortForecastsBySeverity(forecastedSections) {
   return forecastedSections
     .map((forecast, index) => ({ forecast, index }))
@@ -21,10 +25,17 @@ function sortForecastsBySeverity(forecastedSections) {
     .map(({ forecast }) => forecast);
 }
 
-function getForecastCardSummaries(forecastedSections) {
-  return sortForecastsBySeverity(forecastedSections).map((forecast) =>
-    getForecastCardSummary(forecast),
-  );
+function getAttentionGroups(forecastedSections) {
+  const sortedForecasts = sortForecastsBySeverity(forecastedSections);
+
+  return {
+    attentionSummaries: sortedForecasts
+      .filter((forecast) => !isOnTrackForecast(forecast))
+      .map((forecast) => getForecastCardSummary(forecast)),
+    onTrackSummaries: sortedForecasts
+      .filter(isOnTrackForecast)
+      .map((forecast) => getForecastCardSummary(forecast)),
+  };
 }
 
 function ForecastSummaryCard({ summary }) {
@@ -41,34 +52,40 @@ function ForecastSummaryCard({ summary }) {
       </div>
 
       <div className="forecast-card-projection">
-        <span className="forecast-card-section-label">Projection</span>
         <p>{summary.projectedText}</p>
       </div>
 
       <div className="forecast-card-action">
-        <span className="forecast-card-section-label">Recommendation</span>
         <em className="forecast-recommendation">{summary.recommendation}</em>
       </div>
 
       <div className="forecast-card-supporting-info">
-        <span className="forecast-card-section-label">Details</span>
-        <p>{summary.paceText}</p>
-
         <p>
-          Buffer remaining: {summary.bufferRemainingText} days
-          <br />
-          <small>{summary.bufferUsedText} used</small>
+          {summary.paceText} {summary.bufferRemainingText} days of buffer
+          remain; {summary.bufferUsedText} used.
         </p>
-
-        <div className="buffer-meter" aria-label={summary.bufferAriaLabel}>
-          <div
-            className={`buffer-meter-fill ${summary.stateClass}`}
-            style={{
-              width: `${summary.meterWidth}%`,
-            }}
-          />
-        </div>
       </div>
+    </article>
+  );
+}
+
+function OnTrackSummaryCard({ summaries }) {
+  if (summaries.length === 0) return null;
+
+  const sectionList = summaries.map((summary) => summary.heading).join(" and ");
+  const sectionLabel = summaries.length === 1 ? "section is" : "sections are";
+
+  return (
+    <article className="forecast-summary-card on-track forecast-summary-card-calm">
+      <div className="forecast-card-header">
+        <span>Everything else</span>
+
+        <strong>Comfortably on pace.</strong>
+      </div>
+
+      <p>
+        {sectionList} {sectionLabel} on track. No action needed.
+      </p>
     </article>
   );
 }
@@ -80,13 +97,16 @@ function ForecastSummaryCards({
 }) {
   if (!(sectionForecasts.length > 0 && hasForecastProgress)) return null;
 
-  const summaries = getForecastCardSummaries(forecastedSections);
+  const { attentionSummaries, onTrackSummaries } =
+    getAttentionGroups(forecastedSections);
 
   return (
     <div className="forecast-summary-grid">
-      {summaries.map((summary) => (
+      {attentionSummaries.map((summary) => (
         <ForecastSummaryCard summary={summary} key={summary.key} />
       ))}
+
+      <OnTrackSummaryCard summaries={onTrackSummaries} />
     </div>
   );
 }
