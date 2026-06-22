@@ -1287,7 +1287,7 @@ button {
   );
   opacity: 0.78;
   pointer-events: none;
-  z-index: 3;
+  z-index: 2;
 }
 
 .winter-break {
@@ -1399,7 +1399,7 @@ button {
 
 .unit-timeline-block {
   position: relative;
-  z-index: 2;
+  z-index: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1413,7 +1413,7 @@ button {
 
 .unit-timeline-block > span {
   position: relative;
-  z-index: 1;
+  z-index: 4;
 }
 
 .unit-timeline-block-fill {
@@ -1436,7 +1436,7 @@ button {
 
 .unit-timeline-buffer {
   position: relative;
-  z-index: 2;
+  z-index: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1449,6 +1449,8 @@ button {
 }
 
 .unit-timeline-buffer span {
+  position: relative;
+  z-index: 4;
   opacity: 0.85;
 }
 
