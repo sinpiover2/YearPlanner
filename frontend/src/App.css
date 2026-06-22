@@ -1202,9 +1202,8 @@ button {
 
 .unit-timeline-heading {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.55rem;
+  justify-content: center;
+  margin-bottom: 0.65rem;
 }
 
 .timeline-sync-summary {
@@ -1225,12 +1224,7 @@ button {
 
 .unit-timeline-heading h3 {
   margin: 0;
-}
-
-.unit-timeline-heading p {
-  margin: 0.25rem 0 0;
-  color: #64748b;
-  font-weight: 700;
+  text-align: center;
 }
 
 .timeline-axis {
@@ -1239,7 +1233,7 @@ button {
   grid-template-columns: repeat(10, 1fr);
   gap: 0;
   margin: 0.75rem 0 0.3rem 112px;
-  padding: 0 0.35rem 0.7rem;
+  padding: 0 0 0.7rem;
   border-bottom: 1px solid #cbd5e1;
   color: #64748b;
   font-size: 0.72rem;
@@ -1250,14 +1244,28 @@ button {
 .timeline-axis span {
   position: relative;
   min-width: 0;
-  text-align: center;
+  text-align: left;
   white-space: nowrap;
+}
+
+.timeline-axis span:last-child {
+  text-align: right;
 }
 
 .timeline-axis span::after {
   content: "";
   position: absolute;
-  right: 50%;
+  left: 0;
+  bottom: -0.7rem;
+  width: 1px;
+  height: 0.42rem;
+  background: #cbd5e1;
+}
+
+.timeline-axis::after {
+  content: "";
+  position: absolute;
+  right: 0;
   bottom: -0.7rem;
   width: 1px;
   height: 0.42rem;

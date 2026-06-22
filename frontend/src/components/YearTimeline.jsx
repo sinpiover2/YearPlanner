@@ -13,10 +13,7 @@ function YearTimeline({
   return (
     <section className="unit-timeline-section">
       <div className="unit-timeline-heading">
-        <div>
-          <h3>Year Timeline</h3>
-          <p>Unit pacing by section. Cards below remain the decision layer.</p>
-        </div>
+        <h3>Year Timeline</h3>
       </div>
 
       <div className="timeline-axis" aria-hidden="true">
@@ -39,9 +36,6 @@ function YearTimeline({
           const previousForecast = forecastedSections[index - 1];
           const isFirstCourseRow =
             previousForecast?.section?.CourseID !== section.CourseID;
-          const courseSyncSummary = timelineSyncSummaries.find(
-            (summary) => summary.courseId === section.CourseID,
-          );
 
           return (
             <Fragment
@@ -52,7 +46,7 @@ function YearTimeline({
               {isFirstCourseRow && (
                 <div className="unit-timeline-course-row">
                   <strong>{getCourseLabel(section.CourseID)}</strong>
-                  <span>{courseSyncSummary?.message}</span>
+                  <span aria-hidden="true" />
                 </div>
               )}
 
