@@ -203,6 +203,24 @@ Before adding any feature, label, badge, alert, chart, or color to Year Planner,
 
 If the answer to any of these is no, the feature probably belongs somewhere else Ñ or does not belong at all.
 
+## Timeline vs. Cards
+
+The timeline answers:
+
+Where am I?
+
+The cards answer:
+
+Should I care?
+What happens if nothing changes?
+What should I do?
+
+The timeline is context.
+
+The cards are interpretation.
+
+The timeline should not become the decision layer.
+
 ---
 
 *This document is not documentation. It is the constitution of the project. Every feature, color, chart, and interaction should pass through it before being added.*

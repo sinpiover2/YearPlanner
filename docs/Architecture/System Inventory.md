@@ -493,3 +493,58 @@ Improve the cards so they clearly answer:
 - What should I do?
 
 The project is beginning the transition from visualization toward true decision support.
+
+## Forecast Architecture
+
+Forecast page is organized into:
+
+Banner
+
+?
+
+Year Outlook Strip
+
+?
+
+Year Timeline
+
+?
+
+Forecast Summary Cards
+
+The timeline provides orientation.
+
+The cards provide interpretation.
+
+---
+
+### Forecast Card Pipeline
+
+Raw forecast data
+
+?
+
+forecastCardUtils.js
+
+?
+
+Forecast summaries
+
+?
+
+ForecastSummaryCard component
+
+?
+
+Rendered cards
+
+Cards are ordered by severity:
+
+1. Buffer Exhausted
+2. Needs Attention
+3. Monitoring
+4. On Track
+
+Goal:
+
+Translate technical forecast information into teacher language.
