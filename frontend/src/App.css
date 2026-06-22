@@ -1477,6 +1477,18 @@ button {
   background: #e0f2fe;
 }
 
+.unit-timeline-track.course-IM1 .unit-timeline-block:nth-child(odd) {
+  background: #d1fae5;
+}
+
+.unit-timeline-track.course-IM1 .unit-timeline-block:nth-child(even) {
+  background: #a7f3d0;
+}
+
+.unit-timeline-track.course-IM1 .unit-timeline-block-fill {
+  background: rgba(4, 120, 87, 0.38);
+}
+
 .unit-timeline-buffer {
   position: relative;
   z-index: auto;
