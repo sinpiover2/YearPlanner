@@ -47,23 +47,12 @@ function ForecastSummaryCard({ summary }) {
         <strong>{summary.state}</strong>
       </div>
 
-      <div className="forecast-card-current">
+      <div className="forecast-card-body">
         <p>Current lesson: {summary.currentLessonText}</p>
-      </div>
-
-      <div className="forecast-card-projection">
         <p>{summary.projectedText}</p>
-      </div>
+        <p>{summary.bufferRemainingText} buffer days remain.</p>
 
-      <div className="forecast-card-action">
         <em className="forecast-recommendation">{summary.recommendation}</em>
-      </div>
-
-      <div className="forecast-card-supporting-info">
-        <p>
-          {summary.paceText} {summary.bufferRemainingText} days of buffer
-          remain; {summary.bufferUsedText} used.
-        </p>
       </div>
     </article>
   );

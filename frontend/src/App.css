@@ -1041,8 +1041,8 @@ button {
   margin: 6px 0 0;
   color: #475569;
   font-size: 0.8rem;
-  font-weight: 650;
-  line-height: 1.34;
+  font-weight: 620;
+  line-height: 1.42;
   overflow-wrap: anywhere;
 }
 .forecast-summary-card p small {
@@ -1064,30 +1064,36 @@ button {
 
 .forecast-recommendation {
   display: block;
-  margin-top: 0.45rem;
+  margin-top: 0.25rem;
   opacity: 0.86;
 }
 
-.forecast-card-current p {
+.forecast-card-body {
+  display: grid;
+  gap: 0.22rem;
+  margin-top: 0.35rem;
+}
+
+.forecast-card-body p {
+  margin-top: 0;
+}
+
+.forecast-card-body p:first-child {
+  color: #64748b;
+  font-size: 0.77rem;
+  font-weight: 600;
+}
+
+.forecast-card-body p:nth-child(3) {
   color: #64748b;
   font-size: 0.76rem;
-  font-weight: 650;
+  font-weight: 600;
 }
 
-.forecast-card-projection p {
+.forecast-card-body .forecast-recommendation {
   color: #334155;
-  font-weight: 760;
-}
-
-.forecast-card-supporting-info p {
-  color: #64748b;
-  font-size: 0.76rem;
-  font-weight: 650;
-}
-
-.forecast-card-action em {
-  color: #334155;
-  font-weight: 880;
+  font-size: 0.79rem;
+  font-weight: 780;
 }
 
 .forecast-summary-card-calm p {
