@@ -1,3 +1,20 @@
+function getVarianceLabel(variance) {
+  const numericVariance = Number(variance || 0);
+  const absoluteVariance = Math.abs(numericVariance);
+
+  if (numericVariance === 0) return "On pace";
+
+  return `${absoluteVariance}d ${numericVariance > 0 ? "behind" : "ahead"}`;
+}
+
+function getVarianceClassName(variance) {
+  const numericVariance = Number(variance || 0);
+
+  if (numericVariance === 0) return "on-pace";
+  if (numericVariance > 0) return "behind";
+  return "ahead";
+}
+
 function Sidebar({
   status,
   timeLens,
@@ -13,7 +30,6 @@ function Sidebar({
   math8OptionalDays,
   math1OptionalDays,
   calculateProgressPercent,
-  formatVarianceCompact,
   selectedSection,
   selectedCourseSections,
   setSelectedSectionId,
@@ -78,7 +94,9 @@ function Sidebar({
       >
         <div>
           <strong>Math 8</strong>
-          <em>{formatVarianceCompact(math8Status.variance)}</em>
+          <em className={getVarianceClassName(math8Status.variance)}>
+            {getVarianceLabel(math8Status.variance)}
+          </em>
         </div>
         <p>
           {math8Navigation.currentUnit
@@ -116,8 +134,8 @@ function Sidebar({
       >
         <div>
           <strong>Math 1</strong>
-          <em className="good">
-            {formatVarianceCompact(math1Status.variance)}
+          <em className={getVarianceClassName(math1Status.variance)}>
+            {getVarianceLabel(math1Status.variance)}
           </em>
         </div>
         <p>

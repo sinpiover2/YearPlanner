@@ -200,13 +200,21 @@ button {
 .course-sidebar-card em {
   padding: 2px 6px;
   border-radius: 6px;
-  background: #fdecc8;
-  color: #9a5b00;
   font-style: normal;
   font-weight: 900;
 }
 
-.course-sidebar-card em.good {
+.course-sidebar-card em.on-pace {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.course-sidebar-card em.behind {
+  background: #faf7e8;
+  color: #b45309;
+}
+
+.course-sidebar-card em.ahead {
   background: #d1fae5;
   color: #047857;
 }
@@ -959,7 +967,7 @@ button {
 }
 
 .forecast-status-banner.needs-attention {
-  border-left: 6px solid #f59e0b;
+  border-left: 6px solid #d97706;
 }
 
 .forecast-status-banner.buffer-exhausted {
@@ -997,7 +1005,7 @@ button {
 }
 
 .forecast-summary-card.needs-attention {
-  border-left: 6px solid #f59e0b;
+  border-left: 6px solid #d97706;
 }
 
 .forecast-summary-card.buffer-exhausted {
@@ -1013,7 +1021,7 @@ button {
 }
 
 .forecast-summary-card.needs-attention strong {
-  color: #b45309;
+  color: #92400e;
 }
 
 .forecast-summary-card.buffer-exhausted strong {
@@ -1123,7 +1131,7 @@ button {
 }
 
 .buffer-meter-fill.needs-attention {
-  background: #f59e0b;
+  background: #d97706;
 }
 
 .buffer-meter-fill.buffer-exhausted {
@@ -1142,6 +1150,7 @@ button {
 .year-outlook-segment {
   flex: 1;
   min-height: 46px;
+  border-left: 4px solid transparent;
   border-radius: 10px;
   padding: 8px 10px;
   text-align: center;
@@ -1161,19 +1170,47 @@ button {
 }
 
 .year-outlook-segment.on-track {
-  background: #d1fae5;
+  background: #eef8f2;
+}
+.year-outlook-segment.on-track {
+  border-left-color: #10b981;
+}
+
+.year-outlook-segment.on-track strong {
+  color: #047857;
 }
 
 .year-outlook-segment.monitoring {
-  background: #fef3c7;
+  background: #faf7e8;
+}
+.year-outlook-segment.monitoring {
+  border-left-color: #f59e0b;
+}
+
+.year-outlook-segment.monitoring strong {
+  color: #b45309;
 }
 
 .year-outlook-segment.needs-attention {
-  background: #fde68a;
+  background: #fdf1df;
+}
+.year-outlook-segment.needs-attention {
+  border-left-color: #d97706;
+}
+
+.year-outlook-segment.needs-attention strong {
+  color: #92400e;
 }
 
 .year-outlook-segment.buffer-exhausted {
-  background: #fecaca;
+  background: #fdeaea;
+}
+.year-outlook-segment.buffer-exhausted {
+  border-left-color: #dc2626;
+}
+
+.year-outlook-segment.buffer-exhausted strong {
+  color: #b91c1c;
 }
 
 .year-outlook-block {
