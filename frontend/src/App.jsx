@@ -344,11 +344,24 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
   const variance = actualDays - plannedDaysCompleted;
   const forecastShift = variance;
   const projectedFinishVariance = variance;
+
   const bufferUsed = Math.max(0, variance);
   const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
   const consumedFraction = bufferDays > 0 ? bufferUsed / bufferDays : 0;
   const bufferRemainingPercent =
     bufferDays > 0 ? (bufferRemaining / bufferDays) * 100 : 0;
+
+  let projectionState = "Fits";
+
+  if (variance > 0) {
+    if (optionalDaysRemaining <= 0) {
+      projectionState = "Unlikely To Fit";
+    } else if (variance > optionalDaysRemaining) {
+      projectionState = "At Risk";
+    } else {
+      projectionState = "Recoverable";
+    }
+  }
 
   let state = "On Track";
   let recoverabilityMessage = "No action needed.";
@@ -382,6 +395,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     variance,
     forecastShift,
     projectedFinishVariance,
+    projectionState,
     bufferDays,
     bufferUsed,
     bufferRemaining,
