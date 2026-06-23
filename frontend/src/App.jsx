@@ -401,6 +401,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     variance,
     forecastShift,
     projectedFinishVariance,
+    projectedFinishDaysLate: Math.max(0, Math.round(projectedFinishVariance)),
     projectionState,
     bufferDays,
     bufferUsed,
