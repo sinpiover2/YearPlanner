@@ -307,3 +307,28 @@ Low-severity information is folded, not removed.
 - Stability is kindness.
 - Severity governs visibility.
 - The best designs disappear.
+## Sprint 2.4d Ñ True Finish Forecast
+
+Purpose:
+
+Convert pacing variance into a projected year-end outcome.
+
+Teacher Question:
+
+> If nothing changes, when will this section finish?
+
+Outputs:
+
+- Projected finish date
+- Days early
+- Days late
+- Remaining instructional days
+
+Information Order:
+
+Reality
+? Projection
+? Consequence
+? Recommendation
+
+Projection is more important than variance because teachers plan forward, not backward.	
