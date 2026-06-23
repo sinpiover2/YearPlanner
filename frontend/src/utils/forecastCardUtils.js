@@ -17,23 +17,47 @@ function getPaceText(variance) {
 
 function getProjectedText(forecast = {}) {
   const state = forecast.state || "On Track";
+  const forecastShift = Number(forecast.forecastShift || 0);
+  const bufferRemaining = Number(forecast.bufferRemaining || 0);
+  const bufferUsed = Number(forecast.bufferUsed || 0);
+  const optionalDaysRemaining = Number(
+    forecast.optionalDaysRemaining ?? forecast.optionalDays ?? 0,
+  );
+
+  const shiftedDays = Math.abs(forecastShift);
 
   if (state === "Monitoring") {
+    if (forecastShift > 0) {
+      return `Current pacing suggests this section may drift further behind by about ${formatDayPhrase(
+        shiftedDays,
+      )} without small adjustments.`;
+    }
+
     return "Current pacing suggests this section may drift further behind without small adjustments.";
   }
 
   if (state === "Needs Attention") {
+    if (forecastShift > 0 && optionalDaysRemaining > 0) {
+      return `Current pacing suggests this section may finish meaningfully behind schedule unless time is recovered; about ${formatDayPhrase(
+        optionalDaysRemaining,
+      )} of optional time remains available.`;
+    }
+
     return "Current pacing suggests this section may finish meaningfully behind schedule unless time is recovered.";
   }
 
   if (state === "Buffer Exhausted") {
+    if (bufferRemaining <= 0 && bufferUsed > 0) {
+      return "Current pacing suggests required content may no longer fit within available instructional time, and flexibility appears depleted.";
+    }
+
     return "Current pacing suggests required content may no longer fit within available instructional time.";
   }
 
   return "Current pacing remains within the plan.";
 }
 
-function getRecoverabilityText(forecast = {}) {
+export function getRecoverabilityText(forecast = {}) {
   const state = forecast.state || "On Track";
   const optionalDaysRemaining = Number(
     forecast.optionalDaysRemaining ?? forecast.optionalDays ?? 0,
