@@ -15,17 +15,29 @@ function getPaceText(variance) {
   }.`;
 }
 
-function getProjectionLabel(projectionState) {
+function getProjectionLabel(rawState, projectionState) {
+  if (rawState === "Monitoring") {
+    if (projectionState === "Recoverable") {
+      return "Likely recoverable.";
+    }
+
+    return "May use additional buffer.";
+  }
+
+  if (rawState === "Buffer Exhausted") {
+    return "Required content may not fit.";
+  }
+
+  if (rawState === "Needs Attention" && projectionState === "Unlikely To Fit") {
+    return "Required content may not fit.";
+  }
+
   if (projectionState === "Recoverable") {
     return "Likely recoverable.";
   }
 
   if (projectionState === "At Risk") {
     return "At risk of finishing late.";
-  }
-
-  if (projectionState === "Unlikely To Fit") {
-    return "Required content may not fit.";
   }
 
   return "Plan still fits.";
@@ -170,7 +182,7 @@ export function getForecastCardSummary(forecast) {
   return {
     key: section.SectionID || `${section.CourseID}-${section.Period}`,
     state: getCalmStateLabel(rawState),
-    projectionState: getProjectionLabel(forecast.projectionState),
+    projectionState: getProjectionLabel(rawState, forecast.projectionState),
     stateClass,
     heading: `${getCourseLabel(section.CourseID)} · Period ${
       section.Period || "—"
