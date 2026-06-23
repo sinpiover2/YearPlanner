@@ -15,6 +15,22 @@ function getPaceText(variance) {
   }.`;
 }
 
+function getProjectionLabel(projectionState) {
+  if (projectionState === "Recoverable") {
+    return "If nothing changes: recoverable";
+  }
+
+  if (projectionState === "At Risk") {
+    return "If nothing changes: likely tight";
+  }
+
+  if (projectionState === "Unlikely To Fit") {
+    return "If nothing changes: plan may not fit";
+  }
+
+  return "If nothing changes: plan still fits";
+}
+
 function getProjectedText(forecast = {}) {
   const state = forecast.state || "On Track";
   const projectionState = forecast.projectionState || "Fits";
@@ -154,7 +170,7 @@ export function getForecastCardSummary(forecast) {
   return {
     key: section.SectionID || `${section.CourseID}-${section.Period}`,
     state: getCalmStateLabel(rawState),
-    projectionState: forecast.projectionState || "Fits",
+    projectionState: getProjectionLabel(forecast.projectionState),
     stateClass,
     heading: `${getCourseLabel(section.CourseID)} · Period ${
       section.Period || "—"
