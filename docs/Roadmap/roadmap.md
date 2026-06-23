@@ -17,8 +17,8 @@ Sprint 2.3 Ð Forecast Cards / Attention Layer ?
 
   2.3a Ð Card Architecture ?
   2.3b Ð Card Calmness ?
-  2.3c Ð Recommendation Engine
-  2.3d Ð Confidence and Projection Language
+2.3c Ð Recommendation Engine ?
+2.3d Ð Confidence and Projection Language (current)
 
 Sprint 2.4 Ð Forecast Projection
 

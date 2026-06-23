@@ -1,10 +1,12 @@
-# Architecture
+# Forecast Architecture
+
+## Purpose
 
 Year Planner is a teacher decision-support tool.
 
-The purpose of the architecture is to separate orientation from interpretation.
+The purpose of the Forecast tab is not to display pacing data.
 
-Teachers should be able to answer:
+The purpose is to help teachers answer:
 
 > Am I OK?
 
@@ -12,106 +14,147 @@ with as little mental effort as possible.
 
 ---
 
+# Core Design Principle
+
+Information is revealed in layers.
+
+Teachers should not be required to interpret raw data before understanding whether action is needed.
+
+The Forecast tab follows this disclosure model:
+
+```text
+Reassurance
+? Orientation
+? Explanation
+? Investigation
+```
+
+Each layer answers a different question.
+
+---
+
 # Information Order
 
-Information always flows in this order:
+Within every layer, information should flow in this order:
 
-1. Reality
-2. Consequence
-3. Recommendation
+```text
+Reality
+? Consequence
+? Recommendation
+```
 
-The interface should interpret information rather than merely display it.
+The system should interpret information rather than merely display it.
 
 ---
 
 # Forecast Page Structure
 
-The Forecast page consists of four layers.
+```text
+Pacing Forecast
 
-```
-Banner
-
-?
+Forecast Banner
 
 Year Outlook
 
-?
-
 Year Timeline
-
-?
 
 Forecast Cards
 ```
 
 ---
 
-# Responsibilities
+# Layer Responsibilities
 
-## Forecast Banner
+## Reassurance
+
+### Forecast Banner
 
 Purpose:
 
-Provide overall context.
+Answer:
+
+> Should I care?
 
 Responsibilities:
 
-- Acknowledge unlogged sections.
-- Communicate overall state.
+- Communicate overall pacing status.
+- Surface major concerns.
 - Establish emotional tone.
+- Reassure when no action is needed.
+- Direct attention when action is needed.
+
+The banner is the primary emotional layer.
 
 ---
 
-## Year Outlook
+## Orientation
+
+### Year Outlook
 
 Purpose:
 
-Provide high-level pacing summaries.
+Answer:
+
+> Which sections deserve attention?
 
 Responsibilities:
 
-- Show runway consumption.
-- Summarize section status.
-- Surface Buffer Exhausted situations.
+- Show all sections simultaneously.
+- Surface pacing state.
+- Communicate relative urgency.
+- Provide rapid scanning.
+
+The Outlook strip is intentionally compact.
+
+Its purpose is navigation, not explanation.
 
 ---
 
-## Year Timeline
+## Explanation
+
+### Year Timeline
 
 Purpose:
 
-Provide orientation.
+Answer:
+
+> Why?
 
 Responsibilities:
 
-- Show unit lengths.
-- Show month positions.
-- Show current position.
-- Show expected position.
+- Show unit progression.
+- Show expected pace.
+- Show current pace.
 - Show optional buffers.
-- Show synchronization summaries.
+- Show calendar context.
+- Show break impacts.
+- Provide year-scale orientation.
 
-The timeline answers:
+The timeline behaves like a map.
 
-> Where am I?
-
-The timeline does not provide recommendations.
+It provides context but does not make recommendations.
 
 ---
 
-## Forecast Cards
+## Investigation
+
+### Forecast Cards
 
 Purpose:
 
-Provide interpretation.
+Answer:
 
-Cards answer:
+> What should I do?
 
-- Should I care?
-- What happens if nothing changes?
-- Can I fix this?
+Responsibilities:
 
-Cards remain the interpretation layer.
+- Interpret pacing conditions.
+- Explain likely outcomes.
+- Describe remaining flexibility.
+- Provide recommendations.
+- Support teacher decision making.
+
+Cards are the primary interpretation layer.
 
 ---
 
@@ -129,17 +172,31 @@ Position is more important than numbers.
 
 Drift is geometric.
 
+Breaks are terrain, not decoration.
+
+Stable structure reduces cognitive load.
+
 ---
 
 # Layer Separation
 
-Timeline = orientation.
+```text
+Banner
+= Reassurance
 
-Cards = interpretation.
+Outlook
+= Orientation
 
-Visuals support decisions.
+Timeline
+= Explanation
 
-Cards make decisions understandable.
+Cards
+= Investigation
+```
+
+Each layer has a distinct responsibility.
+
+Redundant explanations should be removed.
 
 ---
 
@@ -149,6 +206,8 @@ Cards make decisions understandable.
 
 Green.
 
+Plan remains within available flexibility.
+
 No action needed.
 
 ---
@@ -157,9 +216,9 @@ No action needed.
 
 Amber.
 
-Using some buffer.
+Some buffer is being consumed.
 
-Recoverable.
+Current pacing remains recoverable.
 
 ---
 
@@ -169,7 +228,9 @@ Amber.
 
 Significant buffer consumption.
 
-Optional lesson compression may be worth considering.
+Pacing should be watched carefully.
+
+Future flexibility may need to be protected.
 
 ---
 
@@ -177,9 +238,11 @@ Optional lesson compression may be worth considering.
 
 Red.
 
-Schedule adjustment required.
+Required content no longer fits within available flexibility.
 
-Red is reserved for true problems.
+Schedule adjustment or scope adjustment is likely required.
+
+Red is reserved exclusively for Buffer Exhausted.
 
 ---
 
@@ -187,43 +250,60 @@ Red is reserved for true problems.
 
 Forecasts are section-aware.
 
-DailyProgress rows are grouped by CourseSectionID.
+DailyProgress is grouped by:
 
-Only active sections are forecasted.
+```text
+CourseSectionID
+```
 
-Only sections with logged progress produce cards.
+Forecast calculations are generated independently for each section.
 
-Cards are sorted by urgency:
+Forecast recommendations currently use:
 
-1. Buffer Exhausted
-2. Needs Attention
-3. Monitoring
-4. On Track
+```text
+variance
+bufferRemaining
+bufferUsed
+optionalDaysRemaining
+currentUnitOptionalDays
+forecast state
+```
+
+Recommendations are generated from forecast data rather than directly from state labels.
 
 ---
 
-# Timeline Principles
+# Visibility Rules
 
-Rows stay.
+Severity governs default visibility, not existence.
 
-Periods are landmarks.
+All information remains discoverable.
 
-Synchronization changes interpretation, not geometry.
+Default visibility:
 
-Stable structure reduces cognitive load.
+```text
+Buffer Exhausted
+Visible
 
-Breaks are terrain, not decorations.
+Needs Attention
+Visible
+
+Monitoring
+Visible
+
+On Track
+Collapsed into reassurance
+```
+
+Low-severity information is folded, not removed.
 
 ---
 
 # Major Discoveries
 
-One dot and one line are better than two dots.
-
-Drift is geometric.
-
-The timeline behaves like a map.
-
-Stability is kindness.
-
-The best designs disappear.
+- One dot and one line are better than two dots.
+- Drift is geometric.
+- The timeline behaves like a map.
+- Stability is kindness.
+- Severity governs visibility.
+- The best designs disappear.
