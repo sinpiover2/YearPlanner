@@ -343,7 +343,13 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
 
   const variance = actualDays - plannedDaysCompleted;
   const forecastShift = variance;
-  const projectedFinishVariance = variance;
+  const paceRatio =
+    plannedDaysCompleted > 0 ? actualDays / plannedDaysCompleted : 1;
+  const projectedActualAtFinish = remainingRequiredDays * paceRatio;
+  const projectedFinishVariance =
+    projectedActualAtFinish +
+    actualDays -
+    (plannedDaysCompleted + remainingRequiredDays);
 
   const bufferUsed = Math.max(0, variance);
   const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
@@ -353,10 +359,10 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
 
   let projectionState = "Fits";
 
-  if (variance > 0) {
+  if (projectedFinishVariance > 0) {
     if (optionalDaysRemaining <= 0) {
       projectionState = "Unlikely To Fit";
-    } else if (variance > optionalDaysRemaining) {
+    } else if (projectedFinishVariance > optionalDaysRemaining) {
       projectionState = "At Risk";
     } else {
       projectionState = "Recoverable";
