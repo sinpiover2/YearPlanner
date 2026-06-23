@@ -15,16 +15,49 @@ function getPaceText(variance) {
   }.`;
 }
 
-function getProjectedText(state, forecastShift) {
-  if (forecastShift === 0) {
-    return state === "On Track"
-      ? "If nothing changes, this section remains on schedule."
-      : "The current projection does not require a schedule change yet.";
+function getProjectedText(forecast = {}) {
+  const state = forecast.state || "On Track";
+
+  if (state === "Monitoring") {
+    return "Current pacing suggests this section may drift further behind without small adjustments.";
   }
 
-  return `If nothing changes, this section is projected about ${formatDayPhrase(
-    Math.abs(forecastShift),
-  )} ${forecastShift > 0 ? "behind" : "ahead"}.`;
+  if (state === "Needs Attention") {
+    return "Current pacing suggests this section may finish meaningfully behind schedule unless time is recovered.";
+  }
+
+  if (state === "Buffer Exhausted") {
+    return "Current pacing suggests required content may no longer fit within available instructional time.";
+  }
+
+  return "Current pacing remains within the plan.";
+}
+
+function getRecoverabilityText(forecast = {}) {
+  const state = forecast.state || "On Track";
+  const optionalDaysRemaining = Number(
+    forecast.optionalDaysRemaining ?? forecast.optionalDays ?? 0,
+  );
+
+  if (state === "Monitoring") {
+    return "Current pacing remains recoverable within available flexibility.";
+  }
+
+  if (state === "Needs Attention") {
+    if (optionalDaysRemaining > 0) {
+      return `Remaining flexibility may still absorb part of this variance. About ${formatDayPhrase(
+        optionalDaysRemaining,
+      )} could still be recovered from optional lessons.`;
+    }
+
+    return "Remaining flexibility may still absorb part of this variance.";
+  }
+
+  if (state === "Buffer Exhausted") {
+    return "Available flexibility appears exhausted.";
+  }
+
+  return "Available flexibility remains intact.";
 }
 
 function getRecommendationText(state, forecast = {}) {
@@ -74,7 +107,6 @@ export function getForecastCardSummary(forecast) {
   const rawState = forecast.state || "On Track";
   const stateClass = forecast.visualStateClass || "on-track";
   const variance = Number(forecast.variance || 0);
-  const forecastShift = Number(forecast.forecastShift || 0);
   const bufferRemaining = formatDays(forecast.bufferRemaining);
   const bufferUsed = formatDays(forecast.bufferUsed);
   const meterWidth = Math.min(
@@ -91,7 +123,8 @@ export function getForecastCardSummary(forecast) {
     }`,
     currentLessonText: forecast.currentLesson?.LessonTitle ?? "Course complete",
     paceText: getPaceText(variance),
-    projectedText: getProjectedText(rawState, forecastShift),
+    projectedText: getProjectedText(forecast),
+    recoverabilityText: getRecoverabilityText(forecast),
     bufferRemainingText: bufferRemaining,
     bufferUsedText: bufferUsed,
     bufferAriaLabel: `${bufferRemaining} buffer days remaining`,

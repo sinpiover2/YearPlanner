@@ -50,7 +50,7 @@ function ForecastSummaryCard({ summary }) {
       <div className="forecast-card-body">
         <p>Current lesson: {summary.currentLessonText}</p>
         <p>{summary.projectedText}</p>
-        <p>{summary.bufferRemainingText} buffer days remain.</p>
+        <p>{summary.recoverabilityText}</p>
 
         <em className="forecast-recommendation">{summary.recommendation}</em>
       </div>
