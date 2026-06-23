@@ -196,5 +196,6 @@ export function getForecastCardSummary(forecast) {
     bufferAriaLabel: `${bufferRemaining} buffer days remaining`,
     meterWidth,
     recommendation: getRecommendationText(rawState, forecast),
+    projectedFinishDaysLate: forecast.projectedFinishDaysLate,
   };
 }
