@@ -343,6 +343,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
 
   const variance = actualDays - plannedDaysCompleted;
   const forecastShift = variance;
+  const projectedFinishVariance = variance;
   const bufferUsed = Math.max(0, variance);
   const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
   const consumedFraction = bufferDays > 0 ? bufferUsed / bufferDays : 0;
@@ -380,6 +381,7 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     plannedDaysCompleted,
     variance,
     forecastShift,
+    projectedFinishVariance,
     bufferDays,
     bufferUsed,
     bufferRemaining,
