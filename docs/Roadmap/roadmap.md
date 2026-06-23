@@ -21,6 +21,15 @@ Sprint 2.3 Ð Forecast Cards / Attention Layer ?
 2.3d Ð Confidence and Projection Language (current)
 
 Sprint 2.4 Ð Forecast Projection
+(current)
+
+2.4a Ð Projection State ?
+
+2.4b Ð Projection Visibility ?
+
+2.4c Ð Projection-Aware Recoverability ?
+
+2.4d Ð True Finish Forecast
 
 Phase 3 Ð Today Tab Refinement
 

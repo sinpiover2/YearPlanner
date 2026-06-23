@@ -353,3 +353,95 @@ Completed:
 Result:
 
 Timeline now provides context rather than serving as the primary decision layer. Cards below the timeline remain the place where teachers make decisions.
+
+---
+
+# 2026-06-23
+
+## Sprint 2.3c Ñ Recommendation Engine Completed
+
+Implemented:
+
+- Unit-aware recommendation engine.
+- Recommendation metadata in forecasts.
+- Projection-aware forecast messaging.
+- Improved recommendation specificity using remaining optional days.
+- Removed redundant Forecast subtitle.
+- Removed redundant Pacing Summary heading.
+- Simplified Forecast information hierarchy.
+
+Result:
+
+Forecast cards now explain consequences and recommended actions rather than simply reporting pacing variance.
+
+---
+
+## Sprint 2.4 Ñ Forecast Projection
+
+### 2.4a Ñ Projection State
+
+Implemented:
+
+- projectionState field in section forecasts.
+- Initial projection categories:
+  - Fits
+  - Recoverable
+  - At Risk
+  - Unlikely To Fit
+
+Result:
+
+Forecasts can now distinguish current status from future outlook.
+
+---
+
+### 2.4b Ñ Projection Visibility
+
+Implemented:
+
+- Projection state displayed directly on Forecast Cards.
+
+Result:
+
+Teachers can see both present conditions and projected outcomes.
+
+---
+
+### 2.4c Ñ Projection-Aware Recoverability
+
+Implemented:
+
+- Recoverability messaging driven by projection state.
+- Monitoring cards remain calm.
+- Needs Attention cards communicate risk appropriately.
+- Removed contradictory language between projection and recoverability.
+- Removed misleading "Course complete" fallback.
+- Hidden Current Lesson line when no active lesson exists.
+
+Result:
+
+Forecast cards now follow the intended information sequence:
+
+Reality ? Consequence ? Recoverability ? Recommendation
+
+and present a coherent answer to:
+
+> Am I OK?
+
+---
+
+## Major Discovery
+
+Current status and future projection are different concepts.
+
+Teachers need both.
+
+Current pacing answers:
+
+> Where am I?
+
+Projection answers:
+
+> What happens if nothing changes?
+
+Both are required for effective decision support.
