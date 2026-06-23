@@ -100,26 +100,26 @@ function getProjectedText(forecast = {}) {
 
 export function getRecoverabilityText(forecast = {}) {
   const state = forecast.state || "On Track";
-  const optionalDaysRemaining = Number(
-    forecast.optionalDaysRemaining ?? forecast.optionalDays ?? 0,
-  );
+  const projectionState = forecast.projectionState || "Fits";
 
   if (state === "Monitoring") {
-    return "Current pacing remains recoverable within available flexibility.";
-  }
-
-  if (state === "Needs Attention") {
-    if (optionalDaysRemaining > 0) {
-      return `Remaining flexibility may still absorb part of this variance. About ${formatDayPhrase(
-        optionalDaysRemaining,
-      )} could still be recovered from optional lessons.`;
+    if (projectionState === "Recoverable") {
+      return "Current pacing remains recoverable within available flexibility.";
     }
 
-    return "Remaining flexibility may still absorb part of this variance.";
+    return "Recovery may require using additional optional time.";
   }
 
-  if (state === "Buffer Exhausted") {
-    return "Available flexibility appears exhausted.";
+  if (projectionState === "Unlikely To Fit") {
+    return "Recovery is unlikely without schedule or scope changes.";
+  }
+
+  if (projectionState === "At Risk") {
+    return "Recovery may require using additional optional time.";
+  }
+
+  if (projectionState === "Recoverable") {
+    return "Current pacing remains recoverable within available flexibility.";
   }
 
   return "Available flexibility remains intact.";
@@ -187,7 +187,7 @@ export function getForecastCardSummary(forecast) {
     heading: `${getCourseLabel(section.CourseID)} · Period ${
       section.Period || "—"
     }`,
-    currentLessonText: forecast.currentLesson?.LessonTitle ?? "Course complete",
+    currentLessonText: forecast.currentLesson?.LessonTitle ?? null,
     paceText: getPaceText(variance),
     projectedText: getProjectedText(forecast),
     recoverabilityText: getRecoverabilityText(forecast),

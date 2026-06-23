@@ -25,16 +25,26 @@ function sortForecastsBySeverity(forecastedSections) {
     .map(({ forecast }) => forecast);
 }
 
+function summarizeForecastWithDebug(forecast) {
+  console.log(
+    forecast.section?.Period,
+    forecast.state,
+    forecast.projectionState,
+  );
+
+  return getForecastCardSummary(forecast);
+}
+
 function getAttentionGroups(forecastedSections) {
   const sortedForecasts = sortForecastsBySeverity(forecastedSections);
 
   return {
     attentionSummaries: sortedForecasts
       .filter((forecast) => !isOnTrackForecast(forecast))
-      .map((forecast) => getForecastCardSummary(forecast)),
+      .map((forecast) => summarizeForecastWithDebug(forecast)),
     onTrackSummaries: sortedForecasts
       .filter(isOnTrackForecast)
-      .map((forecast) => getForecastCardSummary(forecast)),
+      .map((forecast) => summarizeForecastWithDebug(forecast)),
   };
 }
 
@@ -48,7 +58,9 @@ function ForecastSummaryCard({ summary }) {
       </div>
 
       <div className="forecast-card-body">
-        <p>Current lesson: {summary.currentLessonText}</p>
+        {summary.currentLessonText && (
+          <p>Current lesson: {summary.currentLessonText}</p>
+        )}
         <p>{summary.paceText}</p>
         <p>{summary.projectionState}</p>
         <p>{summary.projectedText}</p>
