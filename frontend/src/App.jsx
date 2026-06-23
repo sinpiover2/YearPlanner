@@ -313,10 +313,33 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
       )
     : courseLessons.length - 1;
 
+  const currentUnit = currentLesson
+    ? courseUnits.find((unit) => unit.UnitID === currentLesson.UnitID)
+    : (courseUnits.at(-1) ?? null);
+
   const bufferDays = courseUnits.reduce(
     (sum, unit) => sum + Number(unit.OptionalDays || 0),
     0,
   );
+
+  const currentUnitIndex = currentLesson
+    ? courseUnits.findIndex((unit) => unit.UnitID === currentLesson.UnitID)
+    : courseUnits.length;
+
+  const remainingUnits =
+    currentUnitIndex >= 0 ? courseUnits.slice(currentUnitIndex) : [];
+
+  const optionalDaysRemaining = remainingUnits.reduce(
+    (sum, unit) => sum + Number(unit.OptionalDays || 0),
+    0,
+  );
+
+  const remainingRequiredDays = remainingUnits.reduce(
+    (sum, unit) => sum + Number(unit.RequiredDays || 0),
+    0,
+  );
+
+  const currentUnitOptionalDays = Number(currentUnit?.OptionalDays || 0);
 
   const variance = actualDays - plannedDaysCompleted;
   const forecastShift = variance;
@@ -361,8 +384,14 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     bufferUsed,
     bufferRemaining,
     bufferRemainingPercent,
+    optionalDaysRemaining,
     recoverabilityMessage,
     currentLesson,
+    currentUnit,
+    currentUnitName: currentUnit?.UnitTitle ?? currentUnit?.UnitName ?? null,
+    currentUnitOptionalDays,
+    remainingUnits,
+    remainingRequiredDays,
     visualStateClass,
     currentLessonNumber: currentLessonIndex + 1,
     totalLessons: courseLessons.length,
