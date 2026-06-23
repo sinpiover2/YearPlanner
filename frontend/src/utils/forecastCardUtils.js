@@ -17,18 +17,18 @@ function getPaceText(variance) {
 
 function getProjectionLabel(projectionState) {
   if (projectionState === "Recoverable") {
-    return "If nothing changes: recoverable";
+    return "Likely recoverable.";
   }
 
   if (projectionState === "At Risk") {
-    return "If nothing changes: likely tight";
+    return "At risk of finishing late.";
   }
 
   if (projectionState === "Unlikely To Fit") {
-    return "If nothing changes: plan may not fit";
+    return "Required content may not fit.";
   }
 
-  return "If nothing changes: plan still fits";
+  return "Plan still fits.";
 }
 
 function getProjectedText(forecast = {}) {
