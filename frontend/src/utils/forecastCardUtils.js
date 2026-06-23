@@ -17,6 +17,7 @@ function getPaceText(variance) {
 
 function getProjectedText(forecast = {}) {
   const state = forecast.state || "On Track";
+  const projectionState = forecast.projectionState || "Fits";
   const forecastShift = Number(forecast.forecastShift || 0);
   const bufferRemaining = Number(forecast.bufferRemaining || 0);
   const bufferUsed = Number(forecast.bufferUsed || 0);
@@ -52,6 +53,18 @@ function getProjectedText(forecast = {}) {
     }
 
     return "Current pacing suggests required content may no longer fit within available instructional time.";
+  }
+
+  if (projectionState === "Recoverable") {
+    return "Current pacing remains recoverable within available flexibility.";
+  }
+
+  if (projectionState === "At Risk") {
+    return "Current pacing suggests available flexibility may become insufficient.";
+  }
+
+  if (projectionState === "Unlikely To Fit") {
+    return "Current pacing suggests required content may not fit within available time.";
   }
 
   return "Current pacing remains within the plan.";
@@ -141,6 +154,7 @@ export function getForecastCardSummary(forecast) {
   return {
     key: section.SectionID || `${section.CourseID}-${section.Period}`,
     state: getCalmStateLabel(rawState),
+    projectionState: forecast.projectionState || "Fits",
     stateClass,
     heading: `${getCourseLabel(section.CourseID)} · Period ${
       section.Period || "—"

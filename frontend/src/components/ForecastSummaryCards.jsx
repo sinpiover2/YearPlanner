@@ -47,6 +47,8 @@ function ForecastSummaryCard({ summary }) {
         <strong>{summary.state}</strong>
       </div>
 
+      <p>{summary.projectionState}</p>
+
       <div className="forecast-card-body">
         <p>Current lesson: {summary.currentLessonText}</p>
         <p>{summary.projectedText}</p>
