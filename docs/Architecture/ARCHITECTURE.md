@@ -332,3 +332,5 @@ Reality
 ? Recommendation
 
 Projection is more important than variance because teachers plan forward, not backward.	
+
+Forecast overflow must never resize the school-year timeline. The Aug–May scale remains fixed. Forecasts may enter a capped overflow zone beyond the last day of school. Moderate overflow may show a projected finish marker; severe overflow should fill the cap and hand off to details rather than claiming false date precision.
