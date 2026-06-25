@@ -63,8 +63,6 @@ function ForecastSummaryCard({ summary }) {
         )}
         <p>{summary.paceText}</p>
         <p>{summary.projectionState}</p>
-        <p>{summary.projectedText}</p>
-        <p>{summary.recoverabilityText}</p>
 
         <em className="forecast-recommendation">{summary.recommendation}</em>
       </div>

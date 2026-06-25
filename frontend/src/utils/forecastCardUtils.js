@@ -138,14 +138,10 @@ function getRecommendationText(state, forecast = {}) {
 
   if (state === "Needs Attention") {
     if (currentUnitOptionalDays > 0) {
-      return `${currentUnitName} includes about ${formatDayPhrase(
-        currentUnitOptionalDays,
-      )} of optional time. Protect upcoming instructional days before cutting required lessons.`;
+      return `Use ~${currentUnitOptionalDays} optional days in ${currentUnitName} before cutting required content.`;
     }
 
-    return `This section is using significant buffer, but about ${formatDayPhrase(
-      bufferRemaining,
-    )} remains. Protect upcoming instructional days before changing the plan.`;
+    return `Protect remaining buffer before changing required content.`;
   }
 
   if (state === "Monitoring") {
