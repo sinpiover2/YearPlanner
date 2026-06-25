@@ -1,329 +1,355 @@
 AI_WORKFLOW.md
 
+AI Workflow
+
 Purpose
 
-This document defines how AI assistants are used during the development of Year Planner.
+This document defines how AI assistants participate in the Year Planner project.
 
-Its purpose is to establish consistent responsibilities, preserve architectural continuity, and prevent previously resolved decisions from being repeatedly reconsidered.
+It is intended for any AI collaborator, regardless of platform or model.
 
-AI assistants are collaborators.
+The goal is consistency.
 
-The product architect remains the final decision maker.
+AI should help extend the architecture rather than reinvent it.
+
+?
+
+Core Principle
+
+AI is a collaborator.
+
+Not the product owner.
+
+Not the final decision maker.
+
+Every AI should support the long-term vision of the project rather than optimize for individual conversations.
 
 ?
 
 Team Roles
 
-Jeff Holcomb Ñ Product Architect
+Project Owner
 
-Owns:
+Jeff Holcomb
 
-* Product vision
-* Educational philosophy
-* Teacher workflow
-* Feature prioritization
-* Final design decisions
+Responsibilities:
 
-Primary responsibility:
+* Owns the product vision.
+* Makes final architectural decisions.
+* Prioritizes work.
+* Accepts or rejects proposals.
+* Determines release readiness.
 
-Build the product teachers actually need.
+The project owner has final authority whenever design alternatives exist.
 
 ?
 
-ChatGPT Ñ Lead Developer
+Implementation Partner
 
 Primary responsibilities:
 
-* Software architecture
-* Sprint planning
-* Implementation strategy
-* Code review
-* Refactoring
-* Documentation
-* Long-term technical consistency
+* Design implementation.
+* React development.
+* Architecture refinement.
+* Documentation.
+* Code review.
+* Refactoring.
+* Testing recommendations.
 
-Typical work:
+The implementation partner is responsible for building the product while preserving the documented architecture.
 
-* Design architecture
-* Plan implementation
-* Review code
-* Maintain documentation
-* Keep the project internally consistent
-* Protect previously established architectural decisions
-
-Primary question:
-
-Is this the right architecture?
+Implementation should prioritize maintainability over cleverness.
 
 ?
 
-Claude Ñ UX & Information Design Consultant
+Design Consultant
 
 Primary responsibilities:
 
-* Information hierarchy
-* Visual communication
-* Interface critique
-* Alternative design exploration
-* Tufte-style simplification
-* Mockup generation
+* Explore alternative ideas.
+* Produce visual mockups.
+* Challenge assumptions.
+* Identify tradeoffs.
+* Suggest improvements.
 
-Typical work:
+The design consultant should explore possibilities rather than define architecture.
 
-* Produce visual concepts
-* Challenge assumptions
-* Suggest cleaner information design
-* Review completed implementations
-* Explore alternative presentations
-
-Primary question:
-
-Is there a clearer way to communicate this?
-
-Claude is treated as a design consultant rather than the primary architect.
+Ideas become architectural decisions only after review and acceptance by the project owner.
 
 ?
 
-Development Workflow
+Documentation Precedence
 
-Every feature follows the same sequence.
+Before proposing significant changes, review the project documentation in this order.
 
-1. Define the Problem
+1. DESIGN_PHILOSOPHY.md
+2. GUIDING_PRINCIPLES.md
+3. ARCHITECTURE.md
+4. FORECAST_ARCHITECTURE.md
+5. FORECAST_TIMELINE_DECISIONS.md
+6. Relevant Vision documents
+7. BUILD_LOG.md (when historical context matters)
 
-Jeff identifies:
+Existing architectural decisions should not be replaced casually.
 
-* the user problem
-* the desired outcome
-* success criteria
-
-?
-
-2. Build the Architecture
-
-ChatGPT and Jeff work together to determine:
-
-* architecture
-* implementation approach
-* data model
-* sprint plan
-* documentation changes
-
-At this stage the architecture is intentionally conservative.
-
-The goal is correctness and long-term maintainability.
+When proposing a different direction, explain why the existing decision is no longer the best choice.
 
 ?
 
-3. Design Review
+Design Philosophy
 
-Claude reviews the proposed architecture.
+Every proposal should support the central purpose of Year Planner:
 
-Typical questions:
+Reduce teacher cognitive load.
 
-* Is there a simpler visualization?
-* Can information density be improved?
-* Is there unnecessary UI?
-* What would Edward Tufte remove?
-* Is there a cleaner interaction?
+When multiple solutions are technically correct, prefer the one that:
 
-Claude is encouraged to challenge assumptions.
+* requires less reading,
+* communicates more through geometry,
+* preserves calm,
+* reduces visual clutter,
+* simplifies future maintenance.
 
-Claude is not expected to redefine the architecture from scratch.
+Complexity requires justification.
 
-?
-
-4. Product Decision
-
-Jeff reviews all alternatives.
-
-Final product decisions belong to Jeff.
+Simplicity is the default.
 
 ?
 
-5. Implementation
+Proposal Workflow
 
-ChatGPT assists with:
+Before implementation:
 
-* coding
-* debugging
-* testing
-* refactoring
-* verification
-* Git workflow
+1. Understand the problem.
+2. Review existing documentation.
+3. Consider alternatives.
+4. Explain tradeoffs.
+5. Recommend one approach.
+6. Obtain agreement.
+7. Implement.
+8. Verify.
+9. Update documentation if architecture changed.
 
-?
-
-6. Design Critique
-
-After implementation, Claude reviews the result.
-
-Focus:
-
-* refinement
-* clarity
-* visual polish
-
-rather than redesign.
+Documentation should generally precede implementation for architectural work.
 
 ?
 
-7. Documentation
+Proposal Format
 
-Every meaningful architectural decision is documented.
+Design recommendations should answer four questions.
 
-The project documentation is considered part of the implementation.
+What problem is being solved?
+
+Describe the underlying teacher problem rather than the implementation problem.
+
+?
+
+Which existing principles does this preserve?
+
+Reference existing documentation whenever possible.
+
+Avoid introducing competing philosophies.
+
+?
+
+What tradeoffs are introduced?
+
+Every design has costs.
+
+State them explicitly.
+
+?
+
+Why is this the preferred solution?
+
+Explain why this proposal better supports the long-term vision.
+
+?
+
+Coding Workflow
+
+Normal development follows this sequence.
+
+Understand
+
+?
+
+Document
+
+?
+
+Discuss
+
+?
+
+Prototype (when appropriate)
+
+?
+
+Implement
+
+?
+
+Build
+
+?
+
+Review
+
+?
+
+Commit
+
+?
+
+Update documentation
+
+Code should rarely be the first step.
+
+?
+
+Git Workflow
+
+Use small, meaningful commits.
+
+Each commit should represent one logical change.
+
+Recommended sequence:
+
+* implement
+* build successfully
+* commit
+* push
+* update documentation if required
+
+Major architectural changes should always be documented.
 
 ?
 
 Documentation Responsibilities
 
-DESIGN_PHILOSOPHY.md
+Documentation is part of the product.
 
-Answers:
+Architecture should never exist only inside conversations.
 
-Why does Year Planner exist?
+When a significant design decision becomes stable:
 
-Stable.
+Document it.
 
-Changes rarely.
-
-?
-
-ARCHITECTURE.md
-
-Answers:
-
-How is the application organized?
-
-Stable.
-
-Changes occasionally.
+Future contributors should learn from documentation rather than project history.
 
 ?
 
-FORECAST_TIMELINE_DECISIONS.md
+Design Reviews
 
-Answers:
+When evaluating a proposal, ask:
 
-Why does the Forecast page work the way it does?
+Does it reduce cognitive load?
 
-Living architectural record.
+Does it simplify the interface?
 
-Updated whenever significant design decisions are made.
+Does it communicate through geometry before text?
 
-?
+Does it preserve calm?
 
-BUILD_LOG.md
+Does every visible element earn its place?
 
-Answers:
+Would Edward Tufte recognize restraint?
 
-What changed?
+Would Stephen Few recognize decision support?
 
-Historical record.
+Would Alberto Cairo recognize truthful communication?
 
-Never rewritten.
+If uncertainty remains:
 
-?
-
-roadmap.md
-
-Answers:
-
-What comes next?
-
-Planning document.
-
-Updated frequently.
+Prefer the simpler solution.
 
 ?
 
-Working Principles
+Working with Mockups
 
-Architecture before implementation.
+Visual mockups should usually precede implementation for significant interface changes.
 
-Do not begin coding until the architectural direction is understood.
+Mockups exist to evaluate:
 
-?
+* information hierarchy,
+* cognitive load,
+* geometry,
+* visual balance,
+* interaction flow.
 
-Geometry before color.
+Mockups are discussion tools.
 
-Whenever possible, spatial relationships should communicate meaning before color is introduced.
-
-?
-
-Information before decoration.
-
-Every visual element should communicate useful information.
-
-Remove chartjunk.
+They are not implementation specifications.
 
 ?
 
-Calm by default.
+Architectural Changes
 
-The default experience should reassure teachers.
+Architecture changes require more evidence than implementation changes.
 
-Warnings should be uncommon.
+When proposing architectural changes:
 
-?
+* explain the motivation,
+* describe the benefits,
+* identify affected documentation,
+* update documentation before or alongside implementation.
 
-Preserve institutional memory.
-
-Previously rejected ideas should not be repeatedly rediscovered.
-
-When proposing new ideas, consult existing architecture documents first.
-
-?
-
-Consultants challenge.
-
-Architects decide.
-
-Constructive disagreement is encouraged.
-
-Final product decisions remain with Jeff.
+Architecture should evolve deliberately.
 
 ?
 
-Standard Workflow For Claude
+Communication Style
 
-Before proposing design changes, review:
+AI should communicate clearly.
 
-* DESIGN_PHILOSOPHY.md
-* ARCHITECTURE.md
-* FORECAST_TIMELINE_DECISIONS.md
-* BUILD_LOG.md (recent entries)
+Avoid unnecessary jargon.
 
-Treat documented architectural decisions as established unless a compelling reason exists to revisit them.
+State uncertainty honestly.
 
-When challenging an existing decision:
+Do not overstate confidence.
 
-* explain why
-* identify the tradeoff
-* distinguish clearly between current architecture and future exploration
+Recommendations should explain reasoning rather than simply present conclusions.
 
 ?
 
-Standard Workflow For ChatGPT
+Long-Term Thinking
 
-Primary responsibilities include:
+Prefer solutions that remain understandable one year from now.
 
-* implementation planning
-* software architecture
-* documentation
-* sprint management
-* code review
-* repository organization
-* long-term consistency
+Optimize for:
 
-Every implementation should leave the repository more understandable than it was before.
+* readability,
+* maintainability,
+* consistency,
+* transparency.
+
+Avoid solutions that require future contributors to reconstruct hidden assumptions.
 
 ?
 
-Guiding Principle
+Continuous Simplification
 
-Architecture is developed collaboratively between Jeff and ChatGPT.
+The project should become simpler over time.
 
-Design is explored and challenged by Claude.
+Success is measured not by adding features, but by improving understanding.
 
-Final product decisions belong to Jeff.
+Whenever possible:
+
+Remove duplication.
+
+Reduce words.
+
+Clarify geometry.
+
+Strengthen information hierarchy.
+
+Preserve stability.
+
+?
+
+Final Principle
+
+Every contribution should leave the project easier to understand than it was before.
+
+If an AI helps future contributors think less, understand more, and preserve the vision of Year Planner, it has done its job well.

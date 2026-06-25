@@ -1,240 +1,180 @@
-# Year Planner
+Year Planner
 
-Teacher decision-support for curriculum pacing.
+A decision-support system for curriculum planning and instructional pacing.
 
-Year Planner is designed to help teachers answer one question:
+Year Planner helps teachers understand the future consequences of todayÕs instructional decisions before they become tomorrowÕs pacing problems.
 
-> Am I OK?
+The application is built around one question:
 
-It is not a reporting dashboard.
+Am I OK?
+
+Year Planner is not a reporting dashboard.
 
 It is not a gradebook.
 
-It is not an LMS.
+It is not a learning management system.
 
-Year Planner interprets information and helps teachers understand where they are, whether they should care, and what happens if nothing changes.
+It is a decision-support tool that interprets information and helps teachers understand where they are, whether they should care, and what happens if nothing changes.
 
----
+?
 
-??? apps-script
-??? archive
-??? Claude Design
-?ÊÊ ??? Design Philosophy.md
-?ÊÊ ??? Forecast.jpg
-?ÊÊ ??? Written Specifications for Forcast Tab.md
-??? data
-??? docs
-?ÊÊ ??? Architecture
-?ÊÊ ?ÊÊ ??? API_REFERENCE.md
-?ÊÊ ?ÊÊ ??? ARCHITECTURE.md
-?ÊÊ ?ÊÊ ??? DESIGN_PHILOSOPHY.md
-?ÊÊ ?ÊÊ ??? Forecast Architecture.md
-?ÊÊ ?ÊÊ ??? Guiding Principles.md
-?ÊÊ ?ÊÊ ??? Sheet Structure.md
-?ÊÊ ?ÊÊ ??? System Inventory.md
-?ÊÊ ??? Color Scheme Reference.md
-?ÊÊ ??? History
-?ÊÊ ?ÊÊ ??? BUILD_LOG.md
-?ÊÊ ?ÊÊ ??? Decisions.md
-?ÊÊ ?ÊÊ ??? FORECAST_V1.md
-?ÊÊ ?ÊÊ ??? Phase2-ForecastVisualizations.md
-?ÊÊ ??? Reference
-?ÊÊ ?ÊÊ ??? Component Inventory.md
-?ÊÊ ?ÊÊ ??? Requirements.md
-?ÊÊ ??? Releases
-?ÊÊ ?ÊÊ ??? v0.9.md
-?ÊÊ ??? Roadmap
-?ÊÊ     ??? Project_Status.md
-?ÊÊ     ??? roadmap.md
-??? frontend
-?ÊÊ ??? eslint.config.js
-?ÊÊ ??? index.html
-?ÊÊ ??? package-lock.json
-?ÊÊ ??? package.json
-?ÊÊ ??? public
-?ÊÊ ?ÊÊ ??? favicon.svg
-?ÊÊ ?ÊÊ ??? icons.svg
-?ÊÊ ??? README.md
-?ÊÊ ??? src
-?ÊÊ ?ÊÊ ??? api.js
-?ÊÊ ?ÊÊ ??? App.css
-?ÊÊ ?ÊÊ ??? App.jsx
-?ÊÊ ?ÊÊ ??? assets
-?ÊÊ ?ÊÊ ?ÊÊ ??? hero.png
-?ÊÊ ?ÊÊ ?ÊÊ ??? react.svg
-?ÊÊ ?ÊÊ ?ÊÊ ??? vite.svg
-?ÊÊ ?ÊÊ ??? index.css
-?ÊÊ ?ÊÊ ??? main.jsx
-?ÊÊ ??? vite.config.js
-??? README.md
-??? Repository Map.jpg
-
-# Philosophy
+Design Philosophy
 
 Most teachers are fine most of the time.
 
-The default emotional state is calm.
+The interface should communicate that reality.
 
-Information appears in this order:
+Year Planner is designed to reduce teacher cognitive load through calm, truthful, and highly visual communication.
+
+Information always appears in this order:
 
 1. Reality
 2. Consequence
 3. Recommendation
 
-Timeline = orientation.
+The application favors:
 
-Cards = interpretation.
+* Geometry before color.
+* Interpretation before reporting.
+* Navigation before dashboards.
+* Progressive disclosure.
+* Stability over novelty.
 
-Compression is kindness.
+The goal is simple:
 
-Stability is kindness.
+Help teachers spend less time interpreting information and more time making good instructional decisions.
 
----
+?
 
-# Current Features
+Current Capabilities
 
-### Today
+Today
 
-Daily instructional navigation.
-
-Answers:
-
-> Am I OK today?
-
----
-
-### Units
-
-Medium-term planning.
+Supports daily instructional navigation.
 
 Answers:
 
-> Am I OK in this unit?
+Am I OK today?
 
----
+?
 
-### Forecast
+Units
 
-Long-range pacing awareness.
+Supports medium-term instructional planning.
 
 Answers:
 
-> Am I OK this year?
+Am I OK in this unit?
 
-Includes:
+?
 
-- Year Outlook
-- Year Timeline
-- Forecast Cards
-- Buffer calculations
-- Section-aware forecasting
+Forecast
 
----
+Supports long-range pacing awareness.
 
-# Technology Stack
+Answers:
 
-Frontend:
+Am I OK this year?
 
-- React
-- Vite
+Forecast combines:
 
-Backend:
+* Year Timeline
+* Forecast Cards
+* Section-aware pacing
+* Buffer calculations
+* Projection modeling
 
-- Google Apps Script
+to help teachers understand future consequences before they become problems.
 
-Data Store:
+?
 
-- Google Sheets
+Technology Stack
 
-Hosting:
+Frontend
 
-- Vercel
+* React
+* Vite
 
----
+Backend
 
-# Architecture
+* Google Apps Script
 
-```text
+Data Store
+
+* Google Sheets
+
+Hosting
+
+* Vercel
+
+?
+
+Architecture
+
 React Frontend
         ?
-Apps Script Endpoint
+        ?
+Google Apps Script API
+        ?
         ?
 Google Sheets
-```
 
 Google Sheets stores facts.
 
-The application provides interpretation.
+Year Planner provides interpretation.
 
----
+?
 
-# Repository Structure
+Documentation
 
-```text
-frontend/
+Project documentation lives in the docs/ directory.
+
+Start with:
+
+docs/DOCUMENTATION_GUIDE.md
+
+Recommended reading order:
+
+1. Architecture/DESIGN_PHILOSOPHY.md
+2. Architecture/GUIDING_PRINCIPLES.md
+3. Architecture/ARCHITECTURE.md
+4. Architecture/FORECAST_ARCHITECTURE.md
+5. Architecture/FORECAST_TIMELINE_DECISIONS.md
+6. Vision/FORECAST_TIMELINE_VISION.md
+7. Development/AI_WORKFLOW.md
+
+Additional documentation includes:
+
+* Reference material
+* Build history
+* Release notes
+* Project roadmap
+
+?
+
+Repository Structure
+
 apps-script/
-docs/
-data/
 archive/
-```
-
----
-
-# Core Documents
-
-- Design Philosophy.md
-- Architecture.md
-- Requirements.md
-- Major Decisions.md
-- Guiding Principles.md
-- Color Scheme Reference.md
-
----
-
-# Current Status
-
-Phase 2 Ð Forecast Visualizations
-
-Current sprint:
-
-**Sprint 2.2c Ð Timeline Integration**
-
-Visual design is converging.
-
-Forecast logic is considered trustworthy.
-
----
-
-# Long-Term Vision
-
-The application ultimately consists of four layers:
-
-```text
-Banner
+data/
+docs/
+frontend/
 
 ?
 
-Year Outlook
+Vision
 
-?
+Year Planner is being developed as a teacher decision-support system rather than a traditional planning application.
 
-Year Timeline
+Its long-term goal is to compress an entire school year into an interface that can be understood within seconds.
 
-?
+Teachers should be able to open the application, glance at the Forecast page, and immediately understand:
 
-Forecast Cards
-```
+* Where they are.
+* Whether they should be concerned.
+* What will happen if nothing changes.
+* What action, if any, is worth taking.
 
-Timeline provides orientation.
+The interface should quietly disappear, leaving only understanding.
 
-Cards provide interpretation.
-
-The goal is to compress an entire school year into something a teacher can understand in one or two seconds and think:
-
-> I know where I am.
-
-without having to think very hard.
-
----
-
-*"The best designs disappear."*
+ÒThe best designs disappear.Ó
