@@ -1,105 +1,296 @@
-# Forecast Architecture
+Forecast Architecture
 
-## Purpose
+Purpose
 
-Year Planner is a decision-support tool, not a reporting dashboard.
+The Forecast subsystem is the long-range decision-support engine of Year Planner.
 
-The teacher's underlying question is:
+Its purpose is not to display pacing data.
 
-> Am I OK?
+Its purpose is to help teachers understand the future consequences of todayÕs instructional pacing before those consequences become problems.
 
-Most of the time the answer should be:
+The underlying question remains:
 
-> Yes.
+Am I OK?
 
----
+Most of the time, the answer should be:
 
-## Forecast Page Structure
+Yes.
 
-Banner
+The Forecast subsystem should communicate that reassurance clearly while drawing attention only when meaningful action is warranted.
 
 ?
 
-Year Outlook
+Mental Model
+
+The Forecast subsystem is organized around progressive disclosure.
+
+Information is revealed in layers rather than all at once.
+
+Each layer answers a different question.
+
+Reassurance
+?
+Orientation
+?
+Explanation
+?
+Action
+
+The interface should move teachers naturally from understanding to decision making.
+
+?
+
+Information Order
+
+Within every layer, information follows the same progression.
+
+Reality
+?
+Consequence
+?
+Recommendation
+
+The system should interpret information rather than merely display it.
+
+?
+
+Forecast Page Structure
+
+The Forecast page currently consists of three major layers.
+
+Forecast Banner
+?
+Year Timeline
+?
+Forecast Cards
+
+Each layer has a distinct responsibility.
+
+?
+
+Layer Responsibilities
+
+Forecast Banner
+
+Purpose:
+
+Provide reassurance and establish emotional tone.
+
+Answers:
+
+Should I care?
+
+Responsibilities:
+
+* summarize overall pacing
+* communicate overall instructional health
+* reassure when no action is needed
+* direct attention when necessary
+
+The Banner is the emotional entry point to the Forecast page.
 
 ?
 
 Year Timeline
 
-?
+Purpose:
 
-Forecast Summary Cards
-
----
-
-## Responsibilities
-
-### Timeline
-
-Orientation.
+Provide orientation.
 
 Answers:
 
-- Where am I?
+Where am I?
 
----
+Responsibilities:
 
-### Forecast Cards
+* display curriculum progression
+* provide calendar context
+* compare expected and actual progress
+* show projected movement through the year
+* communicate relationships through geometry
 
-Interpretation.
+The Timeline behaves like a map.
 
-Answers:
+It explains position.
 
-- Should I care?
-- What happens if nothing changes?
-- What should I do?
-
----
-
-## Card Pipeline
-
-Forecast calculations
+It does not make recommendations.
 
 ?
 
+Forecast Cards
+
+Purpose:
+
+Provide explanation and support action.
+
+Answers:
+
+* Why?
+* What happens if nothing changes?
+* What should I do?
+
+Responsibilities:
+
+* explain pacing conditions
+* interpret projected outcomes
+* communicate recoverability
+* recommend instructional actions
+
+Cards transform orientation into understanding.
+
+?
+
+Mental Model of the Timeline
+
+The Timeline behaves like a map.
+
+The school year is the terrain.
+
+Courses define the roads through that terrain.
+
+Sections move along those roads.
+
+Teachers understand position before they understand numbers.
+
+The Timeline therefore communicates primarily through geometry rather than text.
+
+?
+
+Forecast Pipeline
+
+Forecast information moves through several stages.
+
+Instructional Data
+?
+Forecast Calculations
+?
+Projection Engine
+?
 forecastCardUtils.js
+?
+Forecast Summaries
+?
+Forecast Components
+?
+Teacher Decisions
+
+Each stage adds interpretation.
+
+The system intentionally moves from facts toward understanding.
 
 ?
 
-Forecast summaries
+Forecast States
+
+Every section is classified into one of four instructional states.
+
+Buffer Exhausted
+?
+Needs Attention
+?
+Monitoring
+?
+On Track
+
+Severity governs default visibility.
+
+It does not determine whether information exists.
 
 ?
 
-ForecastSummaryCard
+Projection Model
+
+The Forecast subsystem projects future instructional outcomes based on current pacing.
+
+Projection answers:
+
+If nothing changes, what happens?
+
+Current outputs include:
+
+* projected finish
+* projected instructional variance
+* recoverability
+* remaining instructional flexibility
+
+The projection model is intended to support teacher planning rather than prediction for its own sake.
 
 ?
 
-Rendered cards
+Buffer Model
 
----
+Variance alone does not determine instructional health.
 
-## Severity Levels
+The Forecast subsystem evaluates pacing relative to the remaining instructional flexibility available within the curriculum.
 
-1. Buffer Exhausted
+Buffer therefore represents the practical capacity to absorb instructional variance.
 
-2. Needs Attention
+This produces recommendations that are more meaningful than variance alone.
 
-3. Monitoring
+?
 
-4. On Track
+Visibility Philosophy
 
-Cards are sorted by severity.
+Not every section deserves equal attention.
 
----
+Visibility is determined by instructional importance.
 
-## Design Goal
+Buffer Exhausted
+Always visible
+?
+Needs Attention
+Visible
+?
+Monitoring
+Visible
+?
+On Track
+Collapsed into reassurance
 
-Move from:
+Low-severity information is folded rather than removed.
 
-"Here is information."
+Teachers should spend their attention where it is most valuable.
 
-toward:
+?
 
-"Here is whether you need to care."
+Design Principles
 
-The default emotional state should be calm.
+Several principles guide every Forecast feature.
+
+* Calm by default.
+* Geometry before color.
+* Position before numbers.
+* Interpretation before reporting.
+* Progressive disclosure.
+* Stable layouts.
+* Minimal reading.
+* Color reserved for instructional severity.
+* The common case should remain the easiest to understand.
+
+?
+
+Relationship to Other Documents
+
+This document describes how the Forecast subsystem is organized.
+
+Supporting documents include:
+
+* DESIGN_PHILOSOPHY.md Ñ why the application exists.
+* GUIDING_PRINCIPLES.md Ñ recurring design principles.
+* FORECAST_TIMELINE_DECISIONS.md Ñ why major architectural decisions were made.
+* FORECAST_TIMELINE_VISION.md Ñ the long-term direction of the Forecast experience.
+
+Together, these documents describe the philosophy, architecture, evolution, and future of the Forecast subsystem.
+
+?
+
+Guiding Principle
+
+The Forecast subsystem succeeds when teachers can open the page, glance at it for only a few seconds, and confidently understand:
+
+* Where they are.
+* Whether they should be concerned.
+* What will happen if nothing changes.
+* Whether any action is worth taking.
+
+The interface should quietly disappear behind that understanding.

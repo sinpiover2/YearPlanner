@@ -1,336 +1,282 @@
-# Forecast Architecture
+Year Planner Architecture
 
-## Purpose
+Purpose
 
-Year Planner is a teacher decision-support tool.
+Year Planner is a teacher decision-support system for instructional planning.
 
-The purpose of the Forecast tab is not to display pacing data.
+Its purpose is to help teachers understand the consequences of instructional pacing before those consequences become problems.
 
-The purpose is to help teachers answer:
+Unlike traditional educational software, Year Planner is designed to interpret information rather than simply display it.
 
-> Am I OK?
+?
 
-with as little mental effort as possible.
+System Overview
 
----
+At a high level, Year Planner consists of three layers:
 
-# Core Design Principle
-
-Information is revealed in layers.
-
-Teachers should not be required to interpret raw data before understanding whether action is needed.
-
-The Forecast tab follows this disclosure model:
-
-```text
-Reassurance
-? Orientation
-? Explanation
-? Investigation
-```
-
-Each layer answers a different question.
-
----
-
-# Information Order
-
-Within every layer, information should flow in this order:
-
-```text
-Reality
-? Consequence
-? Recommendation
-```
-
-The system should interpret information rather than merely display it.
-
----
-
-# Forecast Page Structure
-
-```text
-Pacing Forecast
-
-Forecast Banner
-
-Year Outlook
-
-Year Timeline
-
-Forecast Cards
-```
-
----
-
-# Layer Responsibilities
-
-## Reassurance
-
-### Forecast Banner
-
-Purpose:
-
-Answer:
-
-> Should I care?
-
-Responsibilities:
-
-- Communicate overall pacing status.
-- Surface major concerns.
-- Establish emotional tone.
-- Reassure when no action is needed.
-- Direct attention when action is needed.
-
-The banner is the primary emotional layer.
-
----
-
-## Orientation
-
-### Year Outlook
-
-Purpose:
-
-Answer:
-
-> Which sections deserve attention?
-
-Responsibilities:
-
-- Show all sections simultaneously.
-- Surface pacing state.
-- Communicate relative urgency.
-- Provide rapid scanning.
-
-The Outlook strip is intentionally compact.
-
-Its purpose is navigation, not explanation.
-
----
-
-## Explanation
-
-### Year Timeline
-
-Purpose:
-
-Answer:
-
-> Why?
-
-Responsibilities:
-
-- Show unit progression.
-- Show expected pace.
-- Show current pace.
-- Show optional buffers.
-- Show calendar context.
-- Show break impacts.
-- Provide year-scale orientation.
-
-The timeline behaves like a map.
-
-It provides context but does not make recommendations.
-
----
-
-## Investigation
-
-### Forecast Cards
-
-Purpose:
-
-Answer:
-
-> What should I do?
-
-Responsibilities:
-
-- Interpret pacing conditions.
-- Explain likely outcomes.
-- Describe remaining flexibility.
-- Provide recommendations.
-- Support teacher decision making.
-
-Cards are the primary interpretation layer.
-
----
-
-# Timeline Philosophy
-
-The timeline behaves like a map.
-
-Rows stay.
-
-The year stays.
-
-The teacher moves.
-
-Position is more important than numbers.
-
-Drift is geometric.
-
-Breaks are terrain, not decoration.
-
-Stable structure reduces cognitive load.
-
----
-
-# Layer Separation
-
-```text
-Banner
-= Reassurance
-
-Outlook
-= Orientation
-
-Timeline
-= Explanation
-
-Cards
-= Investigation
-```
+React Frontend
+        ?
+        ?
+Google Apps Script API
+        ?
+        ?
+Google Sheets
 
 Each layer has a distinct responsibility.
 
-Redundant explanations should be removed.
+?
 
----
+System Responsibilities
 
-# Forecast States
+Google Sheets
 
-## On Track
+Google Sheets is the system of record.
 
-Green.
+It stores:
 
-Plan remains within available flexibility.
+* school calendars
+* courses
+* sections
+* curriculum units
+* lessons
+* daily instructional progress
+* schedule patterns
+* application settings
 
-No action needed.
+Google Sheets stores facts.
 
----
+It does not interpret those facts.
 
-## Monitoring
+?
 
-Amber.
+Google Apps Script
 
-Some buffer is being consumed.
+Apps Script provides the application’s backend API.
 
-Current pacing remains recoverable.
+Responsibilities include:
 
----
+* reading spreadsheet data
+* validating requests
+* writing instructional progress
+* exposing planner data as JSON
+* insulating the frontend from spreadsheet structure
 
-## Needs Attention
+The API acts as a stable boundary between the user interface and the data model.
 
-Amber.
+?
 
-Significant buffer consumption.
+React Frontend
 
-Pacing should be watched carefully.
+The frontend is responsible for interpretation.
 
-Future flexibility may need to be protected.
+Responsibilities include:
 
----
+* application state
+* user interaction
+* visualization
+* forecasting
+* instructional recommendations
+* decision support
 
-## Buffer Exhausted
+The frontend transforms stored facts into information teachers can act upon.
 
-Red.
+?
 
-Required content no longer fits within available flexibility.
+Information Flow
 
-Schedule adjustment or scope adjustment is likely required.
+Information always flows in one direction.
 
-Red is reserved exclusively for Buffer Exhausted.
+Google Sheets
+        ?
+        ?
+Apps Script API
+        ?
+        ?
+React State
+        ?
+        ?
+Interpretation
+        ?
+        ?
+Teacher Decisions
 
----
+Each layer builds upon the one before it.
 
-# Forecast Architecture
+?
 
-Forecasts are section-aware.
+Application Structure
 
-DailyProgress is grouped by:
+Year Planner is organized into several major functional areas.
 
-```text
-CourseSectionID
-```
+Today
 
-Forecast calculations are generated independently for each section.
+Supports daily instructional navigation.
 
-Forecast recommendations currently use:
+Primary question:
 
-```text
-variance
-bufferRemaining
-bufferUsed
-optionalDaysRemaining
-currentUnitOptionalDays
-forecast state
-```
+Am I OK today?
 
-Recommendations are generated from forecast data rather than directly from state labels.
+?
 
----
+Units
 
-# Visibility Rules
+Supports medium-term instructional planning.
 
-Severity governs default visibility, not existence.
+Primary question:
 
-All information remains discoverable.
+Am I OK in this unit?
 
-Default visibility:
+?
 
-```text
-Buffer Exhausted
-Visible
+Forecast
 
-Needs Attention
-Visible
+Supports long-range instructional pacing.
 
-Monitoring
-Visible
+Primary question:
 
-On Track
-Collapsed into reassurance
-```
+Am I OK this year?
 
-Low-severity information is folded, not removed.
+Forecast is a major subsystem with its own architecture, documented separately in:
 
----
+FORECAST_ARCHITECTURE.md
 
-# Major Discoveries
+?
 
-- One dot and one line are better than two dots.
-- Drift is geometric.
-- The timeline behaves like a map.
-- Stability is kindness.
-- Severity governs visibility.
-- The best designs disappear.
-## Sprint 2.4d — True Finish Forecast
+Shared Data Model
 
-Purpose:
+The application is built around a common instructional model.
 
-Convert pacing variance into a projected year-end outcome.
+Course
+    ?
+    ?
+Section
+    ?
+    ?
+Unit
+    ?
+    ?
+Lesson
+    ?
+    ?
+Daily Progress
 
-Teacher Question:
+Every feature operates on this same structure.
 
-> If nothing changes, when will this section finish?
+Forecasts, daily navigation, and unit planning all derive from the same underlying data.
 
-Outputs:
+?
 
-- Projected finish date
-- Days early
-- Days late
-- Remaining instructional days
+Architectural Principles
 
-Information Order:
+Several principles guide the entire application.
 
-Reality
-? Projection
-? Consequence
-? Recommendation
+Separation of Responsibilities
 
-Projection is more important than variance because teachers plan forward, not backward.	
+Each layer has one primary responsibility.
 
-Forecast overflow must never resize the school-year timeline. The Aug–May scale remains fixed. Forecasts may enter a capped overflow zone beyond the last day of school. Moderate overflow may show a projected finish marker; severe overflow should fill the cap and hand off to details rather than claiming false date precision.
+Examples include:
+
+* Sheets store facts.
+* Apps Script exposes data.
+* React interprets data.
+
+Responsibilities should not overlap unnecessarily.
+
+?
+
+Progressive Interpretation
+
+The application should reduce teacher interpretation rather than increase it.
+
+Raw information should become progressively more meaningful as it moves through the system.
+
+Facts become information.
+
+Information becomes understanding.
+
+Understanding supports decisions.
+
+?
+
+Stable Architecture
+
+Core architectural layers should remain stable even as features evolve.
+
+New functionality should be added by extending existing components rather than replacing foundational structures.
+
+Stability improves maintainability and reduces complexity.
+
+?
+
+Shared Components
+
+Whenever possible, reusable logic should be centralized.
+
+Examples include:
+
+* forecasting utilities
+* formatting utilities
+* date calculations
+* instructional progress calculations
+* shared UI components
+
+Avoid duplicating business logic across pages.
+
+?
+
+Major Subsystems
+
+Year Planner currently consists of several major subsystems.
+
+* Instructional Navigation
+* Unit Planning
+* Forecasting
+* Projection Engine
+* Recommendation Engine
+* Calendar Interpretation
+
+Each subsystem has its own documentation where appropriate.
+
+?
+
+Documentation Structure
+
+This document describes the architecture of the entire application.
+
+Subsystem-specific architecture is documented separately.
+
+Examples include:
+
+FORECAST_ARCHITECTURE.md
+
+Architectural decisions are documented separately from architecture itself.
+
+See:
+
+FORECAST_TIMELINE_DECISIONS.md
+
+for the reasoning behind major Forecast design decisions.
+
+?
+
+Future Architecture
+
+The architecture is intended to support future capabilities including:
+
+* scenario planning
+* multiple instructional plans
+* multi-year planning
+* richer forecasting
+* additional instructional analytics
+
+These capabilities should extend the existing architecture rather than replace it.
+
+?
+
+Guiding Principle
+
+The architecture exists to support teacher decision making.
+
+Every layer should reduce complexity rather than introduce it.
+
+The best architecture quietly disappears behind the decisions it enables.

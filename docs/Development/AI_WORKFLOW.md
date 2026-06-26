@@ -353,3 +353,5 @@ Final Principle
 Every contribution should leave the project easier to understand than it was before.
 
 If an AI helps future contributors think less, understand more, and preserve the vision of Year Planner, it has done its job well.
+
+When documentation is incomplete, prefer explicit uncertainty over inferred history. Mark items requiring confirmation with TODO or Verification Needed rather than filling gaps from memory.
