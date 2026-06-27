@@ -163,35 +163,99 @@ function getRecommendationText(state, forecast = {}) {
   return "No action needed. Current pacing remains within the plan.";
 }
 
-export function getForecastCardSummary(forecast) {
+export function getForecastCardSummary(forecast = {}) {
   const section = forecast.section ?? {};
   const rawState = forecast.state || "On Track";
   const stateClass = forecast.visualStateClass || "on-track";
   const variance = Number(forecast.variance || 0);
   const bufferRemaining = formatDays(forecast.bufferRemaining);
   const bufferUsed = formatDays(forecast.bufferUsed);
+  const recommendationText = getRecommendationText(rawState, forecast);
+  const projectedFinishDaysLate = forecast.projectedFinishDaysLate ?? null;
   const meterWidth = Math.min(
     100,
     Math.max(0, Number(forecast.bufferRemainingPercent || 0)),
   );
 
+  const projectionHeadline = getProjectionLabel(
+    rawState,
+    forecast.projectionState,
+  );
+  const projectionDetail = getProjectedText(forecast);
+  const projectionFinishDate =
+    forecast.projectedFinishDate ??
+    forecast.finishDate ??
+    forecast.forecastFinishDate ??
+    null;
+
+  // Preserve existing behavior by deriving runway percentages from available fields only.
+  const projectedFinishPercent = Number.isFinite(
+    Number(forecast.forecastedEndPercent),
+  )
+    ? Number(forecast.forecastedEndPercent)
+    : Number.isFinite(Number(forecast.projectedFinishPercent))
+      ? Number(forecast.projectedFinishPercent)
+      : Number.isFinite(Number(forecast.currentPositionPercent))
+        ? Number(forecast.currentPositionPercent)
+        : null;
+  const runwayCurrentPositionPercent = Number.isFinite(
+    Number(forecast.currentPositionPercent),
+  )
+    ? Number(forecast.currentPositionPercent)
+    : null;
+  const runwayEndPositionPercent = Number.isFinite(
+    Number(forecast.endPositionPercent),
+  )
+    ? Number(forecast.endPositionPercent)
+    : 100;
+  const runwayOverflowPercent =
+    projectedFinishPercent !== null
+      ? Math.max(0, projectedFinishPercent - runwayEndPositionPercent)
+      : 0;
+
   return {
     key: section.SectionID || `${section.CourseID}-${section.Period}`,
     state: getCalmStateLabel(rawState),
-    projectionState: getProjectionLabel(rawState, forecast.projectionState),
+    projectionState: projectionHeadline,
     stateClass,
     heading: `${getCourseLabel(section.CourseID)} · Period ${
       section.Period || "—"
     }`,
     currentLessonText: forecast.currentLesson?.LessonTitle ?? null,
     paceText: getPaceText(variance),
-    projectedText: getProjectedText(forecast),
+    projectedText: projectionDetail,
     recoverabilityText: getRecoverabilityText(forecast),
     bufferRemainingText: bufferRemaining,
     bufferUsedText: bufferUsed,
     bufferAriaLabel: `${bufferRemaining} buffer days remaining`,
     meterWidth,
-    recommendation: getRecommendationText(rawState, forecast),
-    projectedFinishDaysLate: forecast.projectedFinishDaysLate,
+    recommendation: recommendationText,
+    projectedFinishDaysLate,
+    projection: {
+      headline: projectionHeadline,
+      detail: projectionDetail,
+      finishDate: projectionFinishDate,
+      daysFromEnd: projectedFinishDaysLate,
+      state: rawState,
+    },
+    flexibility: {
+      remaining: forecast.bufferRemaining ?? 0,
+      total:
+        forecast.totalBufferDays ??
+        Number(forecast.bufferRemaining || 0) +
+          Number(forecast.bufferUsed || 0),
+      label: bufferRemaining,
+      detail: `${bufferUsed} used`,
+    },
+    runway: {
+      currentPositionPercent: runwayCurrentPositionPercent,
+      projectedFinishPercent,
+      endPositionPercent: runwayEndPositionPercent,
+      overflowPercent: runwayOverflowPercent,
+      stateClass,
+    },
+    recommendationModel: {
+      text: recommendationText,
+    },
   };
 }
