@@ -119,15 +119,27 @@ function ForecastRunway({ runway }) {
       </div>
       <div className="forecast-runway-legend">
         <span>
-          <span className="forecast-runway-legend-current">●</span> Current
+          <span
+            className="forecast-runway-legend-symbol forecast-runway-legend-symbol-current"
+            aria-hidden="true"
+          />
+          Current
         </span>
 
         <span>
-          <span className="forecast-runway-legend-projected">○</span> Projected
+          <span
+            className="forecast-runway-legend-symbol forecast-runway-legend-symbol-projected"
+            aria-hidden="true"
+          />
+          Projected
         </span>
 
         <span>
-          <span className="forecast-runway-legend-end">│</span> Last day
+          <span
+            className="forecast-runway-legend-symbol forecast-runway-legend-symbol-end"
+            aria-hidden="true"
+          />
+          Last day
         </span>
       </div>
     </div>

@@ -1191,9 +1191,35 @@ button {
   gap: 0.22rem;
 }
 
-.forecast-runway-legend-current,
-.forecast-runway-legend-projected,
-.forecast-runway-legend-end {
+.forecast-runway-legend-symbol {
+  display: inline-block;
+  color: #64748b;
+}
+
+.forecast-runway-legend-symbol-current {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #64748b;
+}
+
+.forecast-runway-legend-symbol-projected {
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid #64748b;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.forecast-runway-legend-symbol-end {
+  width: 2px;
+  height: 9px;
+  background: #64748b;
+}
+
+.forecast-runway-legend-symbol-current,
+.forecast-runway-legend-symbol-projected,
+.forecast-runway-legend-symbol-end {
   color: #64748b;
   font-weight: 900;
 }
