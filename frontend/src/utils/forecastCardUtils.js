@@ -221,7 +221,16 @@ export function getForecastCardSummary(forecast = {}) {
     heading: `${getCourseLabel(section.CourseID)} · Period ${
       section.Period || "—"
     }`,
-    currentLessonText: forecast.currentLesson?.LessonTitle ?? null,
+    currentLessonText: forecast.currentLesson
+      ? [
+          forecast.currentLesson.LessonNumber
+            ? `Lesson ${forecast.currentLesson.LessonNumber}`
+            : null,
+          forecast.currentLesson.LessonTitle,
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : null,
     paceText: getPaceText(variance),
     projectedText: projectionDetail,
     recoverabilityText: getRecoverabilityText(forecast),

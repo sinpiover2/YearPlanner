@@ -51,11 +51,10 @@ function ForecastSummaryCard({ summary }) {
       <div className="forecast-card-body">
         {summary.runway && <ForecastRunway runway={summary.runway} />}
 
-        {summary.currentLessonText && (
-          <p>Current lesson: {summary.currentLessonText}</p>
-        )}
-
         <p>{summary.paceText}</p>
+
+        {summary.currentLessonText && <p>{summary.currentLessonText}</p>}
+
         <p>{summary.projectionState}</p>
 
         <em className="forecast-recommendation">{summary.recommendation}</em>
