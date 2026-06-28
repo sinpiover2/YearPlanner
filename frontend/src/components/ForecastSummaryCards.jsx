@@ -26,26 +26,16 @@ function sortForecastsBySeverity(forecastedSections) {
     .map(({ forecast }) => forecast);
 }
 
-function summarizeForecastWithDebug(forecast) {
-  console.log(
-    forecast.section?.Period,
-    forecast.state,
-    forecast.projectionState,
-  );
-
-  return getForecastCardSummary(forecast);
-}
-
 function getAttentionGroups(forecastedSections) {
   const sortedForecasts = sortForecastsBySeverity(forecastedSections);
 
   return {
     attentionSummaries: sortedForecasts
       .filter((forecast) => !isOnTrackForecast(forecast))
-      .map((forecast) => summarizeForecastWithDebug(forecast)),
+      .map((forecast) => getForecastCardSummary(forecast)),
     onTrackSummaries: sortedForecasts
       .filter(isOnTrackForecast)
-      .map((forecast) => summarizeForecastWithDebug(forecast)),
+      .map((forecast) => getForecastCardSummary(forecast)),
   };
 }
 
