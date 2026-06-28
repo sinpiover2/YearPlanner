@@ -1061,14 +1061,15 @@ button {
 
 .forecast-summary-card em {
   display: block;
-  margin-top: 12px;
-  padding-top: 9px;
-  border-top: 1px solid rgba(203, 213, 225, 0.55);
-  color: #1f2937;
-  font-size: 0.8rem;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(203, 213, 225, 0.75);
+  color: #0f172a;
+  font-size: 0.82rem;
   font-style: normal;
-  font-weight: 800;
-  line-height: 1.42;
+  font-weight: 850;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 
