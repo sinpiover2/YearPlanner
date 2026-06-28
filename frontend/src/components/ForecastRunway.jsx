@@ -117,6 +117,19 @@ function ForecastRunway({ runway }) {
           />
         )}
       </div>
+      <div className="forecast-runway-legend">
+        <span>
+          <span className="forecast-runway-legend-current">●</span> Current
+        </span>
+
+        <span>
+          <span className="forecast-runway-legend-projected">○</span> Projected
+        </span>
+
+        <span>
+          <span className="forecast-runway-legend-end">│</span> Last day
+        </span>
+      </div>
     </div>
   );
 }

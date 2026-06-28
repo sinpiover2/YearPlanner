@@ -1177,7 +1177,28 @@ button {
   box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.16);
   transform: translate(-50%, -50%);
 }
+.forecast-runway-legend {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 0.28rem;
+  color: #94a3b8;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1;
+}
 
+.forecast-runway-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+}
+
+.forecast-runway-legend-current,
+.forecast-runway-legend-projected,
+.forecast-runway-legend-end {
+  color: #64748b;
+  font-weight: 900;
+}
 .forecast-summary-card-calm p {
   color: #475569;
   font-weight: 650;
