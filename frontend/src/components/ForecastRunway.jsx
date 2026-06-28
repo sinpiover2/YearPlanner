@@ -47,6 +47,14 @@ function ForecastRunway({ runway }) {
 
   const projectedMarkerPosition =
     projectedPosition !== null ? projectedPosition : null;
+  const projectionSegmentLeft =
+    currentPosition !== null && projectedPosition !== null
+      ? Math.min(currentPosition, projectedPosition)
+      : null;
+  const projectionSegmentWidth =
+    currentPosition !== null && projectedPosition !== null
+      ? Math.abs(projectedPosition - currentPosition)
+      : null;
 
   return (
     <div
@@ -55,6 +63,18 @@ function ForecastRunway({ runway }) {
       aria-label={buildAriaLabel(runway)}
     >
       <div className="forecast-runway-track" aria-hidden="true">
+        {projectionSegmentLeft !== null &&
+          projectionSegmentWidth !== null &&
+          projectionSegmentWidth > 0 && (
+            <span
+              className="forecast-runway-projection-segment"
+              style={{
+                left: `${projectionSegmentLeft}%`,
+                width: `${projectionSegmentWidth}%`,
+              }}
+            />
+          )}
+
         {hasOverflow &&
           overflowWithinTrackWidth > 0 &&
           endPosition !== null && (

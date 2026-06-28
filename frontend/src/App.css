@@ -1117,6 +1117,16 @@ button {
   overflow: hidden;
 }
 
+.forecast-runway-projection-segment {
+  position: absolute;
+  top: 50%;
+  height: 0;
+  border-top: 1px dashed rgba(71, 85, 105, 0.42);
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
 .forecast-runway-overflow {
   position: absolute;
   top: 1px;
@@ -1135,7 +1145,7 @@ button {
 .forecast-runway-marker {
   position: absolute;
   left: 0;
-  z-index: 2;
+  z-index: 3;
 }
 
 .forecast-runway-marker-current {
@@ -1144,7 +1154,7 @@ button {
   height: 8px;
   border: 2px solid #ffffff;
   border-radius: 999px;
-  background: #334155;
+  background: #475569;
   box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.2);
   transform: translate(-50%, -50%);
 }
@@ -1153,7 +1163,7 @@ button {
   top: -2px;
   bottom: -2px;
   width: 2px;
-  background: rgba(51, 65, 85, 0.5);
+  background: rgba(71, 85, 105, 0.55);
   transform: translateX(-50%);
 }
 
@@ -1161,9 +1171,10 @@ button {
   top: 50%;
   width: 10px;
   height: 10px;
-  border: 2px solid #334155;
+  border: 2px solid #475569;
   border-radius: 999px;
   background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.16);
   transform: translate(-50%, -50%);
 }
 
