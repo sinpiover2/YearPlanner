@@ -1,4 +1,5 @@
 import { getForecastCardSummary } from "../utils/forecastCardUtils";
+import ForecastRunway from "./ForecastRunway";
 
 const severityOrder = {
   "Buffer Exhausted": 0,
@@ -61,8 +62,11 @@ function ForecastSummaryCard({ summary }) {
         {summary.currentLessonText && (
           <p>Current lesson: {summary.currentLessonText}</p>
         )}
+
         <p>{summary.paceText}</p>
         <p>{summary.projectionState}</p>
+
+        {summary.runway && <ForecastRunway runway={summary.runway} />}
 
         <em className="forecast-recommendation">{summary.recommendation}</em>
       </div>

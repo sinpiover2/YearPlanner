@@ -1104,6 +1104,69 @@ button {
   font-weight: 780;
 }
 
+.forecast-runway {
+  margin-top: 0.2rem;
+}
+
+.forecast-runway-track {
+  position: relative;
+  height: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.forecast-runway-overflow {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(100, 116, 139, 0.18) 0,
+    rgba(100, 116, 139, 0.18) 4px,
+    rgba(226, 232, 240, 0.35) 4px,
+    rgba(226, 232, 240, 0.35) 8px
+  );
+  pointer-events: none;
+}
+
+.forecast-runway-marker {
+  position: absolute;
+  left: 0;
+  z-index: 2;
+}
+
+.forecast-runway-marker-current {
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #334155;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.2);
+  transform: translate(-50%, -50%);
+}
+
+.forecast-runway-marker-end {
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: rgba(51, 65, 85, 0.5);
+  transform: translateX(-50%);
+}
+
+.forecast-runway-marker-projected {
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #334155;
+  border-radius: 999px;
+  background: #ffffff;
+  transform: translate(-50%, -50%);
+}
+
 .forecast-summary-card-calm p {
   color: #475569;
   font-weight: 650;
