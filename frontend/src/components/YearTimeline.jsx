@@ -39,6 +39,21 @@ function YearTimeline({
     return "Recoverable with attention";
   })();
 
+  const detailStatusTone = (() => {
+    if (!selectedUnit) return "monitoring";
+    if (Number(selectedUnit.remainingInUnit || 0) === 0) return "on-track";
+
+    if (selectedUnit.forecastState === "On Track") return "on-track";
+    if (selectedUnit.forecastState === "Needs Attention") {
+      return "needs-attention";
+    }
+    if (selectedUnit.forecastState === "Buffer Exhausted") {
+      return "buffer-exhausted";
+    }
+
+    return "monitoring";
+  })();
+
   const unitOutcomes = (() => {
     if (!selectedUnit) return [];
 
@@ -83,6 +98,23 @@ function YearTimeline({
       .filter(Boolean);
 
     return [...new Set(outcomes)].slice(0, 4);
+  })();
+
+  const unitPurpose = (() => {
+    if (!selectedUnit) return "";
+
+    const purposeCandidates = [
+      selectedUnit.Purpose,
+      selectedUnit.purpose,
+      selectedUnit.UnitPurpose,
+      selectedUnit.unitPurpose,
+      selectedUnit.InstructionalPurpose,
+      selectedUnit.instructionalPurpose,
+    ];
+
+    return purposeCandidates
+      .map((value) => String(value || "").trim())
+      .find(Boolean);
   })();
 
   if (forecastedSections.length === 0) return null;
@@ -299,52 +331,72 @@ function YearTimeline({
 
       {selectedUnit && (
         <div className="timeline-detail-panel" aria-live="polite">
-          <div className="timeline-detail-panel-header">
-            <strong>Selected unit details</strong>
-            <button
-              type="button"
-              className="timeline-detail-clear"
-              onClick={() => setSelectedUnit(null)}
-            >
-              Clear selection
-            </button>
-          </div>
+          <div className="timeline-detail-layout">
+            <div className="timeline-detail-left-column">
+              <div className="timeline-detail-panel-header">
+                <strong>Selected unit</strong>
+                <button
+                  type="button"
+                  className="timeline-detail-clear"
+                  onClick={() => setSelectedUnit(null)}
+                >
+                  Clear selection
+                </button>
+              </div>
 
-          <p className="timeline-detail-status">{detailStatus}</p>
+              <p
+                className={`timeline-detail-status-pill ${detailStatusTone}`}
+                aria-label={`Status: ${detailStatus}`}
+              >
+                {detailStatus}
+              </p>
 
-          <dl className="timeline-detail-grid">
-            <dt>Course</dt>
-            <dd>{getCourseLabel(selectedUnit.section?.CourseID)}</dd>
+              <dl className="timeline-detail-grid">
+                <dt>Course</dt>
+                <dd>{getCourseLabel(selectedUnit.section?.CourseID)}</dd>
 
-            <dt>Period</dt>
-            <dd>P{selectedUnit.section?.Period || "-"}</dd>
+                <dt>Period</dt>
+                <dd>P{selectedUnit.section?.Period || "-"}</dd>
 
-            <dt>Unit Number</dt>
-            <dd>U{selectedUnit.UnitNumber || "-"}</dd>
+                <dt>Unit</dt>
+                <dd>
+                  U{selectedUnit.UnitNumber || "-"} —{" "}
+                  {selectedUnit.UnitTitle || "-"}
+                </dd>
 
-            <dt>Unit Title</dt>
-            <dd>{selectedUnit.UnitTitle || "-"}</dd>
+                <dt>Required</dt>
+                <dd>{Number(selectedUnit.RequiredDays || 0)}</dd>
 
-            <dt>Required days</dt>
-            <dd>{Number(selectedUnit.RequiredDays || 0)}</dd>
+                <dt>Completed</dt>
+                <dd>{Number(selectedUnit.completedInUnit || 0)}</dd>
 
-            <dt>Completed required days in this unit</dt>
-            <dd>{Number(selectedUnit.completedInUnit || 0)}</dd>
-
-            <dt>Remaining required days in this unit</dt>
-            <dd>{Number(selectedUnit.remainingInUnit || 0)}</dd>
-          </dl>
-
-          {unitOutcomes.length > 0 && (
-            <div className="timeline-detail-outcomes">
-              <strong>Main outcomes</strong>
-              <ul>
-                {unitOutcomes.map((outcome, index) => (
-                  <li key={`timeline-outcome-${index}`}>{outcome}</li>
-                ))}
-              </ul>
+                <dt>Remaining</dt>
+                <dd>{Number(selectedUnit.remainingInUnit || 0)}</dd>
+              </dl>
             </div>
-          )}
+
+            <div className="timeline-detail-right-column">
+              <div className="timeline-detail-right-stack">
+                {unitPurpose && (
+                  <section className="timeline-detail-section timeline-detail-purpose">
+                    <h4>Purpose</h4>
+                    <p>{unitPurpose}</p>
+                  </section>
+                )}
+
+                {unitOutcomes.length > 0 && (
+                  <section className="timeline-detail-section timeline-detail-outcomes">
+                    <h4>Main outcomes</h4>
+                    <ul>
+                      {unitOutcomes.map((outcome, index) => (
+                        <li key={`timeline-outcome-${index}`}>{outcome}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </section>
