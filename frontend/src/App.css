@@ -1727,6 +1727,36 @@ button {
   min-width: 0;
 }
 
+.timeline-detail-outcomes {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.timeline-detail-outcomes strong {
+  color: #334155;
+  font-size: 0.73rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.timeline-detail-outcomes ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.timeline-detail-outcomes li {
+  color: #1f2937;
+  font-size: 0.73rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.timeline-detail-outcomes li + li {
+  margin-top: 2px;
+}
+
 .legend-dot {
   width: 9px;
   height: 9px;

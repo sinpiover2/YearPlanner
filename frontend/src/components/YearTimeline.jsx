@@ -1,6 +1,10 @@
 import { Fragment, useState } from "react";
 import { getSectionTimeline } from "../App";
-import { getCourseLabel, formatDays } from "../utils/plannerUtils";
+import {
+  getCourseLabel,
+  formatDays,
+  getOutcomeList,
+} from "../utils/plannerUtils";
 
 function YearTimeline({
   forecastedSections,
@@ -33,6 +37,52 @@ function YearTimeline({
     }
 
     return "Recoverable with attention";
+  })();
+
+  const unitOutcomes = (() => {
+    if (!selectedUnit) return [];
+
+    const limitLength = (value, maxLength = 96) => {
+      const normalized = String(value || "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (normalized.length <= maxLength) return normalized;
+      return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
+    };
+
+    const normalizeOutcomeField = (value) => {
+      if (Array.isArray(value)) {
+        return value
+          .map((entry) => String(entry || "").trim())
+          .filter(Boolean)
+          .join("|");
+      }
+
+      return value;
+    };
+
+    const outcomes = lessons
+      .filter((lesson) => lesson.UnitID === selectedUnit.UnitID)
+      .flatMap((lesson) => {
+        const outcomeCandidates = [
+          lesson.KeyOutcome,
+          lesson.keyOutcome,
+          lesson.KeyOutcomes,
+          lesson.keyOutcomes,
+          lesson.Outcome,
+          lesson.Outcomes,
+          lesson.Objective,
+          lesson.Objectives,
+        ];
+
+        return outcomeCandidates.flatMap((candidate) =>
+          getOutcomeList(normalizeOutcomeField(candidate)),
+        );
+      })
+      .map(limitLength)
+      .filter(Boolean);
+
+    return [...new Set(outcomes)].slice(0, 4);
   })();
 
   if (forecastedSections.length === 0) return null;
@@ -284,6 +334,17 @@ function YearTimeline({
             <dt>Remaining required days in this unit</dt>
             <dd>{Number(selectedUnit.remainingInUnit || 0)}</dd>
           </dl>
+
+          {unitOutcomes.length > 0 && (
+            <div className="timeline-detail-outcomes">
+              <strong>Main outcomes</strong>
+              <ul>
+                {unitOutcomes.map((outcome, index) => (
+                  <li key={`timeline-outcome-${index}`}>{outcome}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </section>
