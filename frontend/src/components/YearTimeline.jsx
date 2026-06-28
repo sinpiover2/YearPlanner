@@ -63,7 +63,9 @@ function YearTimeline({
                   </em>
                 </div>
 
-                <div className="unit-timeline-track">
+                <div
+                  className={`unit-timeline-track course-${section.CourseID || "unknown"}`}
+                >
                   <span
                     className="timeline-track-break winter-break"
                     aria-hidden="true"
@@ -136,17 +138,39 @@ function YearTimeline({
                   )}
 
                   <div
-                    className="unit-timeline-planned-marker"
-                    style={{ left: `${timeline.expectedPositionPercent}%` }}
-                    title="Expected pace line"
-                    aria-label="Expected pace"
+                    className="unit-timeline-end-marker"
+                    style={{ left: `${timeline.endPositionPercent}%` }}
+                    title="Required finish"
+                    aria-label="Required finish"
                   />
+
+                  {(() => {
+                    const projectedMarkerLeft =
+                      timeline.projectedFinishPercent === null
+                        ? null
+                        : timeline.endPositionPercent === null
+                          ? timeline.projectedFinishPercent
+                          : Math.max(
+                              timeline.projectedFinishPercent,
+                              timeline.endPositionPercent,
+                            );
+
+                    // Keep the projected marker at the required finish when the plan is on time or early.
+                    return projectedMarkerLeft === null ? null : (
+                      <div
+                        className="unit-timeline-projected-marker"
+                        style={{ left: `${projectedMarkerLeft}%` }}
+                        title="Projected finish"
+                        aria-label="Projected finish"
+                      />
+                    );
+                  })()}
 
                   <div
                     className="unit-timeline-marker"
                     style={{ left: `${timeline.currentPositionPercent}%` }}
-                    title="You are here"
-                    aria-label="You are here"
+                    title="Current position"
+                    aria-label="Current position"
                   />
                 </div>
               </div>
@@ -158,12 +182,17 @@ function YearTimeline({
       <div className="unit-timeline-legend" aria-label="Timeline legend">
         <span>
           <i className="legend-dot" />
-          You are here
+          Current
         </span>
 
         <span>
-          <i className="legend-planned-dot" />
-          Expected pace
+          <i className="legend-end-dot" />
+          Required finish
+        </span>
+
+        <span>
+          <i className="legend-projected-dot" />
+          Projected finish
         </span>
 
         <span>

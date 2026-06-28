@@ -500,6 +500,8 @@ function getSectionTimeline(forecast, units, lessons) {
     bufferDays,
     totalTimelineDays,
     currentPositionPercent,
+    projectedFinishPercent: forecast.projectedFinishPercent,
+    endPositionPercent: forecast.endPositionPercent,
     expectedPositionPercent,
   };
 }

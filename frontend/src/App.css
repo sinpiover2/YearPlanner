@@ -1678,6 +1678,25 @@ button {
   z-index: 3;
 }
 
+.unit-timeline-end-marker,
+.unit-timeline-projected-marker {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  z-index: 6;
+}
+
+.unit-timeline-end-marker {
+  background: #475569;
+}
+
+.unit-timeline-projected-marker {
+  background: #dc2626;
+}
+
 .legend-planned-dot {
   width: 2px;
   height: 13px;
@@ -1685,6 +1704,20 @@ button {
   background: rgba(15, 23, 42, 0.34);
 }
 
+.legend-projected-dot {
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  background: #dc2626;
+  border-radius: 999px;
+}
+.legend-end-dot {
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  background: #475569;
+  border-radius: 999px;
+}
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
