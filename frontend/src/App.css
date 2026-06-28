@@ -1697,6 +1697,14 @@ button {
   text-decoration: underline;
 }
 
+.timeline-detail-status {
+  margin: 0 0 8px;
+  color: #334155;
+  font-size: 0.74rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
 .timeline-detail-grid {
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr);

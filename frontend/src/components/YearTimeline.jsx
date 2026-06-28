@@ -10,6 +10,31 @@ function YearTimeline({
 }) {
   const [selectedUnit, setSelectedUnit] = useState(null);
 
+  const detailStatus = (() => {
+    if (!selectedUnit) return "";
+
+    if (Number(selectedUnit.remainingInUnit || 0) === 0) {
+      return "Unit complete";
+    }
+
+    if (selectedUnit.forecastState === "On Track") {
+      return "On pace";
+    }
+
+    if (
+      selectedUnit.forecastState === "Monitoring" ||
+      selectedUnit.forecastState === "Needs Attention"
+    ) {
+      return "Recoverable with attention";
+    }
+
+    if (selectedUnit.forecastState === "Buffer Exhausted") {
+      return "Schedule adjustment needed";
+    }
+
+    return "Recoverable with attention";
+  })();
+
   if (forecastedSections.length === 0) return null;
 
   return (
@@ -120,6 +145,7 @@ function YearTimeline({
                             setSelectedUnit({
                               ...unit,
                               section,
+                              forecastState: forecast.state,
                               completedInUnit,
                               remainingInUnit: Math.max(
                                 0,
@@ -233,6 +259,8 @@ function YearTimeline({
               Clear selection
             </button>
           </div>
+
+          <p className="timeline-detail-status">{detailStatus}</p>
 
           <dl className="timeline-detail-grid">
             <dt>Course</dt>
