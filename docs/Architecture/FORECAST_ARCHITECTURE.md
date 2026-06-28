@@ -266,6 +266,7 @@ Several principles guide every Forecast feature.
 * Minimal reading.
 * Color reserved for instructional severity.
 * The common case should remain the easiest to understand.
+* Prediction is communicated primarily through spatial position. Text exists to confirm and explain what the geometry already communicates.
 
 ?
 

@@ -10,6 +10,12 @@ The distinction matters. A dashboard displays information and asks the teacher t
 
 Most of the time, no action is needed. The design should say so clearly.
 
+The best version of Year Planner is the one the teacher forgets is there—until it has something important to say.
+
+Teacher attention is the scarcest resource in the system. Every feature must justify spending it.
+
+Year Planner does not compete with teaching. It exists so teachers can think less about pacing and more about students.
+
 ---
 
 ## The Underlying Question
