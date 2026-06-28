@@ -1,6 +1,7 @@
-import YearOutlookStrip from "./YearOutlookStrip";
 import YearTimeline from "./YearTimeline";
 import ForecastSummaryCards from "./ForecastSummaryCards";
+
+const showYearOutlook = false;
 
 function ForecastView({
   overallForecastStateClass,
@@ -24,8 +25,6 @@ function ForecastView({
           <strong>{overallForecastMessage}</strong>
           <span>{overallForecastDetail}</span>
         </div>
-
-        <YearOutlookStrip forecastedSections={forecastedSections} />
 
         <YearTimeline
           forecastedSections={forecastedSections}

@@ -1215,7 +1215,7 @@ button {
   width: 2px;
   height: 0.65rem;
   border-radius: 999px;
-  background: rgba(71,85,105,.6);
+  background: rgba(71, 85, 105, 0.6);
 }
 .forecast-summary-card-calm p {
   color: #475569;
@@ -1249,15 +1249,6 @@ button {
 
 .buffer-meter-fill.buffer-exhausted {
   background: #dc2626;
-}
-
-.year-outlook-strip {
-  display: flex;
-  gap: 8px;
-  padding: 10px;
-  border: 1px solid #d7dde6;
-  border-radius: 14px;
-  background: #fbfaf6;
 }
 
 .year-outlook-segment {
