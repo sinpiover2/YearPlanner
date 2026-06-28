@@ -1081,34 +1081,29 @@ button {
 
 .forecast-card-body {
   display: grid;
-  gap: 0.22rem;
-  margin-top: 0.35rem;
+  gap: 0.3rem;
+  margin-top: 0.45rem;
 }
 
 .forecast-card-body p {
   margin-top: 0;
 }
 
-.forecast-card-body p:first-child {
+.forecast-card-body p:first-of-type {
   color: #64748b;
   font-size: 0.77rem;
   font-weight: 600;
 }
 
-.forecast-card-body p:nth-child(3) {
+.forecast-card-body p:nth-of-type(3) {
   color: #64748b;
   font-size: 0.76rem;
   font-weight: 600;
 }
 
-.forecast-card-body .forecast-recommendation {
-  color: #334155;
-  font-size: 0.79rem;
-  font-weight: 780;
-}
-
 .forecast-runway {
-  margin-top: 0.2rem;
+  margin-top: 0.45rem;
+  margin-bottom: 0.1rem;
 }
 
 .forecast-runway-track {
