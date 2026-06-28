@@ -350,7 +350,21 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     projectedActualAtFinish +
     actualDays -
     (plannedDaysCompleted + remainingRequiredDays);
+  const totalRequiredDays = courseUnits.reduce(
+    (sum, unit) => sum + Number(unit.RequiredDays || 0),
+    0,
+  );
 
+  const totalTimelineDays = totalRequiredDays + bufferDays;
+
+  const projectedFinishPercent =
+    totalTimelineDays > 0
+      ? ((totalRequiredDays + projectedFinishVariance) / totalTimelineDays) *
+        100
+      : null;
+
+  const endPositionPercent =
+    totalTimelineDays > 0 ? (totalRequiredDays / totalTimelineDays) * 100 : 100;
   const bufferUsed = Math.max(0, variance);
   const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
   const consumedFraction = bufferDays > 0 ? bufferUsed / bufferDays : 0;
@@ -402,6 +416,8 @@ function getSectionForecast(section, units, lessons, dailyProgress) {
     forecastShift,
     projectedFinishVariance,
     projectedFinishDaysLate: Math.max(0, Math.round(projectedFinishVariance)),
+    projectedFinishPercent,
+    endPositionPercent,
     projectionState,
     bufferDays,
     bufferUsed,
