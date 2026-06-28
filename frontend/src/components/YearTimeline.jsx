@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { getSectionTimeline } from "../App";
 import { getCourseLabel, formatDays } from "../utils/plannerUtils";
 
@@ -8,6 +8,8 @@ function YearTimeline({
   lessons,
   timelineSyncSummaries,
 }) {
+  const [selectedUnit, setSelectedUnit] = useState(null);
+
   if (forecastedSections.length === 0) return null;
 
   return (
@@ -103,10 +105,28 @@ function YearTimeline({
 
                       return (
                         <div
-                          className="unit-timeline-block"
+                          className={`unit-timeline-block ${
+                            selectedUnit?.UnitID === unit.UnitID
+                              ? "unit-timeline-selected"
+                              : ""
+                          }`}
                           key={`${section.SectionID}-${unit.UnitID}`}
                           style={{ width: `${widthPercent}%` }}
-                          title={`U${unit.UnitNumber}: ${unit.UnitTitle} · ${requiredDays} required days`}
+                          title={`U${unit.UnitNumber}: ${unit.UnitTitle}
+                          Required: ${requiredDays} days
+                          Completed here: ${completedInUnit} days
+                          Remaining here: ${Math.max(0, requiredDays - completedInUnit)} days`}
+                          onClick={() =>
+                            setSelectedUnit({
+                              ...unit,
+                              section,
+                              completedInUnit,
+                              remainingInUnit: Math.max(
+                                0,
+                                requiredDays - completedInUnit,
+                              ),
+                            })
+                          }
                         >
                           <span
                             className="unit-timeline-block-fill"
@@ -140,7 +160,7 @@ function YearTimeline({
                   <div
                     className="unit-timeline-end-marker"
                     style={{ left: `${timeline.endPositionPercent}%` }}
-                    title="Required finish"
+                    title={`Required finish: ${timeline.totalRequiredDays} required days`}
                     aria-label="Required finish"
                   />
 
@@ -160,7 +180,7 @@ function YearTimeline({
                       <div
                         className="unit-timeline-projected-marker"
                         style={{ left: `${projectedMarkerLeft}%` }}
-                        title="Projected finish"
+                        title={`Projected finish if current pace continues`}
                         aria-label="Projected finish"
                       />
                     );
@@ -169,7 +189,7 @@ function YearTimeline({
                   <div
                     className="unit-timeline-marker"
                     style={{ left: `${timeline.currentPositionPercent}%` }}
-                    title="Current position"
+                    title={`Current: ${timeline.completedRequiredDays} of ${timeline.totalRequiredDays} required days completed`}
                     aria-label="Current position"
                   />
                 </div>
@@ -200,6 +220,44 @@ function YearTimeline({
           Buffer days
         </span>
       </div>
+
+      {selectedUnit && (
+        <div className="timeline-detail-panel" aria-live="polite">
+          <div className="timeline-detail-panel-header">
+            <strong>Selected unit details</strong>
+            <button
+              type="button"
+              className="timeline-detail-clear"
+              onClick={() => setSelectedUnit(null)}
+            >
+              Clear selection
+            </button>
+          </div>
+
+          <dl className="timeline-detail-grid">
+            <dt>Course</dt>
+            <dd>{getCourseLabel(selectedUnit.section?.CourseID)}</dd>
+
+            <dt>Period</dt>
+            <dd>P{selectedUnit.section?.Period || "-"}</dd>
+
+            <dt>Unit Number</dt>
+            <dd>U{selectedUnit.UnitNumber || "-"}</dd>
+
+            <dt>Unit Title</dt>
+            <dd>{selectedUnit.UnitTitle || "-"}</dd>
+
+            <dt>Required days</dt>
+            <dd>{Number(selectedUnit.RequiredDays || 0)}</dd>
+
+            <dt>Completed required days in this unit</dt>
+            <dd>{Number(selectedUnit.completedInUnit || 0)}</dd>
+
+            <dt>Remaining required days in this unit</dt>
+            <dd>{Number(selectedUnit.remainingInUnit || 0)}</dd>
+          </dl>
+        </div>
+      )}
     </section>
   );
 }
