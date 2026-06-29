@@ -1,119 +1,123 @@
-# Major Decisions
+Major Decisions
 
-This document records architectural and design decisions that shaped the project.
+This document records the major architectural and design decisions that shaped the Year Planner Suite.
 
-The purpose is to preserve *why* decisions were made, not merely what was implemented.
+The purpose is to preserve why decisions were made, not merely what was implemented.
 
----
+Every significant decision should answer three questions:
 
-# June 2026
+* What decision was made?
+* Why was it made?
+* What implications does it create for future development?
 
-## Technology Stack
+?
 
-Decision:
+June 2026
+
+Technology Stack
+
+Decision
 
 Use:
 
-- React
-- Vite
-- Google Sheets
-- Google Apps Script
-- Vercel
+* React
+* Vite
+* Google Sheets
+* Google Apps Script
+* Vercel
 
-Reason:
+Reason
 
-This architecture matches the Classroom Timer project, reducing complexity and allowing reuse of existing knowledge and deployment processes.
+This architecture matches the Classroom Timer project, reducing complexity while allowing reuse of existing knowledge and deployment processes.
 
----
+?
 
-## Year Planner Is a Decision-Support Tool
+Year Planner Is a Decision-Support Tool
 
-Decision:
+Decision
 
 Year Planner is not a reporting dashboard.
 
-Reason:
+Reason
 
 Dashboards display information and ask teachers to interpret it.
 
-Decision-support tools interpret information and help teachers act—or confirm that no action is needed.
+Decision-support tools interpret information and help teachers decide—or confirm that no action is needed.
 
----
+?
 
-## The Organizing Question
+The Organizing Question
 
-Decision:
+Decision
 
-Everything revolves around:
+Everything revolves around one question:
 
-> Am I OK?
+Am I OK?
 
-Reason:
+Reason
 
 Teachers are usually asking this question, even when they do not say it explicitly.
 
----
+Every feature should contribute to answering it.
 
-## Primary Planning Level
+?
 
-Decision:
+Primary Planning Level
+
+Decision
 
 The primary planning object is the Unit.
 
-Hierarchy:
-
-```text
 Course
- ?
+   ?
 Unit
- ?
+   ?
 Lesson
-```
 
-Reason:
+Reason
 
-Teachers naturally think in units rather than individual lessons.
+Teachers naturally organize instruction around units rather than individual lessons.
 
-The file structure and planner database should reflect the teacher's mental model.
+The data model and interface should reflect that mental model.
 
----
+?
 
-## Primary View
+Primary View
 
-Decision:
+Decision
 
-The default application view is a Timeline Dashboard.
+The default application view is a timeline.
 
 Secondary view:
 
-- Calendar Grid
+* Calendar Grid
 
-Reason:
+Reason
 
-The purpose of the application is pacing and year planning.
+Year Planner exists to understand pacing across a school year.
 
-Timelines reveal pacing drift more effectively than calendars.
+Timelines reveal instructional movement more naturally than calendars.
 
----
+?
 
-## Initial Courses
+Initial Courses
 
-Decision:
+Decision
 
 Begin with:
 
-- Math 8
-- Integrated Math 1
+* Math 8
+* Integrated Math 1
 
-Reason:
+Reason
 
-These courses are currently being taught and are sufficient to validate the design.
+These courses provide enough instructional complexity to validate the architecture while remaining manageable during development.
 
----
+?
 
-## Information Order
+Information Order
 
-Decision:
+Decision
 
 Information always appears in this order:
 
@@ -121,236 +125,393 @@ Information always appears in this order:
 2. Consequence
 3. Recommendation
 
-Reason:
+Reason
 
 Warnings without context create anxiety.
 
 Facts create trust.
 
----
+?
 
-## Timeline = Orientation
+Timeline = Orientation
 
-Decision:
+Decision
 
-The timeline provides orientation.
+The Timeline provides orientation.
 
 Cards provide interpretation.
 
-Reason:
+Reason
 
-Combining both responsibilities makes visualizations noisy and difficult to understand.
+Separating responsibilities keeps the interface visually calm and cognitively simple.
 
----
+?
 
-## Drift Is Geometric
+Drift Is Geometric
 
-Decision:
+Decision
 
-Represent drift through position rather than emphasizing numerical variance.
+Represent pacing primarily through position rather than emphasizing numerical variance.
 
-Reason:
+Reason
 
-Teachers understand:
+Teachers naturally understand:
 
-> Where am I?
+Where am I?
 
-more naturally than:
+before they understand:
 
-> How many days off am I?
+How many days off am I?
 
-Position is more important than numbers.
+Geometry communicates more quickly than numbers.
 
----
+?
 
-## One Dot and One Line
+One Dot and One Line
 
-Decision:
+Decision
 
 Use:
 
-- Black dot = current position
-- Vertical line = expected position
+* Current position = dot
+* Expected position = vertical line
 
-Reason:
+Reason
 
-Two dots imply two objects.
+Two dots imply two moving objects.
 
 One object and one reference are easier to understand.
 
----
+?
 
-## Rows Stay
+Rows Stay
 
-Decision:
+Decision
 
 Period rows remain visible.
 
-Reason:
+Reason
 
 Periods are landmarks.
 
 Stable geometry reduces cognitive load.
 
----
+?
 
-## No Section Compression
+No Section Compression
 
-Decision:
+Decision
 
 Remove row compression from the roadmap.
 
 Rejected:
 
-- Shared rows
-- Dynamic collapsing
-- Hidden sections
+* Shared rows
+* Dynamic collapsing
+* Hidden sections
 
-Reason:
+Reason
 
 Changing geometry creates confusion.
 
-Synchronization should change interpretation, not structure.
+Synchronization should change interpretation—not structure.
 
----
+?
 
-## Breaks Are Terrain
+Breaks Are Terrain
 
-Decision:
+Decision
 
-Remove the separate break row.
+Integrate school breaks directly into each timeline.
 
-Integrate breaks directly into tracks.
+Reason
 
-Reason:
-
-Breaks are part of the year itself.
+Breaks are part of the instructional landscape.
 
 Teachers think:
 
-> Nothing happens here.
+Nothing happens here.
 
 not:
 
-> Here is a separate layer of vacation information.
+Here is another layer of information.
 
----
+?
 
-## Stability Is Kindness
+Stability Is Kindness
 
-Decision:
+Decision
 
 Prefer stable structures over clever structures.
 
-Reason:
+Reason
 
 Teachers should not need to relearn the interface.
 
----
+?
 
-## Semantic Colors Are Separate From Course Colors
+Semantic Colors Are Separate From Course Colors
 
-Decision:
+Decision
 
-Status colors and course colors are independent.
+Course identity colors and instructional status colors are independent.
 
-Reason:
+Reason
 
-Identity and meaning are different.
+Identity and meaning communicate different information.
 
-A green course should not imply everything is fine.
+?
 
----
+Red Is Reserved
 
-## Red Is Reserved
+Decision
 
-Decision:
+Reserve red exclusively for Buffer Exhausted.
 
-Red is used only for Buffer Exhausted.
+Reason
 
-Reason:
+Warnings retain meaning only when they are rare.
 
-Most educational software overuses red.
+?
 
-Warnings should retain their meaning.
+Progress Uses Area
 
----
+Decision
 
-## Progress Uses Area
-
-Decision:
-
-Progress should be represented by area whenever possible.
+Represent progress through filled area whenever possible.
 
 Pattern:
 
-- Light background = planned.
-- Dark fill = completed.
+* Light background = planned
+* Dark fill = completed
 
-Reason:
+Reason
 
-Area communicates progress more naturally than icons.
+Area communicates progress more naturally than icons or labels.
 
----
+?
 
-## The Timeline Behaves Like a Map
+The Timeline Behaves Like a Map
 
-Decision:
+Decision
 
-Treat the year as a landscape.
+Treat the school year as a landscape.
 
-Reason:
+Reason
 
-Maps are understood quickly.
-
-Rows stay.
+Maps communicate position almost instantly.
 
 The year stays.
 
+Rows stay.
+
 The teacher moves.
 
----
+?
 
-## Version 1 Scope
+Version 1 Scope
 
-Included:
+Included
 
-- School calendar
-- Unit pacing
-- Instructional day calculations
-- Timeline visualization
-- Forecasting
-- Buffer calculations
+* School calendar
+* Unit pacing
+* Instructional day calculations
+* Timeline visualization
+* Forecasting
+* Buffer calculations
 
-Excluded:
+Excluded
 
-- Standards tracking
-- Assessments
-- Collaboration
-- Gradebook features
-- LMS functionality
+* Standards tracking
+* Assessments
+* Collaboration
+* Gradebook features
+* LMS functionality
 
-Reason:
+Reason
 
-Focus on proving the planning workflow before adding complexity.
+Prove the planning workflow before expanding scope.
 
----
+?
 
-## The Best Designs Disappear
+The Best Designs Disappear
 
-Decision:
+Decision
 
 Favor simplification over feature accumulation.
 
-Reason:
+Reason
 
-Every major improvement so far has come from removing something rather than adding something.
+Nearly every significant improvement has resulted from removing complexity rather than adding it.
 
 Examples:
 
-- Two dots ? one dot and one line.
-- Course grouping.
-- Elimination of section compression.
-- Elimination of the break row.
+* Two dots ? one dot and one line
+* Course grouping
+* Elimination of section compression
+* Elimination of the break row
 
 Invisible design is successful design.
+
+?
+
+Late June 2026
+
+Teaching Is Resource Stewardship
+
+Decision
+
+Treat teaching as the stewardship of limited instructional resources rather than the execution of a curriculum.
+
+Reason
+
+Teachers continuously invest instructional time, student attention, and learning opportunities.
+
+Planning is fundamentally an investment problem.
+
+Implications
+
+The software should help teachers understand instructional tradeoffs rather than simply display schedules.
+
+?
+
+Instructional Time Is a Budget
+
+Decision
+
+Treat instructional time as a finite budget throughout the suite.
+
+Reason
+
+Variance is not the real problem.
+
+The real question is:
+
+How much instructional freedom remains?
+
+Thinking in budgets better reflects how experienced teachers make instructional decisions.
+
+Implications
+
+Forecast emphasizes remaining flexibility rather than simply reporting days ahead or behind.
+
+?
+
+Awareness Before Advice
+
+Decision
+
+The software creates awareness.
+
+Teachers make decisions.
+
+Reason
+
+Professional judgment belongs to teachers.
+
+Software should reveal reality and consequences without prescribing instructional choices.
+
+Implications
+
+Forecast identifies instructional pressure.
+
+It does not decide how teachers should respond.
+
+?
+
+Applications Own Questions
+
+Decision
+
+Applications own professional questions rather than collections of features.
+
+Reason
+
+Clear ownership prevents feature creep while producing a coherent suite.
+
+Implications
+
+Year Planner, Lesson Planner, Unit Planner, and the Student App each answer different instructional questions.
+
+Information may be shared.
+
+Responsibilities should not.
+
+?
+
+One Instructional Model
+
+Decision
+
+The entire suite shares one instructional model.
+
+Reason
+
+Instructional truth should have one source.
+
+Forecast, Units, Lessons, and Student views should never disagree about the same instructional reality.
+
+Implications
+
+Applications interpret shared information rather than recomputing it independently.
+
+?
+
+Software Amplifies Teacher Expertise
+
+Decision
+
+Software exists to amplify professional expertise rather than replace it.
+
+Reason
+
+Teachers are the experts.
+
+Software removes bookkeeping so teachers can invest more attention in students.
+
+Implications
+
+Every feature should strengthen teacher judgment.
+
+A useful metaphor:
+
+Software is a cape on the superhero.
+
+The cape is not the hero.
+
+?
+
+Applications Follow Instructional Horizons
+
+Decision
+
+Organize the suite around instructional time horizons.
+
+Reason
+
+Teachers simultaneously think across multiple planning horizons.
+
+Implications
+
+* Year Planner — school year awareness
+* Unit Planner — instructional investment
+* Lesson Planner — today’s teaching
+* Student App — student ownership
+
+Each application answers a distinct professional question while sharing the same instructional model.
+
+?
+
+Philosophy Evolves
+
+Decision
+
+Treat the philosophy as a living theory rather than a fixed manifesto.
+
+Reason
+
+The software is discovering better ways to express enduring principles of teaching.
+
+Implications
+
+Architecture documents should evolve thoughtfully as understanding deepens, not simply grow larger over time.

@@ -1,232 +1,231 @@
----
+Year Planner — Design Philosophy
 
-# Year Planner — Design Philosophy
+?
 
-## What This Product Is
+What This Product Is
 
-Year Planner is a teacher decision-support tool, not a reporting dashboard.
+Year Planner is an instructional awareness system.
 
-The distinction matters. A dashboard displays information and asks the teacher to interpret it. A decision-support tool interprets the information and asks the teacher to act — or confirms that no action is needed.
+It is not a reporting dashboard.
 
-Most of the time, no action is needed. The design should say so clearly.
+It is not a digital planner.
 
-The best version of Year Planner is the one the teacher forgets is there—until it has something important to say.
+It is not an AI that teaches teachers how to teach.
 
-Teacher attention is the scarcest resource in the system. Every feature must justify spending it.
+Its purpose is to help teachers understand the instructional resources they are stewarding so they can exercise better professional judgment.
 
-Year Planner does not compete with teaching. It exists so teachers can think less about pacing and more about students.
+The software should remove bookkeeping.
 
----
+It should never replace judgment.
 
-## The Underlying Question
+The teacher is the expert.
 
-Teachers using Year Planner are asking one question, even when they do not articulate it:
+The software is the tool that amplifies that expertise.
 
-**Am I OK?**
+Like a cape on a superhero, the software should help teachers do what they already do well—not become the hero itself.
 
-Every feature, every label, every card, and every color choice should help answer that question. If an element of the interface does not help answer it, the element probably does not belong.
+?
 
-The four supporting questions — Where am I? Should I care? What happens if nothing changes? Can I fix this? — are the mechanism for answering "Am I OK?" They are design tools, not UI labels. Teachers should feel them answered, not see them listed.
+The Central Question
 
----
+Teachers often appear to be asking:
 
-## The Default State Is Calm
+Am I OK?
 
-Most pacing variance is normal. Most sections recover on their own. Most years proceed close to plan.
+But beneath that question is something richer:
 
-The interface should reflect this reality.
+Am I teaching the right things, at the right time, with enough time remaining?
 
-A system that defaults to alert trains teachers to ignore it. A system that defaults to calm earns trust — and the rare warning lands with the weight it deserves.
+Every feature should help answer that question.
 
-The emotional progression of Year Planner is:
+If a feature does not increase awareness of instructional investments, remaining flexibility, or future consequences, it probably does not belong.
 
-**On Track** — You're fine.
+?
 
-**Monitoring** — You're still fine. Keep an eye on this.
+Teaching Is Resource Stewardship
 
-**Needs Attention** — Something should probably change.
+Teaching is the continual stewardship of limited resources.
 
-There is no panic state. Even the rare Buffer Exhausted condition should communicate clarity rather than anxiety.
+Instructional time.
 
----
+Student attention.
 
-## Show Reality First
+Learning opportunities.
 
-Every piece of information follows the same order:
+Every instructional decision is an investment.
 
-1. Show the reality — the actual number, the current position, the variance.
-2. Show the consequence — what happens if this continues unchanged.
-3. Show the recommendation — what, if anything, to do about it.
+Every investment has an opportunity cost.
 
-Never lead with a warning. Lead with the fact.
+Great teaching is not the elimination of tradeoffs.
 
-**Not this:**
+It is making thoughtful tradeoffs while understanding their consequences.
 
-> ?? Pacing issue detected — P2 is behind schedule.
+?
 
-**This:**
+Two Clocks
 
-> Math 8 P2 is 0.5 days behind. Future units begin 0.5 days later. 13.5 of 14 buffer days remain. No action needed.
+Teachers teach against two clocks.
 
-Same information. Different experience.
+One hangs on the classroom wall.
 
----
+It measures today’s instructional minutes.
 
-## The Three States
+The other hangs silently over the school year.
 
-| State | Meaning | Visual signal |
-|---|---|---|
-| On Track | Variance is zero or negative. No forecast shift. | Green |
-| Monitoring | Variance is positive but within buffer. Sections may differ from each other but no action is required. | Amber |
-| Needs Attention | Variance is consuming a meaningful portion of buffer. Teacher should consider adjusting. | Amber |
-| Buffer Exhausted | Variance exceeds total optional days. Schedule adjustment required. | Red |
+It measures the instructional days that remain.
 
-**Red is reserved for one situation only:** when variance exceeds total optional days and the schedule can no longer absorb the difference without affecting required content. Every other state uses green or amber. Teachers spend their days inside systems that cry wolf in red. Year Planner should feel different.
+Both clocks matter.
 
----
+The software exists to help teachers understand them together.
 
-## The Recoverability Messages
+?
 
-When variance exists, the system always tells the teacher whether recovery is possible. These four messages are the complete set. Do not add others without reconsidering all four together.
+Awareness Before Advice
 
-- **No action needed.** — Buffer is barely touched.
-- **Recoverable within current buffer.** — Buffer is partially consumed but sufficient.
-- **Consider compressing upcoming optional lessons.** — Buffer is significantly consumed.
-- **Buffer exhausted — schedule adjustment required.** — Variance exceeds total optional days.
+The software exists to increase awareness.
 
-The final message names the situation and implies the need for change. It does not prescribe what the change should be. Teachers know their classrooms. The system's job is clarity, not pedagogy.
+It does not exist to make instructional decisions.
 
----
+Its responsibility is to reveal reality.
 
-## Buffer Is the Primary Pacing Metric
+Reveal constraints.
 
-Variance tells a teacher how far off they are. Buffer tells them whether it matters.
+Reveal consequences.
 
-A teacher who is 0.5 days behind with 13.5 of 14 buffer days remaining is fine. A teacher who is 4.5 days behind with 9.5 of 14 buffer days remaining has a real decision to make. The numbers are different but the variance-only view makes them look similar. Always show buffer alongside variance.
+Stop there.
 
-Display format:
+Professional judgment belongs to the teacher.
 
-**13.5 of 14 buffer days remaining.**
+Always.
 
-The denominator matters. Do not reduce this to a percentage.
+?
 
----
+Reality Before Interpretation
 
-## The Empty State
+Information should always flow in the same order.
 
-On day one, before any progress is logged, Year Planner should feel peaceful. The planned year is visible. Unit bars are drawn. No warnings exist because no data exists.
+1. Reality
+2. Implications
+3. Teacher Decision
 
-The message is simple:
+The software should never begin with an alert.
 
-*Nothing to report yet. Check back after logging your first lessons.*
+It should begin with what is true.
 
-This is the first impression teachers have of the system. It should teach them that Year Planner is a place that gives them useful information when it exists and honest silence when it does not.
+Interpretation should always emerge from reality rather than replace it.
 
----
+?
 
-## The Organizing Principle Across All Tabs
+Calm Is the Default
 
-Every tab in Year Planner answers the same underlying question at a different time scale.
+Most instructional variation is normal.
 
-**Today tab** — Am I OK today?
+Most sections recover naturally.
 
-**Units tab** — Am I OK in this unit?
+Most school years proceed close to plan.
 
-**Forecast tab** — Am I OK this year?
+The interface should reflect that reality.
 
-**What If? (future)** — If I change something, will I still be OK?
+Calm earns trust.
 
-Teachers learn this grammar once. They apply it everywhere. The consistency of tone across all four tabs is what makes Year Planner feel like a single trusted tool rather than a collection of features.
+Urgency should be reserved for genuine instructional constraints.
 
----
+The software should reassure whenever honesty allows.
 
-## The Timeline Is a Map
+?
 
-The timeline behaves like a map.
+Instructional Time Is a Budget
 
-Teachers think in position before they think in numbers.
+Instructional time is the most valuable resource teachers manage.
 
-The year stays.
+Unlike money, it cannot be earned back.
 
-Rows stay.
+Every lesson spends part of that budget.
 
-The teacher moves.
+The purpose of Year Planner is not to eliminate difficult choices.
 
-Periods are landmarks.
+Its purpose is to make those choices visible while meaningful options still exist.
 
-Synchronization changes interpretation, not geometry.
+The central question is never:
 
-Stable structure reduces cognitive load.
+“Am I behind?”
 
-Drift is geometric.
+It is:
 
-The distance between "where I am" and "where I expected to be" matters more than the numerical variance itself.
+“How much freedom do I still have?”
 
-The timeline exists to answer:
+?
 
-> Where am I?
+Reduce Cognitive Load
 
-It does not exist to answer:
+Teacher attention is the scarcest resource in the system.
 
-> Should I care?
+Every feature consumes attention.
 
-That is the responsibility of the cards.
+Every feature must therefore return more understanding than the attention it requires.
 
-**Timeline = orientation.**
+If a feature demands more thinking than it removes, it does not belong.
 
-**Cards = interpretation.**
+?
 
-The separation matters.
+Stable Systems Create Trust
 
----
+Teachers should spend their attention interpreting instruction—not interpreting software.
 
-## Stability Is Kindness
+Layouts should remain stable.
 
-Compression is kindness.
+Patterns should remain consistent.
 
-But changing the structure of the interface can create confusion instead of reducing it.
+Information should become more detailed without becoming more complicated.
 
-Stable geometry helps teachers build trust and familiarity.
+The interface should disappear behind the thinking it supports.
 
-Rows should remain visible.
+?
 
-Breaks are terrain, not decorations.
+Respect Professional Boundaries
 
-Synchronization changes interpretation, not structure.
+Each application in the suite exists to answer a different professional question.
 
-The best designs disappear.
+Year Planner creates awareness across the instructional year.
 
----
+Unit Planner creates awareness within a unit.
 
-## The Test for Every Future Feature
+Lesson Planner supports today’s instructional preparation.
 
-Before adding any feature, label, badge, alert, chart, or color to Year Planner, ask:
+The Student App helps students understand and own their learning.
 
-1. Does this help answer one of the four questions?
-2. Does it show reality before consequence before recommendation?
-3. Does it default to calm?
-4. Does it treat the teacher as a professional making their own decisions?
+Applications should share information.
 
-If the answer to any of these is no, the feature probably belongs somewhere else — or does not belong at all.
+They should not duplicate responsibility.
 
-## Timeline vs. Cards
+?
 
-The timeline answers:
+The Test for Every Feature
 
-Where am I?
+Before adding any feature, ask:
 
-The cards answer:
+* Does it increase teacher awareness?
+* Does it reduce cognitive load?
+* Does it preserve professional judgment?
+* Does it make instructional tradeoffs easier to understand?
+* Does it return more attention than it consumes?
 
-Should I care?
-What happens if nothing changes?
-What should I do?
+If the answer to any of these is no, the feature probably belongs somewhere else—or does not belong at all.
 
-The timeline is context.
+?
 
-The cards are interpretation.
+Success
 
-The timeline should not become the decision layer.
+Success is not measured by the number of features.
 
----
+Success is measured by the amount of unnecessary mental work removed.
 
-*This document is not documentation. It is the constitution of the project. Every feature, color, chart, and interaction should pass through it before being added.*
+The best version of Year Planner is the one teachers barely notice.
+
+It quietly answers the questions they would otherwise carry in their heads.
+
+When teachers close the software, they should not feel that it has taught them how to teach.
+
+They should feel that it has returned more of their attention to the people who deserve it most:
+
+Their students.

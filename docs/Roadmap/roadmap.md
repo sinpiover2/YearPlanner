@@ -1,31 +1,46 @@
-Year Planner Roadmap
+Year Planner Suite Roadmap
 
-This roadmap tracks both product development and the supporting documentation that enables long-term maintainability.
+This roadmap tracks both the evolution of the software and the evolution of its underlying philosophy.
+
+The software exists to create instructional awareness while reducing unnecessary cognitive work for teachers.
+
+As the suite grows, every new feature should strengthen that purpose rather than expand beyond it.
 
 ?
 
-Product Development
+Year Planner
 
-Completed
+Phase 0 – Foundations ?
 
-Phase 0 – Philosophy ?
+Philosophy
 
-* Core design philosophy established.
-* “Am I OK?” defined as the organizing question.
-* Decision-support approach adopted.
+* Established the instructional awareness vision.
+* Defined teacher decision support as the core purpose.
+* Adopted “Awareness before Advice.”
+* Established instructional time as a finite budget.
+* Defined “Two Clocks” as the central mental model.
 
 ?
 
 Phase 1 – Forecast Foundations ?
 
-* Forecast engine established.
-* Buffer calculations implemented.
-* Section-aware forecasting completed.
-* Core forecasting pipeline verified.
+Created the core instructional awareness engine.
+
+Completed:
+
+* Forecast engine
+* Buffer calculations
+* Section-aware forecasting
+* Forecast pipeline
+* Recoverability model
+* Forecast states
+* Initial interpretation layer
 
 ?
 
-Phase 2 – Forecast Intelligence (In Progress)
+Phase 2 – Forecast Experience ?
+
+Transformed forecasting into a decision-support experience.
 
 Sprint 2.0 – Forecast Foundations ?
 
@@ -44,92 +59,181 @@ Sprint 2.2 – Timeline Orientation ?
 * Calendar-based timeline
 * Unit visualization
 * Expected pace markers
-* Break visualization
+* School break visualization
 * Timeline refinement
 
-Sprint 2.3 – Forecast Cards / Attention Layer ?
+Sprint 2.3 – Forecast Cards ?
 
-* ? 2.3a – Card Architecture
-* ? 2.3b – Card Calmness
-* ? 2.3c – Recommendation Engine
-* ? 2.3d – Confidence and Projection Language
+* Card architecture
+* Calm instructional language
+* Interpretive recommendation model
+* Projection language
 
-Sprint 2.4 – Forecast Projection (Current Sprint)
+Sprint 2.4 – Forecast Projection ?
 
-* 2.4a – Projection State
-* 2.4b – Projection Visibility
-* 2.4c – Projection-Aware Recoverability
-* 2.4d – True Finish Forecast
+* Projection state
+* Projection visibility
+* Projection-aware recoverability
+* True Finish Forecast
+
+Sprint 2.5 – Forecast Polish ?
+
+* Visual refinement
+* Summary improvements
+* Forecast readability
+* Instructional language improvements
+
+Sprint 2.6 – Instructional Context ?
+
+* Interactive Year Timeline
+* Selected Unit panel
+* Unit purpose
+* Main learning outcomes
+* Improved instructional hierarchy
+
+Sprint 2.7 – Budget Awareness (Current)
+
+Current focus:
+
+Move Forecast from pacing awareness toward instructional budget awareness.
+
+Objectives:
+
+* Clarify remaining instructional freedom.
+* Strengthen the relationship between instructional purpose and pacing.
+* Improve awareness of future instructional tradeoffs.
+* Preserve the boundary between awareness and instructional decision-making.
 
 ?
 
-Future Phases
+Future Applications
 
-Phase 3 – Today Tab Refinement
+Unit Planner
 
-Refine daily instructional navigation.
+Purpose:
 
-?
+Help teachers understand the purpose and structure of instructional investments.
 
-Phase 4 – Units Tab Refinement
+Primary question:
 
-Refine medium-term planning and curriculum management.
-
-?
-
-Phase 5 – Data Model Improvements
-
-Improve flexibility, scalability, and maintainability of the planning model.
+Why is this instructional investment worth making?
 
 ?
 
-Phase 6 – What If? Scenario Engine
+Lesson Planner
 
-Support alternate pacing plans and instructional scenarios.
+Purpose:
+
+Reduce uncertainty before today’s instruction.
+
+Primary question:
+
+How should I prepare for today’s instructional investment?
 
 ?
 
-Phase 7 – Multi-Year Intelligence
+Student App
 
-Extend planning beyond a single school year.
+Purpose:
+
+Help students understand and take ownership of their learning.
+
+Primary question:
+
+What am I responsible for learning?
+
+?
+
+Future Exploration
+
+Potential future areas include:
+
+* What-If scenario planning
+* Multi-year curriculum planning
+* AI-assisted instructional analysis
+* Curriculum comparison tools
+* Department-level planning
+
+These features should support awareness rather than replace professional judgment.
 
 ?
 
 Documentation Roadmap
 
-The documentation system is considered part of the application architecture.
+Documentation is part of the architecture.
 
-Documentation should evolve alongside implementation.
-
-Documentation v1.1 (Current)
+It should evolve alongside implementation.
 
 Architecture
 
-* Complete the separation of ARCHITECTURE.md and FORECAST_ARCHITECTURE.md.
-* Standardize the disclosure model terminology using Action as the fourth layer.
+Completed:
+
+* FIRST_PRINCIPLES.md
+* DESIGN_PHILOSOPHY.md
+* SUITE_ARCHITECTURE.md
+* FORECAST_ARCHITECTURE.md
+
+Future:
+
+* LESSON_PLANNER_ARCHITECTURE.md
+* STUDENT_APP_ARCHITECTURE.md
+
+?
 
 Reference
 
-* Update REQUIREMENTS.md to reflect the current implementation.
-* Clarify the long-term responsibility of REQUIREMENTS.md.
+Maintain:
 
-Navigation
+* SYSTEM_INVENTORY.md
+* API_REFERENCE.md
+* SHEET_STRUCTURE.md
+* REQUIREMENTS.md
 
-* Add REQUIREMENTS.md and BUILD_LOG.md to the recommended reading order.
-* Cross-reference Vision, Architecture, Decisions, and History where appropriate.
+Reference documents describe reality.
 
-Maintenance
+Architecture documents describe intent.
 
-* Periodically audit documentation against implementation to prevent architectural drift.
+Both must remain synchronized.
+
+?
+
+Decision History
+
+Maintain an ongoing architectural decision log.
+
+Major design decisions should record:
+
+* the decision
+* the reasoning
+* the implications
+
+This preserves institutional memory as the suite evolves.
 
 ?
 
 Long-Term Vision
 
-Year Planner is evolving from a curriculum planner into a teacher decision-support system.
+The Year Planner Suite is not a collection of educational applications.
 
-The long-term objective is to help teachers understand the state of an entire school year within seconds by presenting information progressively through reassurance, orientation, explanation, and action.
+It is a unified instructional awareness system.
 
-Every feature should contribute to answering one question:
+Each application supports a different horizon of teaching.
 
-Am I OK?
+* Year Planner helps teachers steward the school year.
+* Unit Planner helps teachers steward instructional investments.
+* Lesson Planner helps teachers steward today’s instruction.
+* Student App helps students steward their own learning.
+
+Together, they reduce unnecessary cognitive work while preserving professional judgment.
+
+?
+
+Success
+
+The success of this project will not be measured by the number of applications or features it contains.
+
+It will be measured by whether teachers spend less time managing instruction and more time thinking about students.
+
+Every feature should move the suite toward that goal.
+
+If it does not, it should not be built.
