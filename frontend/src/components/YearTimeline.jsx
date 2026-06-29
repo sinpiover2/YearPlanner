@@ -334,7 +334,7 @@ function YearTimeline({
           <div className="timeline-detail-layout">
             <div className="timeline-detail-left-column">
               <div className="timeline-detail-panel-header">
-                <strong>Selected unit</strong>
+                <strong>Selected Unit</strong>
                 <button
                   type="button"
                   className="timeline-detail-clear"
@@ -344,14 +344,7 @@ function YearTimeline({
                 </button>
               </div>
 
-              <p
-                className={`timeline-detail-status-pill ${detailStatusTone}`}
-                aria-label={`Status: ${detailStatus}`}
-              >
-                {detailStatus}
-              </p>
-
-              <dl className="timeline-detail-grid">
+              <dl className="timeline-detail-facts">
                 <dt>Course</dt>
                 <dd>{getCourseLabel(selectedUnit.section?.CourseID)}</dd>
 
@@ -363,27 +356,40 @@ function YearTimeline({
                   U{selectedUnit.UnitNumber || "-"} —{" "}
                   {selectedUnit.UnitTitle || "-"}
                 </dd>
-
-                <dt>Required</dt>
-                <dd>{Number(selectedUnit.RequiredDays || 0)}</dd>
-
-                <dt>Completed</dt>
-                <dd>{Number(selectedUnit.completedInUnit || 0)}</dd>
-
-                <dt>Remaining</dt>
-                <dd>{Number(selectedUnit.remainingInUnit || 0)}</dd>
               </dl>
+
+              <div className="timeline-detail-divider" aria-hidden="true" />
+
+              <div
+                className="timeline-detail-stats"
+                aria-label="Pacing summary"
+              >
+                <div className="timeline-detail-stat-card">
+                  <span>Required</span>
+                  <strong>{Number(selectedUnit.RequiredDays || 0)}</strong>
+                </div>
+
+                <div className="timeline-detail-stat-card">
+                  <span>Completed</span>
+                  <strong>{Number(selectedUnit.completedInUnit || 0)}</strong>
+                </div>
+
+                <div className="timeline-detail-stat-card">
+                  <span>Remaining</span>
+                  <strong>{Number(selectedUnit.remainingInUnit || 0)}</strong>
+                </div>
+              </div>
+
+              <p
+                className={`timeline-detail-status-pill ${detailStatusTone}`}
+                aria-label={`Status: ${detailStatus}`}
+              >
+                {detailStatus}
+              </p>
             </div>
 
             <div className="timeline-detail-right-column">
               <div className="timeline-detail-right-stack">
-                {unitPurpose && (
-                  <section className="timeline-detail-section timeline-detail-purpose">
-                    <h4>Purpose</h4>
-                    <p>{unitPurpose}</p>
-                  </section>
-                )}
-
                 {unitOutcomes.length > 0 && (
                   <section className="timeline-detail-section timeline-detail-outcomes">
                     <h4>Main outcomes</h4>
@@ -392,6 +398,13 @@ function YearTimeline({
                         <li key={`timeline-outcome-${index}`}>{outcome}</li>
                       ))}
                     </ul>
+                  </section>
+                )}
+
+                {unitPurpose && (
+                  <section className="timeline-detail-section timeline-detail-purpose">
+                    <h4>Purpose</h4>
+                    <p>{unitPurpose}</p>
                   </section>
                 )}
               </div>

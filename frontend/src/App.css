@@ -1683,7 +1683,7 @@ button {
 
 .timeline-detail-right-stack {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .timeline-detail-section {
@@ -1709,7 +1709,7 @@ button {
 
 .timeline-detail-panel-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 6px;
@@ -1741,11 +1741,11 @@ button {
 .timeline-detail-status-pill {
   display: inline-flex;
   align-items: center;
-  margin: 0 0 8px;
+  margin: 3px 0 0;
   padding: 2px 7px;
   border-radius: 999px;
   border: 1px solid transparent;
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: 800;
   line-height: 1.2;
 }
@@ -1774,21 +1774,21 @@ button {
   color: #b91c1c;
 }
 
-.timeline-detail-grid {
+.timeline-detail-facts {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
   gap: 4px 12px;
   margin: 0;
 }
 
-.timeline-detail-grid dt {
+.timeline-detail-facts dt {
   margin: 0;
   color: #64748b;
   font-size: 0.73rem;
   font-weight: 700;
 }
 
-.timeline-detail-grid dd {
+.timeline-detail-facts dd {
   margin: 0;
   color: #0f172a;
   font-size: 0.74rem;
@@ -1796,8 +1796,46 @@ button {
   min-width: 0;
 }
 
+.timeline-detail-divider {
+  margin: 10px 0 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.timeline-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.timeline-detail-stat-card {
+  min-width: 0;
+  padding: 7px 6px;
+}
+
+.timeline-detail-stat-card span,
+.timeline-detail-stat-card strong {
+  white-space: nowrap;
+}
+
+.timeline-detail-stat-card span {
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+
+.timeline-detail-stat-card strong {
+  display: block;
+  margin-top: 2px;
+  color: #111827;
+  font-size: 0.95rem;
+  line-height: 1.1;
+}
+
 .timeline-detail-outcomes {
   margin-top: 0;
+}
+
+.timeline-detail-outcomes h4 {
+  margin: 0;
 }
 
 .timeline-detail-outcomes ul {
@@ -1933,12 +1971,12 @@ button {
     gap: 0.45rem;
   }
 
-  .timeline-detail-grid {
+  .timeline-detail-facts {
     grid-template-columns: 1fr;
     gap: 3px;
   }
 
-  .timeline-detail-grid dd {
+  .timeline-detail-facts dd {
     margin-bottom: 4px;
   }
 
@@ -1952,5 +1990,9 @@ button {
     border-right: none;
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 6px;
+  }
+
+  .timeline-detail-stats {
+    grid-template-columns: 1fr;
   }
 }
