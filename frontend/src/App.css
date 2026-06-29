@@ -1863,6 +1863,76 @@ button {
   margin-top: 2px;
 }
 
+.timeline-detail-lessons {
+  order: 3;
+  margin-top: 0;
+}
+
+.timeline-lesson-awareness {
+  display: grid;
+  gap: 10px;
+}
+
+.timeline-lesson-progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.timeline-lesson-progress strong {
+  color: #0f172a;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.timeline-lesson-progress span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.timeline-lesson-card {
+  padding: 10px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.timeline-lesson-card span {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.timeline-lesson-card strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.timeline-lesson-card p {
+  margin: 6px 0 0;
+  color: #334155;
+  font-size: 0.74rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.timeline-lesson-card.next {
+  background: #f8fafc;
+}
+
 .timeline-detail-close {
   border: none;
   background: transparent;

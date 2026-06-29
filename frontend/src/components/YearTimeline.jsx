@@ -116,7 +116,52 @@ function YearTimeline({
       .map((value) => String(value || "").trim())
       .find(Boolean);
   })();
+  const lessonAwareness = (() => {
+    if (!selectedUnit) return null;
 
+    const unitLessons = lessons
+      .filter((lesson) => lesson.UnitID === selectedUnit.UnitID)
+      .sort(
+        (a, b) =>
+          Number(a.SortOrder || a.LessonNumber || 0) -
+          Number(b.SortOrder || b.LessonNumber || 0),
+      );
+
+    if (unitLessons.length === 0) return null;
+
+    const currentLessonIndex = unitLessons.findIndex(
+      (lesson) => lesson.LessonID === selectedUnit.currentLesson?.LessonID,
+    );
+
+    const currentLesson =
+      currentLessonIndex >= 0
+        ? unitLessons[currentLessonIndex]
+        : unitLessons[0];
+
+    const nextLesson =
+      currentLessonIndex >= 0
+        ? unitLessons[currentLessonIndex + 1] || null
+        : unitLessons[1] || null;
+
+    const currentOutcomes = getOutcomeList(currentLesson?.KeyOutcome);
+    const nextOutcomes = getOutcomeList(nextLesson?.KeyOutcome);
+
+    return {
+      totalLessons: unitLessons.length,
+      currentLesson,
+      nextLesson,
+      currentLessonNumber:
+        currentLesson?.LessonNumber || currentLessonIndex + 1 || 1,
+      remainingLessons: Math.max(
+        unitLessons.length -
+          (currentLessonIndex >= 0 ? currentLessonIndex + 1 : 1),
+        0,
+      ),
+      currentOutcome: currentOutcomes[0] || "",
+      nextOutcome: nextOutcomes[0] || "",
+      isActiveUnit: currentLessonIndex >= 0,
+    };
+  })();
   if (forecastedSections.length === 0) return null;
 
   return (
@@ -407,6 +452,60 @@ function YearTimeline({
                   <section className="timeline-detail-section timeline-detail-purpose">
                     <h4>Unit Purpose</h4>
                     <p>{unitPurpose}</p>
+                  </section>
+                )}
+
+                {lessonAwareness && (
+                  <section className="timeline-detail-section timeline-detail-lessons">
+                    <h4>Lesson Awareness</h4>
+
+                    <div className="timeline-lesson-awareness">
+                      <div className="timeline-lesson-progress">
+                        <strong>
+                          Lesson {lessonAwareness.currentLessonNumber} of{" "}
+                          {lessonAwareness.totalLessons}
+                        </strong>
+                        <span>
+                          {lessonAwareness.remainingLessons === 0
+                            ? "No lessons remaining"
+                            : `${lessonAwareness.remainingLessons} lesson${
+                                lessonAwareness.remainingLessons === 1
+                                  ? ""
+                                  : "s"
+                              } remaining`}
+                        </span>
+                      </div>
+
+                      <div className="timeline-lesson-card">
+                        <span>
+                          {lessonAwareness.isActiveUnit
+                            ? "Current lesson"
+                            : "First lesson"}
+                        </span>
+                        <strong>
+                          Lesson{" "}
+                          {lessonAwareness.currentLesson?.LessonNumber || "-"} —{" "}
+                          {lessonAwareness.currentLesson?.LessonTitle || "-"}
+                        </strong>
+                        {lessonAwareness.currentOutcome && (
+                          <p>{lessonAwareness.currentOutcome}</p>
+                        )}
+                      </div>
+
+                      {lessonAwareness.nextLesson && (
+                        <div className="timeline-lesson-card next">
+                          <span>Up next</span>
+                          <strong>
+                            Lesson{" "}
+                            {lessonAwareness.nextLesson?.LessonNumber || "-"} —{" "}
+                            {lessonAwareness.nextLesson?.LessonTitle || "-"}
+                          </strong>
+                          {lessonAwareness.nextOutcome && (
+                            <p>{lessonAwareness.nextOutcome}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </section>
                 )}
               </div>
