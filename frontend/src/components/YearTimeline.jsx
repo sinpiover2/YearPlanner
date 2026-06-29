@@ -337,10 +337,12 @@ function YearTimeline({
                 <strong>Selected Unit</strong>
                 <button
                   type="button"
-                  className="timeline-detail-clear"
+                  className="timeline-detail-close"
                   onClick={() => setSelectedUnit(null)}
+                  aria-label="Close selected unit"
+                  title="Close"
                 >
-                  Clear selection
+                  ×
                 </button>
               </div>
 
@@ -403,7 +405,7 @@ function YearTimeline({
 
                 {unitPurpose && (
                   <section className="timeline-detail-section timeline-detail-purpose">
-                    <h4>Purpose</h4>
+                    <h4>Unit Purpose</h4>
                     <p>{unitPurpose}</p>
                   </section>
                 )}
