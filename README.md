@@ -1,180 +1,239 @@
-Year Planner
+Year Planner — Design Philosophy
 
-A decision-support system for curriculum planning and instructional pacing.
+What This Product Is
 
-Year Planner helps teachers understand the future consequences of today’s instructional decisions before they become tomorrow’s pacing problems.
+Year Planner is a teacher decision-support system.
 
-The application is built around one question:
+Its purpose is not to tell teachers what to do.
+
+Its purpose is to help teachers understand how they are investing their instructional time so they can make confident professional decisions.
+
+The software is not the expert.
+
+The teacher is.
+
+Year Planner exists to make that expertise easier to apply.
+
+The best version of Year Planner is the one the teacher forgets is there—until it has something important to say.
+
+Teacher attention is the scarcest resource in the system. Every feature must justify spending it.
+
+Year Planner does not compete with teaching.
+
+It exists so teachers can spend less mental energy managing time and more mental energy teaching students.
+
+?
+
+The First Question
+
+Every school year is constrained by one resource that cannot be replaced:
+
+Instructional time.
+
+Teachers are constantly making investments with that resource.
+
+Every lesson taught.
+
+Every discussion extended.
+
+Every review day added.
+
+Every enrichment activity.
+
+Every interruption absorbed.
+
+Every decision spends instructional time.
+
+Year Planner exists to answer one foundational question:
+
+How am I investing my instructional time?
+
+When teachers understand that clearly, they can answer the question they were really asking all along:
 
 Am I OK?
 
-Year Planner is not a reporting dashboard.
+?
 
-It is not a gradebook.
+Awareness Before Advice
 
-It is not a learning management system.
+Year Planner is an awareness system.
 
-It is a decision-support tool that interprets information and helps teachers understand where they are, whether they should care, and what happens if nothing changes.
+It makes the invisible visible.
+
+It shows teachers how today’s instructional choices affect tomorrow’s instructional possibilities.
+
+The software does not decide how instructional time should be spent.
+
+It does not optimize teaching.
+
+It does not prescribe curriculum.
+
+It simply reveals the current budget, the direction it is moving, and the consequences of continuing on the same path.
+
+Professional judgment always belongs to the teacher.
 
 ?
 
-Design Philosophy
+The Information Model
 
-Most teachers are fine most of the time.
+Every piece of information follows the same progression.
 
-The interface should communicate that reality.
-
-Year Planner is designed to reduce teacher cognitive load through calm, truthful, and highly visual communication.
-
-Information always appears in this order:
-
-1. Reality
-2. Consequence
-3. Recommendation
-
-The application favors:
-
-* Geometry before color.
-* Interpretation before reporting.
-* Navigation before dashboards.
-* Progressive disclosure.
-* Stability over novelty.
-
-The goal is simple:
-
-Help teachers spend less time interpreting information and more time making good instructional decisions.
+Reality
 
 ?
 
-Current Capabilities
-
-Today
-
-Supports daily instructional navigation.
-
-Answers:
-
-Am I OK today?
+Consequence
 
 ?
 
-Units
+Teacher Decision
 
-Supports medium-term instructional planning.
+The system reveals facts.
 
-Answers:
+It explains their implications.
 
-Am I OK in this unit?
+The teacher decides what those implications mean for their classroom.
 
-?
+Never reverse this order.
 
-Forecast
+Never begin with advice.
 
-Supports long-range pacing awareness.
-
-Answers:
-
-Am I OK this year?
-
-Forecast combines:
-
-* Year Timeline
-* Forecast Cards
-* Section-aware pacing
-* Buffer calculations
-* Projection modeling
-
-to help teachers understand future consequences before they become problems.
+Understanding comes before action.
 
 ?
 
-Technology Stack
+The Default State Is Calm
 
-Frontend
+Most pacing variance is normal.
 
-* React
-* Vite
+Most sections recover naturally.
 
-Backend
+Most school years stay within the available instructional flexibility.
 
-* Google Apps Script
+The interface should communicate this reality.
 
-Data Store
+A system that constantly warns eventually gets ignored.
 
-* Google Sheets
+A system that remains calm earns trust.
 
-Hosting
+Warnings become meaningful because they are rare.
 
-* Vercel
+The emotional progression is intentional:
 
-?
+On Track — Everything is working.
 
-Architecture
+Monitoring — Continue paying attention.
 
-React Frontend
-        ?
-        ?
-Google Apps Script API
-        ?
-        ?
-Google Sheets
+Needs Attention — Your instructional budget is becoming constrained.
 
-Google Sheets stores facts.
+Buffer Exhausted — Your current plan no longer fits within the available instructional time.
 
-Year Planner provides interpretation.
+Even the most serious state communicates clarity rather than anxiety.
 
 ?
 
-Documentation
+Buffer Is Freedom
 
-Project documentation lives in the docs/ directory.
+Variance tells teachers where they are.
 
-Start with:
+Buffer tells them how much freedom they still have.
 
-docs/DOCUMENTATION_GUIDE.md
+Buffer is not simply unused optional lessons.
 
-Recommended reading order:
+Buffer represents remaining instructional flexibility.
 
-1. Architecture/DESIGN_PHILOSOPHY.md
-2. Architecture/GUIDING_PRINCIPLES.md
-3. Architecture/ARCHITECTURE.md
-4. Architecture/FORECAST_ARCHITECTURE.md
-5. Architecture/FORECAST_TIMELINE_DECISIONS.md
-6. Vision/FORECAST_TIMELINE_VISION.md
-7. Development/AI_WORKFLOW.md
+It is the amount of professional choice still available before required learning must change.
 
-Additional documentation includes:
+This makes buffer the primary pacing metric.
 
-* Reference material
-* Build history
-* Release notes
-* Project roadmap
+Teachers do not manage variance.
+
+They manage freedom.
 
 ?
 
-Repository Structure
+Progressive Disclosure
 
-apps-script/
-archive/
-data/
-docs/
-frontend/
+Teachers should receive information only when it becomes useful.
+
+Year Planner reveals understanding in layers.
+
+Reassurance
 
 ?
 
-Vision
+Orientation
 
-Year Planner is being developed as a teacher decision-support system rather than a traditional planning application.
+?
 
-Its long-term goal is to compress an entire school year into an interface that can be understood within seconds.
+Explanation
 
-Teachers should be able to open the application, glance at the Forecast page, and immediately understand:
+?
 
-* Where they are.
-* Whether they should be concerned.
-* What will happen if nothing changes.
-* What action, if any, is worth taking.
+Action
 
-The interface should quietly disappear, leaving only understanding.
+Each layer answers a different question.
 
-“The best designs disappear.”
+The interface should never ask teachers to process more information than the moment requires.
+
+?
+
+Stable Mental Models
+
+Teachers build confidence through familiarity.
+
+The interface should remain structurally stable.
+
+The year does not move.
+
+The timeline does not move.
+
+The teacher moves.
+
+Geometry communicates before numbers.
+
+Position communicates before text.
+
+Stable structures reduce cognitive effort.
+
+?
+
+Professional Respect
+
+Teachers already carry impossible cognitive loads.
+
+Every feature should reduce that burden rather than increase it.
+
+Year Planner never assumes it knows the best instructional decision.
+
+Instead, it helps teachers understand the tradeoffs surrounding that decision.
+
+Awareness comes first.
+
+Judgment remains human.
+
+?
+
+The Test for Every Future Feature
+
+Before adding anything to Year Planner, ask:
+
+1. Does it improve awareness of instructional time?
+2. Does it reduce cognitive effort?
+3. Does it present reality before consequence?
+4. Does it preserve the teacher’s professional judgment?
+5. Does it make the software quieter rather than louder?
+
+If the answer to any of these is no, the feature probably does not belong.
+
+?
+
+The Goal
+
+Software is not the hero.
+
+Teachers are.
+
+Software is simply the cape that helps them do what they already know how to do—more clearly, more confidently, and with less unnecessary effort.
+
+Year Planner succeeds when teachers stop thinking about the software and start thinking about students.
