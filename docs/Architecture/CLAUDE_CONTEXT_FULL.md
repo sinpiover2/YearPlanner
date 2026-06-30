@@ -1,286 +1,310 @@
-Suite Architecture
+# Suite Architecture
 
-?
+## Purpose
 
-Purpose
+Year Planner is an instructional awareness suite for teachers.
 
-The Year Planner Suite is a collection of instructional awareness tools.
+It helps teachers see the instructional system clearly from different professional perspectives while preserving teacher judgment.
 
-Each application exists to answer one professional question exceptionally well.
+The suite should feel less like separate applications and more like different views of the same instructional reality.
 
-Applications may share information.
+---
 
-They should never duplicate responsibility.
+# Core Principle
 
-The suite succeeds when each application has a clear purpose and a teacher instinctively knows where to go for a particular kind of thinking.
+Applications own professional perspectives.
 
-?
+Those perspectives define the questions they answer.
 
-Shared Foundation
+Features follow from responsibility.
 
-Every application shares the same beliefs.
-
-* Teaching is the stewardship of limited instructional resources.
-* Instructional time is a budget.
-* Awareness belongs to the software.
-* Professional judgment belongs to the teacher.
-* Software should remove bookkeeping, not replace expertise.
-* Teacher attention is the scarcest resource in the system.
-
-Every application expresses these beliefs from a different instructional horizon.
-
-?
-
-The Instructional Horizons
-
-Teaching happens simultaneously across multiple time scales.
-
-The suite mirrors those horizons.
-
-School Year
-     ?
-     ?
- Year Planner
-     ?
-     ?
-Unit Planner
-     ?
-     ?
-Lesson Planner
-     ?
-     ?
-Student Learning
-
-Moving downward does not mean moving to a different system.
-
-It means moving closer to todayÕs instruction.
-
-Each application inherits context from the one above it.
-
-?
-
-Application Responsibilities
-
-Year Planner
-
-Primary Question
-
-How is my instructional time budget changing across the year?
-
-Responsibilities
-
-* Reveal long-term pacing.
-* Monitor instructional flexibility.
-* Show remaining buffer.
-* Surface emerging constraints.
-* Help teachers understand future implications.
-* Connect pacing to instructional purpose.
-
-Does Not Do
-
-* Build lessons.
-* Recommend instructional strategies.
-* Choose what to cut.
-* Manage daily instruction.
-
-Year Planner creates awareness.
-
-Teachers make decisions.
-
-?
-
-Unit Planner
-
-Primary Question
-
-Why is this instructional investment worth making?
-
-Responsibilities
-
-* Explain the purpose of the unit.
-* Organize lessons.
-* Clarify major learning outcomes.
-* Show instructional progress through the unit.
-* Reveal how todayÕs work fits the larger unit.
-
-Does Not Do
-
-* Manage yearly pacing.
-* Plan daily instruction.
-* Predict future schedule changes.
-
-The Unit Planner answers:
-
-ÒWhat is this investment intended to accomplish?Ó
-
-?
-
-Lesson Planner
-
-Primary Question
-
-How should I prepare for todayÕs instructional investment?
-
-Responsibilities
-
-* Organize todayÕs lesson.
-* Surface learning targets.
-* Collect instructional resources.
-* Support lesson preparation.
-* Reduce uncertainty before class.
-
-Does Not Do
-
-* Evaluate yearly pacing.
-* Redesign curriculum.
-* Make instructional decisions for teachers.
-
-Lesson Planner prepares teachers.
-
-Teachers teach.
-
-?
-
-Student App
-
-Primary Question
-
-What am I responsible for learning?
-
-Responsibilities
-
-* Show current learning goals.
-* Clarify success criteria.
-* Track learning progress.
-* Encourage ownership.
-* Help students understand their own growth.
-
-Does Not Do
-
-* Replace teacher feedback.
-* Grade students.
-* Manage curriculum pacing.
-
-Students steward learning.
-
-Teachers steward instructional time.
-
-?
-
-Ownership Rules
-
-Applications own questions, not features.
-
-For example:
-
-Forecast information belongs to Year Planner because it answers a yearly question.
-
-Learning targets belong to Lesson Planner because they answer a daily instructional question.
-
-The same data may appear in multiple applications.
+The same information may appear in multiple applications.
 
 The same responsibility should not.
 
-?
+---
 
-Information Flow
+# Shared Foundation
 
-Information moves from broad awareness toward daily action.
+Every application shares the same beliefs.
 
-Year
-"What does the year look like?"
-        ?
-        ?
-Unit
-"What is this investment for?"
-        ?
-        ?
-Lesson
-"What am I preparing today?"
-        ?
-        ?
-Student
-"What am I learning?"
+- Teaching is the stewardship of limited instructional resources.
+- Instructional time is finite.
+- Awareness belongs to the software.
+- Professional judgment belongs to the teacher.
+- Software should reduce bookkeeping, not replace expertise.
+- Teacher attention is the scarcest resource in the system.
 
-Each level inherits context from the one above it.
+---
 
-No application should require the teacher to mentally reconstruct information already understood elsewhere.
+# Professional Perspectives
 
-?
+The suite currently consists of five perspectives.
 
-Shared Pacing Engine
+| Application      | Primary Question                    | Primary Responsibility                                          |
+| ---------------- | ----------------------------------- | --------------------------------------------------------------- |
+| Forecast         | Where are we?                       | Interpret pacing and the consequences of instructional time.    |
+| Units            | What are we learning?               | Explain the planned curriculum.                                 |
+| Today            | What happened today?                | Record the enacted curriculum.                                  |
+| Lesson Planner   | How will I teach this lesson?       | Prepare and support lesson delivery.                            |
+| Student Learning | What am I responsible for learning? | Help students understand goals, success criteria, and progress. |
 
-The suite contains one instructional model.
+Year Planner is the name of the suite.
 
-Not four.
+Forecast, Units, Today, Lesson Planner, and Student Learning are applications within the suite.
 
-Concepts such as:
+---
 
-* Required days
-* Optional days
-* Buffer
-* Variance
-* Forecast state
-* Remaining flexibility
+# Application Responsibilities
 
-are computed once and shared throughout the suite.
+## Forecast
 
-Applications differ only in how they interpret that shared understanding.
+Primary Question:
 
-Truth should have one source.
+> Where are we?
 
-?
+Responsibilities:
 
-Progressive Disclosure
+- reveal pacing
+- show projected consequences
+- surface emerging constraints
+- communicate remaining instructional runway
+- help teachers understand implications of current instructional time use
 
-The suite should reveal information only when it becomes useful.
+Does Not Do:
 
-Teachers should move naturally through increasing levels of detail.
+- choose what to cut
+- record daily instruction
+- redesign curriculum
+- prepare lessons
 
-Year
-?
-Unit
-?
-Lesson
-?
-Student
+Forecast communicates consequences.
 
-The deeper a teacher moves, the narrower the instructional focus becomes.
+Teachers make decisions.
 
-The broader instructional context should never be lost.
+---
 
-Teachers should always understand both:
+## Units
 
-* the forest
-* the trees
+Primary Question:
 
-?
+> What are we learning?
 
-Design Boundary
+Responsibilities:
 
-Before adding a feature, ask:
+- explain the planned curriculum
+- communicate unit purpose
+- clarify learning destination
+- describe learning progression
+- organize the lesson sequence
+- support intentional curriculum revision
 
-Which professional question does this answer?
+Does Not Do:
 
-If the answer is unclear, the feature probably does not belong.
+- interpret pacing
+- record daily instruction
+- manage lesson delivery
+- become a progress dashboard
 
-If the feature answers two questions equally well, the architecture should be reconsidered before implementation.
+Units communicates intent.
+
+---
+
+## Today
+
+Primary Question:
+
+> What happened today?
+
+Responsibilities:
+
+- record instructional events
+- record lesson completion
+- record partial completion
+- capture instructional notes
+- support section-specific instructional adjustments
+
+Does Not Do:
+
+- rewrite the planned curriculum for all sections
+- interpret long-term pacing consequences
+- prepare future lessons
+- become a curriculum map
+
+Today records classroom reality.
+
+---
+
+## Lesson Planner
+
+Primary Question:
+
+> How will I teach this lesson?
+
+Responsibilities:
+
+- connect a planned lesson to a specific instructional day
+- support lesson preparation
+- organize resources
+- surface instructional strategies
+- support teacher reflection
+
+Does Not Do:
+
+- own yearly pacing
+- own the curriculum sequence
+- own official instructional records
+- make instructional decisions for teachers
+
+Lesson Planner prepares instruction.
+
+Teachers teach.
+
+---
+
+## Student Learning
+
+Primary Question:
+
+> What am I responsible for learning?
+
+Responsibilities:
+
+- show current learning goals
+- clarify success criteria
+- support student awareness of progress
+- encourage ownership of learning
+
+Does Not Do:
+
+- replace teacher feedback
+- grade students
+- manage curriculum pacing
+- determine instructional decisions
+
+Student Learning supports learner awareness.
+
+Teachers remain responsible for instruction.
+
+---
+
+# Information Domains
+
+Year Planner uses the shared Information Model defined in:
+
+`docs/Architecture/INFORMATION_MODEL.md`
+
+The suite distinguishes three information domains:
+
+1. Planned Curriculum
+2. Enacted Curriculum
+3. Interpretation
+
+These domains are authoritative in the Information Model.
+
+This document describes how applications use those domains.
+
+---
+
+# Information Flow
+
+Information flows through the suite as follows:
+
+```text
+Planned Curriculum
+        â†“
+Enacted Curriculum
+        â†“
+Interpretation
+        â†“
+Teacher Judgment
+```
+
+Units explains the Planned Curriculum.
+
+Today records the Enacted Curriculum.
+
+Forecast interprets the relationship between the plan and reality.
+
+Lesson Planner prepares instruction using the plan and relevant context.
+
+Student Learning presents learning goals and progress in student-facing form.
+
+---
+
+# Ownership Rules
+
+Applications own responsibilities, not duplicate data.
+
+Information has one canonical owner.
+
+Information may have many consumers.
+
+When deciding where a feature belongs, ask:
+
+1. What professional question does this answer?
+2. What information does it modify?
+3. Which application owns that responsibility?
 
 Clear ownership is more valuable than convenient placement.
 
-?
+---
 
-The Goal
+# Progressive Disclosure
 
-The applications should feel less like separate programs and more like different perspectives on the same instructional reality.
+The suite should reveal information only when it becomes useful.
 
-Teachers should never wonder:
+Teachers need to widen and narrow their view continuously.
 
-ÒWhich application am I supposed to use?Ó
+They should be able to move between:
 
-The answer should be obvious because each application exists to support a distinct kind of professional thinking.
+- the year
+- the course
+- the unit
+- the lesson
+- the day
+- the student
 
-The suite should quietly accompany teachers from the first day of school to the last, helping them understand their instructional investments while leaving the decisionsÑand the teachingÑwhere they belong.# Information Model
+without mentally reconstructing context.
+
+Teachers should always understand both:
+
+- the forest
+- the trees
+
+---
+
+# Design Boundary
+
+Before adding a feature, ask:
+
+> Which professional question does this answer?
+
+If the answer is unclear, the feature probably does not belong.
+
+If a feature answers two questions equally well, the architecture should be reconsidered before implementation.
+
+The goal is not to place features where they are convenient.
+
+The goal is to preserve clear professional thinking.
+
+---
+
+# The Goal
+
+Year Planner should quietly accompany teachers from the first day of school to the last.
+
+It should help them understand:
+
+- what they planned
+- what happened
+- what that means
+- what choices remain
+
+The suite creates awareness.
+
+Teachers make decisions.
+# Information Model
 
 ## Purpose
 
