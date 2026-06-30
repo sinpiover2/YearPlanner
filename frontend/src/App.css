@@ -833,77 +833,178 @@ button {
 
 /* ---------- Units View ---------- */
 
-.timeline-course {
+.units-workspace {
+  padding: 0 0 16px;
+}
+
+.units-page-header {
+  padding: 18px 24px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.units-page-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 24px;
+}
+
+.units-page-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.units-selector {
+  padding: 4px 0 0;
+}
+
+.units-course-map {
   padding: 20px 24px;
   border-top: 1px solid #e5e7eb;
 }
 
-.timeline-course:first-of-type {
+.units-course-map:first-of-type {
   border-top: none;
 }
 
-.timeline-course h3 {
+.units-course-map h3 {
   margin: 0 0 10px;
+  color: #111827;
+  font-size: 1rem;
 }
 
-.timeline-row {
+.units-map-row {
   display: flex;
   overflow: hidden;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
 }
 
-.unit-block {
+.units-map-card {
   flex: 1;
-  min-width: 110px;
+  min-width: 150px;
   border: none;
   border-right: 1px solid white;
   background: #dbeafe;
-  padding: 14px 10px;
-  text-align: center;
+  padding: 12px 10px;
+  text-align: left;
 }
 
-.unit-block:nth-child(even) {
+.units-map-card:nth-child(even) {
   background: #e0f2fe;
 }
 
-.unit-block.selected-unit {
+.units-map-card.selected-unit {
   outline: 3px solid #2563eb;
   z-index: 1;
 }
 
-.unit-block span {
+.units-map-card-number {
   display: block;
   color: #1d4ed8;
-  font-size: 18px;
-  font-weight: 950;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.unit-block strong {
+.units-map-card strong {
   display: block;
-  margin: 6px 0;
+  margin: 5px 0 4px;
   color: #0f3d8c;
-  font-size: 12px;
+  font-size: 0.8rem;
+  line-height: 1.2;
 }
 
-.unit-block small {
-  display: inline;
+.units-map-card-purpose {
+  margin: 0 0 6px;
   color: #475569;
-  font-style: normal;
-  font-weight: 800;
+  font-size: 0.73rem;
+  font-weight: 650;
+  line-height: 1.3;
 }
 
-.unit-block em {
+.units-map-card small {
   display: block;
-  margin-top: 4px;
   color: #475569;
   font-style: normal;
   font-weight: 800;
+  font-size: 0.72rem;
+}
+
+.units-map-card em {
+  display: block;
+  margin-top: 2px;
+  color: #475569;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.72rem;
   white-space: nowrap;
 }
 
-.unit-block small::after {
-  content: " · ";
+.units-summary {
+  margin: 2px 24px 12px;
+  padding: 12px 14px;
+  border: 1px solid #d7dde6;
+  border-radius: 12px;
+  background: #fbfaf6;
+}
+
+.units-summary-header h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.02rem;
+}
+
+.units-summary-header p {
+  margin: 4px 0 0;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.units-summary-brief {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.units-brief-section h4 {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.units-brief-section p {
+  margin: 5px 0 0;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.units-brief-section ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.units-brief-section li {
+  color: #1f2937;
+  font-size: 0.77rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.units-brief-section li + li {
+  margin-top: 2px;
 }
 
 /* ---------- Forecast View ---------- */

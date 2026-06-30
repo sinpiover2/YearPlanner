@@ -41,62 +41,129 @@ function UnitsView({
   formatVarianceCompact,
   formatDate,
 }) {
+  const selectedUnitPurpose = selectedUnit
+    ? [
+        selectedUnit.Purpose,
+        selectedUnit.UnitPurpose,
+        selectedUnit.purpose,
+        selectedUnit.unitPurpose,
+      ]
+        .map((value) => String(value || "").trim())
+        .find(Boolean)
+    : "";
+
+  const selectedUnitOutcomes = selectedUnit
+    ? [
+        ...new Set(
+          selectedUnitLessons
+            .flatMap((lesson) => getOutcomeList(lesson.KeyOutcome))
+            .map((outcome) => outcome.trim())
+            .filter(Boolean),
+        ),
+      ]
+    : [];
+
   return (
-    <section className="workspace-panel">
-      <h2>Units</h2>
+    <section className="workspace-panel units-workspace">
+      <header className="units-page-header">
+        <h2>Units</h2>
+        <p>Explore unit purpose, instructional time, and lesson sequence.</p>
+      </header>
 
-      {courses.map((course) => {
-        const courseUnits = units.filter(
-          (unit) => unit.CourseID === course.CourseID,
-        );
-        const projectedUnits = getProjectedUnits(courseUnits, schoolCalendar);
+      <section className="units-selector">
+        {courses.map((course) => {
+          const courseUnits = units.filter(
+            (unit) => unit.CourseID === course.CourseID,
+          );
+          const projectedUnits = getProjectedUnits(courseUnits, schoolCalendar);
 
-        return (
-          <div className="timeline-course" key={course.CourseID}>
-            <h3>{course.CourseName}</h3>
+          return (
+            <div className="units-course-map" key={course.CourseID}>
+              <h3>{course.CourseName}</h3>
 
-            <div className="timeline-row">
-              {projectedUnits.map((unit) => (
-                <button
-                  className={
-                    selectedUnit?.UnitID === unit.UnitID
-                      ? "unit-block selected-unit"
-                      : "unit-block"
-                  }
-                  key={unit.UnitID}
-                  onClick={() => {
-                    setSelectedCourseId(unit.CourseID);
-                    setSelectedUnitId(unit.UnitID);
-                  }}
-                >
-                  <span>U{unit.UnitNumber}</span>
-                  <strong>{unit.UnitTitle}</strong>
-                  <small>{unit.RequiredDays}d</small>
-                  <em>
-                    {unit.projectedStart && unit.projectedEnd
-                      ? `${formatDate(unit.projectedStart)}–${formatDate(
-                          unit.projectedEnd,
-                        )}`
-                      : "Pending"}
-                  </em>
-                </button>
-              ))}
+              <div className="units-map-row">
+                {projectedUnits.map((unit) => {
+                  const unitPurpose = [
+                    unit.Purpose,
+                    unit.UnitPurpose,
+                    unit.purpose,
+                    unit.unitPurpose,
+                  ]
+                    .map((value) => String(value || "").trim())
+                    .find(Boolean);
+
+                  return (
+                    <button
+                      className={
+                        selectedUnit?.UnitID === unit.UnitID
+                          ? "units-map-card selected-unit"
+                          : "units-map-card"
+                      }
+                      key={unit.UnitID}
+                      onClick={() => {
+                        setSelectedCourseId(unit.CourseID);
+                        setSelectedUnitId(unit.UnitID);
+                      }}
+                    >
+                      <span className="units-map-card-number">
+                        U{unit.UnitNumber}
+                      </span>
+                      <strong>{unit.UnitTitle}</strong>
+
+                      {unitPurpose && (
+                        <p className="units-map-card-purpose">{unitPurpose}</p>
+                      )}
+
+                      <small>{unit.RequiredDays}d</small>
+                      <em>
+                        {unit.projectedStart && unit.projectedEnd
+                          ? `${formatDate(unit.projectedStart)}–${formatDate(
+                              unit.projectedEnd,
+                            )}`
+                          : "Pending"}
+                      </em>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </section>
 
       {selectedUnit && (
         <>
-          <div className="unit-header compact">
-            <div>
-              <h2>
+          <section className="units-summary">
+            <div className="units-summary-header">
+              <h3>
                 {getCourseLabel(selectedUnit.CourseID)} — U
                 {selectedUnit.UnitNumber}
-              </h2>
+              </h3>
               <p>{selectedUnit.UnitTitle}</p>
             </div>
-          </div>
+
+            {(selectedUnitPurpose || selectedUnitOutcomes.length > 0) && (
+              <div className="units-summary-brief">
+                {selectedUnitPurpose && (
+                  <section className="units-brief-section">
+                    <h4>Unit Purpose</h4>
+                    <p>{selectedUnitPurpose}</p>
+                  </section>
+                )}
+
+                {selectedUnitOutcomes.length > 0 && (
+                  <section className="units-brief-section">
+                    <h4>Main Outcomes</h4>
+                    <ul>
+                      {selectedUnitOutcomes.map((outcome, index) => (
+                        <li key={`units-outcome-${index}`}>{outcome}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            )}
+          </section>
 
           <LessonTable
             lessonList={selectedUnitLessons}
