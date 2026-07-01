@@ -1127,7 +1127,6 @@ function App() {
 
           {activeView === "today" && (
             <TodayView
-              selectedCourseId={selectedCourseId}
               selectedNavigation={selectedNavigation}
               selectedStatus={selectedStatus}
               selectedPrepareNext={selectedPrepareNext}
@@ -1171,6 +1170,7 @@ function App() {
               units={units}
               schoolCalendar={schoolCalendar}
               getProjectedUnits={getProjectedUnits}
+              selectedCourseId={selectedCourseId}
               selectedUnit={selectedUnit}
               selectedUnitLessons={selectedUnitLessons}
               setSelectedCourseId={setSelectedCourseId}

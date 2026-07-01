@@ -1,10 +1,18 @@
+import { useEffect, useState } from "react";
 import LessonTable from "./LessonTable";
+
+function getUnitPurpose(unit) {
+  return [unit?.Purpose, unit?.UnitPurpose, unit?.purpose, unit?.unitPurpose]
+    .map((value) => String(value || "").trim())
+    .find(Boolean);
+}
 
 function UnitsView({
   courses,
   units,
   schoolCalendar,
   getProjectedUnits,
+  selectedCourseId,
   selectedUnit,
   selectedUnitLessons,
   setSelectedCourseId,
@@ -41,16 +49,23 @@ function UnitsView({
   formatVarianceCompact,
   formatDate,
 }) {
-  const selectedUnitPurpose = selectedUnit
-    ? [
-        selectedUnit.Purpose,
-        selectedUnit.UnitPurpose,
-        selectedUnit.purpose,
-        selectedUnit.unitPurpose,
-      ]
-        .map((value) => String(value || "").trim())
-        .find(Boolean)
-    : "";
+  const activeCourse =
+    courses.find((course) => course.CourseID === selectedCourseId) ??
+    courses[0];
+
+  const activeCourseUnits = activeCourse
+    ? units.filter((unit) => unit.CourseID === activeCourse.CourseID)
+    : [];
+
+  const projectedUnits = getProjectedUnits(activeCourseUnits, schoolCalendar);
+
+  const selectedUnitPurpose = getUnitPurpose(selectedUnit);
+
+  const [showAllOutcomes, setShowAllOutcomes] = useState(false);
+
+  useEffect(() => {
+    setShowAllOutcomes(false);
+  }, [selectedUnit?.UnitID]);
 
   const selectedUnitOutcomes = selectedUnit
     ? [
@@ -63,110 +78,155 @@ function UnitsView({
       ]
     : [];
 
+  const visibleUnitOutcomes = showAllOutcomes
+    ? selectedUnitOutcomes
+    : selectedUnitOutcomes.slice(0, 5);
+
+  const hasHiddenOutcomes = selectedUnitOutcomes.length > 5;
+
   return (
     <section className="workspace-panel units-workspace">
       <header className="units-page-header">
-        <h2>Units</h2>
-        <p>Explore unit purpose, instructional time, and lesson sequence.</p>
+        <div>
+          <h2>Units</h2>
+          <p>I’m working in this curriculum. Where am I in it?</p>
+        </div>
       </header>
 
-      <section className="units-selector">
-        {courses.map((course) => {
-          const courseUnits = units.filter(
-            (unit) => unit.CourseID === course.CourseID,
-          );
-          const projectedUnits = getProjectedUnits(courseUnits, schoolCalendar);
+      <nav className="units-course-tabs" aria-label="Course navigation">
+        {courses.map((course) => (
+          <button
+            type="button"
+            className={
+              activeCourse?.CourseID === course.CourseID
+                ? "units-course-tab active"
+                : "units-course-tab"
+            }
+            key={course.CourseID}
+            onClick={() => {
+              const nextCourseUnits = units.filter(
+                (unit) => unit.CourseID === course.CourseID,
+              );
 
-          return (
-            <div className="units-course-map" key={course.CourseID}>
-              <h3>{course.CourseName}</h3>
+              setSelectedCourseId(course.CourseID);
+              setSelectedUnitId(nextCourseUnits[0]?.UnitID || "");
+            }}
+          >
+            {course.CourseName}
+          </button>
+        ))}
+      </nav>
 
-              <div className="units-map-row">
-                {projectedUnits.map((unit) => {
-                  const unitPurpose = [
-                    unit.Purpose,
-                    unit.UnitPurpose,
-                    unit.purpose,
-                    unit.unitPurpose,
-                  ]
-                    .map((value) => String(value || "").trim())
-                    .find(Boolean);
+      <hr className="units-divider" />
 
-                  return (
-                    <button
-                      className={
-                        selectedUnit?.UnitID === unit.UnitID
-                          ? "units-map-card selected-unit"
-                          : "units-map-card"
-                      }
-                      key={unit.UnitID}
-                      onClick={() => {
-                        setSelectedCourseId(unit.CourseID);
-                        setSelectedUnitId(unit.UnitID);
-                      }}
-                    >
-                      <div className="units-map-card-main">
-                        <span className="units-map-card-number">
-                          U{unit.UnitNumber}
-                        </span>
-                        <strong>{unit.UnitTitle}</strong>
+      {activeCourse && (
+        <section className="units-map">
+          <div className="units-map-heading">
+            <h3>{activeCourse.CourseName}</h3>
+            <p>
+              {projectedUnits.length} units · click any unit to navigate the
+              curriculum
+            </p>
+          </div>
 
-                        {unitPurpose && (
-                          <p className="units-map-card-purpose">
-                            {unitPurpose}
-                          </p>
-                        )}
-                      </div>
+          <div className="units-map-row">
+            {projectedUnits.map((unit) => {
+              const isSelected = selectedUnit?.UnitID === unit.UnitID;
 
-                      <div className="units-map-card-footer">
-                        <small>{unit.RequiredDays}d</small>
-                        <em>
-                          {unit.projectedStart && unit.projectedEnd
-                            ? `${formatDate(unit.projectedStart)}–${formatDate(unit.projectedEnd)}`
-                            : "Pending"}
-                        </em>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </section>
+              return (
+                <button
+                  className={
+                    isSelected
+                      ? "units-map-card selected-unit"
+                      : "units-map-card"
+                  }
+                  key={unit.UnitID}
+                  onClick={() => {
+                    setSelectedCourseId(unit.CourseID);
+                    setSelectedUnitId(unit.UnitID);
+                  }}
+                >
+                  <span className="units-map-card-number">
+                    U{unit.UnitNumber}
+                  </span>
+
+                  <strong>{unit.UnitTitle}</strong>
+
+                  <span className="units-map-card-days">
+                    {unit.RequiredDays} days
+                  </span>
+
+                  <em>
+                    {unit.projectedStart && unit.projectedEnd
+                      ? `${formatDate(unit.projectedStart)} – ${formatDate(
+                          unit.projectedEnd,
+                        )}`
+                      : "Pending"}
+                  </em>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {selectedUnit && (
         <>
           <section className="units-summary">
-            <div className="units-summary-header">
-              <h3>
-                {getCourseLabel(selectedUnit.CourseID)} — U
-                {selectedUnit.UnitNumber}
-              </h3>
-              <p>{selectedUnit.UnitTitle}</p>
+            <div className="units-summary-top">
+              <div className="units-summary-title-block">
+                <span className="units-summary-unit-number">
+                  U{selectedUnit.UnitNumber}
+                </span>
+
+                <div>
+                  <h3>{selectedUnit.UnitTitle}</h3>
+                  {selectedUnitPurpose && <p>{selectedUnitPurpose}</p>}
+                </div>
+              </div>
+
+              <div className="units-days-badge">
+                {selectedUnit.RequiredDays} Days Planned
+              </div>
             </div>
 
-            {(selectedUnitPurpose || selectedUnitOutcomes.length > 0) && (
-              <div className="units-summary-brief">
-                {selectedUnitPurpose && (
-                  <section className="units-brief-section">
-                    <h4>Unit Purpose</h4>
-                    <p>{selectedUnitPurpose}</p>
-                  </section>
-                )}
+            <div className="units-summary-brief">
+              <section className="units-brief-section units-purpose-section">
+                <h4>Unit Purpose</h4>
+                <p>
+                  {selectedUnitPurpose ||
+                    "This unit purpose has not been added yet."}
+                </p>
+              </section>
 
-                {selectedUnitOutcomes.length > 0 && (
-                  <section className="units-brief-section">
-                    <h4>Main Outcomes</h4>
-                    <ul>
-                      {selectedUnitOutcomes.map((outcome, index) => (
-                        <li key={`units-outcome-${index}`}>{outcome}</li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-              </div>
-            )}
+              {selectedUnitOutcomes.length > 0 && (
+                <section className="units-brief-section units-outcomes-section">
+                  <h4>Main Outcomes</h4>
+
+                  <ul
+                    className={
+                      showAllOutcomes && selectedUnitOutcomes.length >= 8
+                        ? "units-outcome-list expanded"
+                        : "units-outcome-list"
+                    }
+                  >
+                    {visibleUnitOutcomes.map((outcome, index) => (
+                      <li key={`units-outcome-${index}`}>{outcome}</li>
+                    ))}
+                  </ul>
+
+                  {hasHiddenOutcomes && (
+                    <button
+                      type="button"
+                      className="units-show-outcomes"
+                      onClick={() => setShowAllOutcomes((value) => !value)}
+                    >
+                      {showAllOutcomes ? "Show fewer" : "Show all outcomes"}
+                    </button>
+                  )}
+                </section>
+              )}
+            </div>
           </section>
 
           <LessonTable
