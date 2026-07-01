@@ -105,23 +105,27 @@ function UnitsView({
                         setSelectedUnitId(unit.UnitID);
                       }}
                     >
-                      <span className="units-map-card-number">
-                        U{unit.UnitNumber}
-                      </span>
-                      <strong>{unit.UnitTitle}</strong>
+                      <div className="units-map-card-main">
+                        <span className="units-map-card-number">
+                          U{unit.UnitNumber}
+                        </span>
+                        <strong>{unit.UnitTitle}</strong>
 
-                      {unitPurpose && (
-                        <p className="units-map-card-purpose">{unitPurpose}</p>
-                      )}
+                        {unitPurpose && (
+                          <p className="units-map-card-purpose">
+                            {unitPurpose}
+                          </p>
+                        )}
+                      </div>
 
-                      <small>{unit.RequiredDays}d</small>
-                      <em>
-                        {unit.projectedStart && unit.projectedEnd
-                          ? `${formatDate(unit.projectedStart)}–${formatDate(
-                              unit.projectedEnd,
-                            )}`
-                          : "Pending"}
-                      </em>
+                      <div className="units-map-card-footer">
+                        <small>{unit.RequiredDays}d</small>
+                        <em>
+                          {unit.projectedStart && unit.projectedEnd
+                            ? `${formatDate(unit.projectedStart)}–${formatDate(unit.projectedEnd)}`
+                            : "Pending"}
+                        </em>
+                      </div>
                     </button>
                   );
                 })}
