@@ -3,6 +3,7 @@ import LessonTable from "./LessonTable";
 import {
   getUnitLoggedDays,
   getUnitProgressPercent,
+  getUnitState,
   getUnitRemainingDays,
   getUnitRequiredDays,
 } from "../utils/unitUtils";
@@ -159,6 +160,11 @@ function UnitsView({
               const loggedDays = getUnitLoggedDays(
                 selectedDailyProgress,
                 unit.UnitID,
+              );
+              const unitState = getUnitState(
+                selectedDailyProgress,
+                unit,
+                selectedUnit,
               );
 
               return (

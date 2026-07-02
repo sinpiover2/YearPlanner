@@ -27,3 +27,18 @@ export function getUnitProgressPercent(dailyProgress, unit) {
     ),
   );
 }
+
+export function getUnitState(dailyProgress, unit, selectedUnit) {
+  const loggedDays = getUnitLoggedDays(dailyProgress, unit?.UnitID);
+  const requiredDays = getUnitRequiredDays(unit);
+
+  if (requiredDays && loggedDays >= requiredDays) {
+    return "complete";
+  }
+
+  if (selectedUnit?.UnitID === unit?.UnitID || loggedDays > 0) {
+    return "current";
+  }
+
+  return "upcoming";
+}
