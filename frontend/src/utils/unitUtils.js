@@ -28,7 +28,7 @@ export function getUnitProgressPercent(dailyProgress, unit) {
   );
 }
 
-export function getUnitState(dailyProgress, unit, selectedUnit) {
+export function getUnitState(dailyProgress, unit, courseUnits) {
   const loggedDays = getUnitLoggedDays(dailyProgress, unit?.UnitID);
   const requiredDays = getUnitRequiredDays(unit);
 
@@ -36,7 +36,21 @@ export function getUnitState(dailyProgress, unit, selectedUnit) {
     return "complete";
   }
 
-  if (selectedUnit?.UnitID === unit?.UnitID || loggedDays > 0) {
+  const currentUnit =
+    courseUnits.find((courseUnit) => {
+      const courseUnitLoggedDays = getUnitLoggedDays(
+        dailyProgress,
+        courseUnit.UnitID,
+      );
+      const courseUnitRequiredDays = getUnitRequiredDays(courseUnit);
+
+      return (
+        !courseUnitRequiredDays ||
+        courseUnitLoggedDays < courseUnitRequiredDays
+      );
+    }) ?? courseUnits[0];
+
+  if (currentUnit?.UnitID === unit?.UnitID) {
     return "current";
   }
 

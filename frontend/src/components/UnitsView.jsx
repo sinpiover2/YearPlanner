@@ -164,7 +164,7 @@ function UnitsView({
               const unitState = getUnitState(
                 selectedDailyProgress,
                 unit,
-                selectedUnit,
+                activeCourseUnits,
               );
 
               return (
@@ -185,6 +185,16 @@ function UnitsView({
                   </span>
 
                   <strong>{unit.UnitTitle}</strong>
+
+                  <span
+                    className={`units-map-card-state ${unitState}`}
+                  >
+                    {unitState === "complete"
+                      ? "✓ Complete"
+                      : unitState === "current"
+                        ? "Current"
+                        : "Upcoming"}
+                  </span>
 
                   <span className="units-map-card-days">
                     {loggedDays} / {unit.RequiredDays} days
@@ -227,11 +237,7 @@ function UnitsView({
               </div>
 
               <div className="units-days-badge">
-                {unitLoggedDays} of {unitRequiredDays} days completed
-              </div>
-
-              <div className="units-days-remaining">
-                {unitRemainingDays} days remaining
+                {unitLoggedDays}/{unitRequiredDays} days · {unitRemainingDays} remaining
               </div>
 
               <div

@@ -1021,6 +1021,34 @@ button {
   letter-spacing: -0.02em;
 }
 
+.units-map-card-state {
+  display: inline-flex;
+  align-items: center;
+  align-self: start;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.units-map-card-state.complete {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.units-map-card-state.current {
+  background: #eef4ff;
+  color: #2563eb;
+}
+
+.units-map-card-state.upcoming {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
 .units-map-card strong {
   margin-top: 7px;
   color: #111827;
