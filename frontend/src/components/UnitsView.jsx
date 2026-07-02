@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 import LessonTable from "./LessonTable";
+import {
+  getUnitLoggedDays,
+  getUnitProgressPercent,
+  getUnitRemainingDays,
+  getUnitRequiredDays,
+} from "../utils/unitUtils";
 
 function getUnitPurpose(unit) {
   return [unit?.Purpose, unit?.UnitPurpose, unit?.purpose, unit?.unitPurpose]
@@ -83,35 +89,20 @@ function UnitsView({
     : selectedUnitOutcomes.slice(0, 5);
 
   const hasHiddenOutcomes = selectedUnitOutcomes.length > 5;
-  const unitLoggedDays = selectedUnit
-    ? selectedDailyProgress
-        .filter((entry) => entry.UnitID === selectedUnit.UnitID)
-        .reduce((total, entry) => total + Number(entry.DayFraction || 0), 0)
-    : 0;
 
-  const unitRequiredDays = Number(selectedUnit?.RequiredDays || 0);
-
-  const unitRemainingDays = Math.max(0, unitRequiredDays - unitLoggedDays);
-
-  const unitPercentComplete =
-    unitRequiredDays > 0
-      ? Math.round((unitLoggedDays / unitRequiredDays) * 100)
-      : 0;
-  const getUnitLoggedDays = (unitId) =>
-    selectedDailyProgress
-      .filter((entry) => entry.UnitID === unitId)
-      .reduce((total, entry) => total + Number(entry.DayFraction || 0), 0);
-
-  const getUnitProgressPercent = (unit) => {
-    const requiredDays = Number(unit.RequiredDays || 0);
-
-    if (!requiredDays) return 0;
-
-    return Math.min(
-      100,
-      Math.round((getUnitLoggedDays(unit.UnitID) / requiredDays) * 100),
-    );
-  };
+  const unitLoggedDays = getUnitLoggedDays(
+    selectedDailyProgress,
+    selectedUnit?.UnitID,
+  );
+  const unitRequiredDays = getUnitRequiredDays(selectedUnit);
+  const unitRemainingDays = getUnitRemainingDays(
+    selectedDailyProgress,
+    selectedUnit,
+  );
+  const unitPercentComplete = getUnitProgressPercent(
+    selectedDailyProgress,
+    selectedUnit,
+  );
 
   return (
     <section className="workspace-panel units-workspace">
@@ -161,8 +152,14 @@ function UnitsView({
           <div className="units-map-row">
             {projectedUnits.map((unit) => {
               const isSelected = selectedUnit?.UnitID === unit.UnitID;
-              const progressPercent = getUnitProgressPercent(unit);
-              const loggedDays = getUnitLoggedDays(unit.UnitID);
+              const progressPercent = getUnitProgressPercent(
+                selectedDailyProgress,
+                unit,
+              );
+              const loggedDays = getUnitLoggedDays(
+                selectedDailyProgress,
+                unit.UnitID,
+              );
 
               return (
                 <button
