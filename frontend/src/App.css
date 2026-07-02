@@ -843,7 +843,7 @@ button {
   justify-content: center;
   gap: 18px;
   align-items: center;
-  padding: 14px 20px 12px;
+  padding: 10px 20px 8px;
   border-bottom: 1px solid #e5e7eb;
   text-align: center;
 }
@@ -851,32 +851,32 @@ button {
 .units-page-header h2 {
   margin: 0;
   color: #111827;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .units-page-header p {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   color: #64748b;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
 .units-course-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 28px;
+  gap: 24px;
   align-items: center;
-  padding: 0 24px;
-  margin-top: 6px;
+  padding: 0 22px;
+  margin-top: 4px;
 }
 
 .units-course-tab {
   position: relative;
   border: none;
   background: transparent;
-  padding: 8px 0 10px;
+  padding: 7px 0 8px;
   color: #475569;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 800;
   cursor: pointer;
   transition: color 120ms ease;
@@ -900,23 +900,22 @@ button {
   border-radius: 999px;
   background: #2563eb;
 }
+
 .units-divider {
-  margin: 0 24px 18px;
-
+  margin: 0 22px 10px;
   border: 0;
-
   border-top: 1px solid #e5e7eb;
 }
 
 .units-map {
   position: relative;
-  padding: 8px 24px 20px;
+  padding: 4px 24px 18px;
   border-bottom: 1px solid #e5e7eb;
   background: #ffffff;
 }
 
 .units-map-heading {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .units-map-heading h3 {
@@ -926,22 +925,23 @@ button {
 .units-map-heading p {
   margin: 0;
   color: #334155;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 750;
 }
 
 .units-map-row {
   position: relative;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   overflow-x: auto;
   overflow-y: hidden;
-  align-items: start;
-  padding-bottom: 26px;
+  align-items: stretch;
+  padding: 2px 2px 28px;
 
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f3f4f6;
 }
+
 .units-map-row::-webkit-scrollbar {
   height: 6px;
 }
@@ -961,7 +961,7 @@ button {
   position: absolute;
   left: 3.5%;
   right: 3.5%;
-  bottom: 8px;
+  bottom: 9px;
   height: 3px;
   border-radius: 999px;
   background: #cbd5e1;
@@ -969,21 +969,16 @@ button {
 
 .units-map-card {
   position: relative;
-  flex: 0 0 156px;
+  flex: 0 0 150px;
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;
-  min-height: 164px;
-
-  padding: 14px 14px 12px;
-
+  min-height: 156px;
+  padding: 13px 13px 12px;
   border: 1px solid #d7dde6;
   border-radius: 10px;
-
   background: #ffffff;
-
   text-align: left;
   cursor: pointer;
-
   transition:
     border-color 120ms ease,
     box-shadow 120ms ease,
@@ -994,7 +989,7 @@ button {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -20px;
+  bottom: -21px;
   width: 11px;
   height: 11px;
   border-radius: 999px;
@@ -1005,41 +1000,31 @@ button {
 
 .units-map-card.selected-unit {
   border-color: #2563eb;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  background: #f8fbff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
 .units-map-card.selected-unit::after {
-  bottom: -20px;
-  width: 13px;
-  height: 13px;
+  bottom: -23px;
+  width: 15px;
+  height: 15px;
   background: #2563eb;
-}
-
-.units-map-card.selected-unit::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -10px;
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 8px solid #2563eb;
-  transform: translateX(-50%);
+  box-shadow:
+    0 0 0 4px #ffffff,
+    0 0 0 6px #bfdbfe;
 }
 
 .units-map-card-number {
   color: #2563eb;
-  font-size: 1rem;
+  font-size: 0.94rem;
   font-weight: 900;
   letter-spacing: -0.02em;
 }
 
 .units-map-card strong {
-  margin-top: 8px;
+  margin-top: 7px;
   color: #111827;
-  font-size: 0.78rem;
+  font-size: 0.77rem;
   font-weight: 850;
   line-height: 1.18;
   overflow-wrap: normal;
@@ -1049,19 +1034,10 @@ button {
 
 .units-map-card-days {
   align-self: end;
-  margin-top: 12px;
+  margin-top: 10px;
   color: #334155;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 750;
-}
-
-.units-map-card em {
-  margin-top: 8px;
-  color: #475569;
-  font-size: 0.75rem;
-  font-style: normal;
-  font-weight: 650;
-  white-space: nowrap;
 }
 
 .units-map-card em {
