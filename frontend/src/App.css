@@ -1040,6 +1040,22 @@ button {
   font-weight: 750;
 }
 
+.units-map-card-progress {
+  align-self: end;
+  height: 5px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.units-map-card-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+}
+
 .units-map-card em {
   margin-top: 2px;
   color: #64748b;
@@ -1116,6 +1132,23 @@ button {
   color: #047857;
   font-size: 0.72rem;
   font-weight: 850;
+}
+
+.units-summary-progress {
+  width: min(520px, 82%);
+  margin: 10px auto 8px;
+  height: 10px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.units-summary-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+  transition: width 200ms ease;
 }
 
 .units-summary-brief {
