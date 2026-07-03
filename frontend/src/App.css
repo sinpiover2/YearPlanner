@@ -2429,3 +2429,254 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* Today Workspace */
+
+.today-workspace {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.today-main {
+  display: grid;
+  gap: 28px;
+}
+
+.today-sidebar {
+  display: grid;
+  gap: 18px;
+}
+
+.today-date-card,
+.today-section,
+.today-hero-card {
+  border: 1px solid #eee7dc;
+  border-radius: 22px;
+  background: #fffdfa;
+}
+
+.today-date-card {
+  padding: 22px;
+}
+
+.today-date-card h2 {
+  margin: 8px 0 4px;
+  font-size: 1.35rem;
+}
+
+.today-date-card p {
+  margin: 0;
+  color: #7a7168;
+}
+
+.today-side-nav {
+  display: grid;
+  gap: 8px;
+}
+
+.today-side-nav a {
+  color: #6f665e;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.today-side-nav a:hover {
+  color: #2f2a25;
+}
+
+.today-hero-card {
+  padding: 46px 50px;
+  background: #fdfcf9;
+}
+
+.today-status {
+  margin: 0 0 14px;
+  color: #6f665e;
+  font-size: 1rem;
+}
+
+.today-hero-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 48px;
+  align-items: flex-end;
+}
+
+.today-hero-copy {
+  display: flex;
+  max-width: 680px;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.today-eyebrow {
+  display: inline-block;
+  color: #8a8178;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.today-hero-copy h2 {
+  margin: 12px 0 12px;
+  color: #2d2823;
+  font-size: clamp(2.3rem, 4vw, 3.9rem);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.today-hero-copy p {
+  margin: 6px 0 0;
+  color: #6f665e;
+  font-size: 0.98rem;
+}
+
+.today-countdown {
+  color: #4d463f;
+  font-weight: 650;
+}
+
+.today-start-button {
+  align-self: flex-end;
+  margin-bottom: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: #2f2a25;
+  color: #fffdfa;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 14px 24px;
+  white-space: nowrap;
+}
+
+.today-start-button:hover {
+  background: #1f1a16;
+}
+
+.today-section {
+  padding: 24px 28px;
+}
+
+.today-section-header h3 {
+  margin: 0;
+  color: #2f2a25;
+  font-size: 1.1rem;
+}
+
+.today-section-header p {
+  margin: 6px 0 0;
+  color: #7a7168;
+}
+
+.today-flow-timeline {
+  display: grid;
+  gap: 0;
+  margin: 28px auto 0;
+  max-width: 430px;
+}
+
+.today-flow-stop {
+  --node-size: 10px;
+  --rail-color: #e5ded2;
+  display: grid;
+  grid-template-columns: 54px 22px minmax(0, 1fr);
+  min-height: 64px;
+  position: relative;
+}
+
+.today-flow-stop::after {
+  background: var(--rail-color);
+  bottom: 0;
+  content: "";
+  left: 64px;
+  position: absolute;
+  top: calc(var(--node-size) + 2px);
+  width: 2px;
+}
+
+.today-flow-stop:last-child::after {
+  display: none;
+}
+
+.today-flow-stop time {
+  color: #a49a8f;
+  font-size: 0.82rem;
+  line-height: 1;
+  padding-top: 1px;
+  text-align: right;
+}
+
+.today-flow-node {
+  background: #fffdfa;
+  border: 1.5px solid #d8d0c4;
+  border-radius: 999px;
+  height: var(--node-size);
+  margin: 0 auto;
+  position: relative;
+  width: var(--node-size);
+  z-index: 1;
+}
+
+.today-flow-copy {
+  padding: 0 0 18px 10px;
+}
+
+.today-flow-copy strong {
+  color: #7a7168;
+  display: block;
+  line-height: 1.15;
+}
+
+.today-flow-copy p {
+  color: #a49a8f;
+  margin: 2px 0 0;
+}
+
+.today-flow-stop.is-complete {
+  --rail-color: #d8d0c4;
+}
+
+.today-flow-stop.is-complete .today-flow-node {
+  background: #bdb5aa;
+  border-color: #bdb5aa;
+}
+
+.today-flow-stop.is-complete .today-flow-copy strong,
+.today-flow-stop.is-complete .today-flow-copy p {
+  color: #b2aaa0;
+}
+
+.today-flow-stop.is-current {
+  --node-size: 18px;
+  min-height: 76px;
+}
+
+.today-flow-stop.is-current .today-flow-node {
+  background: #2f2a25;
+  border: 4px solid #f3eee6;
+  box-shadow: 0 0 0 1px #2f2a25;
+}
+
+.today-flow-stop.is-current .today-flow-copy {
+  padding-bottom: 28px;
+}
+
+.today-flow-stop.is-current .today-flow-copy strong {
+  color: #2f2a25;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 900px) {
+  .today-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .today-hero-content {
+    align-items: start;
+    flex-direction: column;
+  }
+}

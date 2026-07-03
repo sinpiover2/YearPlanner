@@ -24,23 +24,30 @@ function TodayView({
       </aside>
 
       <div className="today-main">
-        <p className="today-status">You're set for today.</p>
-
         <section id="today-next-up" className="today-hero-card">
-          <div className="today-hero-copy">
-            <span className="today-eyebrow">Next up · 12 min</span>
-            <p>{courseLabel} · Period 2</p>
-            <h2>{currentLesson?.LessonTitle ?? "No lesson selected"}</h2>
-            <p>
-              {currentUnit
-                ? `Unit ${currentUnit.UnitNumber}: ${currentUnit.UnitTitle}`
-                : "Course complete"}
-            </p>
-          </div>
+          <p className="today-status">You're set for today.</p>
 
-          <button className="today-start-button" type="button">
-            Start Lesson
-          </button>
+          <div className="today-hero-content">
+            <div className="today-hero-copy">
+              <span className="today-eyebrow">Next Lesson</span>
+              <h2>{currentLesson?.LessonTitle ?? "No lesson selected"}</h2>
+              <p>
+                {courseLabel} · Period 2 · Lesson{" "}
+                {selectedNavigation.currentLessonNumber ?? "—"} of{" "}
+                {selectedNavigation.totalLessonsInUnit ?? "—"}
+              </p>
+              <p>
+                {currentUnit
+                  ? `Unit ${currentUnit.UnitNumber}: ${currentUnit.UnitTitle}`
+                  : "Course complete"}
+              </p>
+              <p className="today-countdown">Starts in 12 minutes</p>
+            </div>
+
+            <button className="today-start-button" type="button">
+              Start Lesson
+            </button>
+          </div>
         </section>
 
         <section id="today-flow" className="today-section">
@@ -49,36 +56,37 @@ function TodayView({
             <p>Teaching sequence for the day</p>
           </div>
 
-          <div className="today-flow-list">
-            <article className="today-flow-item is-complete">
-              <span className="today-flow-marker" aria-hidden="true">✓</span>
-              <div>
+          <div className="today-flow-timeline" aria-label="Today teaching timeline">
+            <article className="today-flow-stop is-complete">
+              <time dateTime="08:15">8:15</time>
+              <span className="today-flow-node" aria-hidden="true" />
+              <div className="today-flow-copy">
                 <strong>Period 1</strong>
                 <p>Completed</p>
               </div>
             </article>
 
-            <article className="today-flow-item is-current">
-              <span className="today-flow-marker" aria-hidden="true">▶</span>
-              <div>
-                <strong>Period 2 · {courseLabel}</strong>
-                <p>{currentLesson?.LessonTitle ?? "Ready when selected"}</p>
+            <article className="today-flow-stop is-current">
+              <time dateTime="09:40">9:40</time>
+              <span className="today-flow-node" aria-hidden="true" />
+              <div className="today-flow-copy">
+                <strong>Period 2 — {currentLesson?.LessonTitle ?? "Ready when selected"}</strong>
               </div>
             </article>
 
-            <article className="today-flow-item">
-              <span className="today-flow-marker" aria-hidden="true">○</span>
-              <div>
+            <article className="today-flow-stop">
+              <time dateTime="11:00">11:00</time>
+              <span className="today-flow-node" aria-hidden="true" />
+              <div className="today-flow-copy">
                 <strong>Prep</strong>
-                <p>Later today</p>
               </div>
             </article>
 
-            <article className="today-flow-item">
-              <span className="today-flow-marker" aria-hidden="true">○</span>
-              <div>
+            <article className="today-flow-stop">
+              <time dateTime="13:10">1:10</time>
+              <span className="today-flow-node" aria-hidden="true" />
+              <div className="today-flow-copy">
                 <strong>Period 5</strong>
-                <p>Later today</p>
               </div>
             </article>
           </div>
