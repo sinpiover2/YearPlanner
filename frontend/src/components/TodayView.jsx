@@ -1,19 +1,16 @@
-function TodayView({
-  selectedCourseId,
-  selectedNavigation,
-  getCourseLabel,
-}) {
-  const courseLabel = getCourseLabel(selectedCourseId);
-  const currentLesson = selectedNavigation.currentLesson;
-  const currentUnit = selectedNavigation.currentUnit;
+function TodayView({ todayModel }) {
+  const currentItem = todayModel.currentItem;
+  const currentLesson = currentItem?.lesson;
+  const currentUnit = currentItem?.unit;
+  const currentSection = currentItem?.section;
 
   return (
     <section className="workspace-panel today-workspace">
       <aside className="today-sidebar">
         <div className="today-date-card">
           <span className="today-eyebrow">Today</span>
-          <h2>Thursday</h2>
-          <p>July 2</p>
+          <h2>{todayModel.weekday}</h2>
+          <p>{todayModel.dateLabel}</p>
         </div>
 
         <nav className="today-side-nav" aria-label="Today quick navigation">
@@ -25,16 +22,17 @@ function TodayView({
 
       <div className="today-main">
         <section id="today-next-up" className="today-hero-card">
-          <p className="today-status">You're set for today.</p>
+          <p className="today-status">{todayModel.statusText}</p>
 
           <div className="today-hero-content">
             <div className="today-hero-copy">
               <span className="today-eyebrow">Next Lesson</span>
               <h2>{currentLesson?.LessonTitle ?? "No lesson selected"}</h2>
               <p>
-                {courseLabel} · Period 2 · Lesson{" "}
-                {selectedNavigation.currentLessonNumber ?? "—"} of{" "}
-                {selectedNavigation.totalLessonsInUnit ?? "—"}
+                {currentItem?.courseLabel ?? todayModel.selectedCourseLabel} ·
+                Period {currentSection?.Period ?? "—"} · Lesson{" "}
+                {currentItem?.lessonNumber ?? "—"} of{" "}
+                {currentItem?.totalLessonsInUnit ?? "—"}
               </p>
               <p>
                 {currentUnit
@@ -57,38 +55,36 @@ function TodayView({
           </div>
 
           <div className="today-flow-timeline" aria-label="Today teaching timeline">
-            <article className="today-flow-stop is-complete">
-              <time dateTime="08:15">8:15</time>
-              <span className="today-flow-node" aria-hidden="true" />
-              <div className="today-flow-copy">
-                <strong>Period 1</strong>
-                <p>Completed</p>
-              </div>
-            </article>
+            {todayModel.flowItems.map((item) => {
+              const stateClass =
+                item.state === "complete"
+                  ? " is-complete"
+                  : item.state === "current"
+                    ? " is-current"
+                    : "";
 
-            <article className="today-flow-stop is-current">
-              <time dateTime="09:40">9:40</time>
-              <span className="today-flow-node" aria-hidden="true" />
-              <div className="today-flow-copy">
-                <strong>Period 2 — {currentLesson?.LessonTitle ?? "Ready when selected"}</strong>
-              </div>
-            </article>
-
-            <article className="today-flow-stop">
-              <time dateTime="11:00">11:00</time>
-              <span className="today-flow-node" aria-hidden="true" />
-              <div className="today-flow-copy">
-                <strong>Prep</strong>
-              </div>
-            </article>
-
-            <article className="today-flow-stop">
-              <time dateTime="13:10">1:10</time>
-              <span className="today-flow-node" aria-hidden="true" />
-              <div className="today-flow-copy">
-                <strong>Period 5</strong>
-              </div>
-            </article>
+              return (
+                <article
+                  className={`today-flow-stop${stateClass}`}
+                  key={item.id}
+                >
+                  <time dateTime={item.timeLabel}>{item.timeLabel}</time>
+                  <span className="today-flow-node" aria-hidden="true" />
+                  <div className="today-flow-copy">
+                    <strong>
+                      Period {item.section?.Period ?? "—"}
+                      {item.state === "current" && item.lesson
+                        ? ` — ${item.lesson.LessonTitle}`
+                        : ""}
+                    </strong>
+                    {item.state === "complete" && <p>Completed</p>}
+                    {item.state !== "complete" && item.state !== "current" && (
+                      <p>{item.courseLabel}</p>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </section>
 
