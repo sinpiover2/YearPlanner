@@ -1,140 +1,95 @@
-import LessonTable from "./LessonTable";
-
 function TodayView({
   selectedCourseId,
   selectedNavigation,
-  selectedStatus,
-  selectedPrepareNext,
   getCourseLabel,
-  formatVariance,
-  calculateProgressPercent,
-  selectedDailyProgress,
-  activeProgressLessonId,
-  progressInputs,
-  setProgressInputs,
-  setActiveProgressLessonId,
-  handleLogProgress,
-  editingLessonId,
-  editLessonDraft,
-  setEditLessonDraft,
-  setEditingLessonId,
-  startEditingLesson,
-  updateGoal,
-  removeGoal,
-  addGoal,
-  handleUpdateLesson,
-  handleMoveLesson,
-  handleDeleteLesson,
-  isAddingLesson,
-  setIsAddingLesson,
-  newLesson,
-  setNewLesson,
-  updateNewLessonGoal,
-  addNewLessonGoal,
-  removeNewLessonGoal,
-  handleAddLesson,
-  getLessonProgress,
-  getOutcomeList,
-  formatVarianceCompact,
 }) {
+  const courseLabel = getCourseLabel(selectedCourseId);
+  const currentLesson = selectedNavigation.currentLesson;
+  const currentUnit = selectedNavigation.currentUnit;
+
   return (
-    <section className="workspace-panel">
-      <div className="breadcrumb">
-        {getCourseLabel(selectedCourseId)} ›{" "}
-        {selectedNavigation.currentUnit
-          ? `U${selectedNavigation.currentUnit.UnitNumber}: ${selectedNavigation.currentUnit.UnitTitle}`
-          : "Course complete"}{" "}
-        › <strong>Lesson {selectedNavigation.currentLessonNumber}</strong>
-        <span>{formatVariance(selectedStatus.variance)}</span>
-      </div>
-
-      <header className="unit-header">
-        <div>
-          <h2>
-            {selectedNavigation.currentUnit?.UnitTitle ?? "Course Complete"}
-          </h2>
-          <p>
-            {getCourseLabel(selectedCourseId)} ·{" "}
-            {selectedNavigation.totalLessonsInUnit} lessons ·{" "}
-            {selectedNavigation.plannedDays} days planned
-          </p>
+    <section className="workspace-panel today-workspace">
+      <aside className="today-sidebar">
+        <div className="today-date-card">
+          <span className="today-eyebrow">Today</span>
+          <h2>Thursday</h2>
+          <p>July 2</p>
         </div>
 
-        <span className="status-pill">
-          {selectedNavigation.currentLesson ? "In progress" : "Complete"}
-        </span>
-      </header>
+        <nav className="today-side-nav" aria-label="Today quick navigation">
+          <a href="#today-next-up">Next Up</a>
+          <a href="#today-flow">Today's Flow</a>
+          <a href="#before-tomorrow">Before Tomorrow</a>
+        </nav>
+      </aside>
 
-      <div className="unit-progress">
-        <div
-          style={{
-            width: `${calculateProgressPercent(
-              selectedNavigation.actualDays,
-              selectedNavigation.plannedDays,
-            )}%`,
-          }}
-        />
-      </div>
+      <div className="today-main">
+        <p className="today-status">You're set for today.</p>
 
-      <p className="progress-caption">
-        {selectedNavigation.actualDays} of {selectedNavigation.plannedDays} days
-        used
-      </p>
+        <section id="today-next-up" className="today-hero-card">
+          <div className="today-hero-copy">
+            <span className="today-eyebrow">Next up · 12 min</span>
+            <p>{courseLabel} · Period 2</p>
+            <h2>{currentLesson?.LessonTitle ?? "No lesson selected"}</h2>
+            <p>
+              {currentUnit
+                ? `Unit ${currentUnit.UnitNumber}: ${currentUnit.UnitTitle}`
+                : "Course complete"}
+            </p>
+          </div>
 
-      <LessonTable
-        lessonList={selectedNavigation.currentUnitLessons}
-        selectedDailyProgress={selectedDailyProgress}
-        selectedNavigation={selectedNavigation}
-        activeProgressLessonId={activeProgressLessonId}
-        progressInputs={progressInputs}
-        setProgressInputs={setProgressInputs}
-        setActiveProgressLessonId={setActiveProgressLessonId}
-        handleLogProgress={handleLogProgress}
-        editingLessonId={editingLessonId}
-        editLessonDraft={editLessonDraft}
-        setEditLessonDraft={setEditLessonDraft}
-        setEditingLessonId={setEditingLessonId}
-        startEditingLesson={startEditingLesson}
-        updateGoal={updateGoal}
-        removeGoal={removeGoal}
-        addGoal={addGoal}
-        handleUpdateLesson={handleUpdateLesson}
-        handleMoveLesson={handleMoveLesson}
-        handleDeleteLesson={handleDeleteLesson}
-        isAddingLesson={isAddingLesson}
-        setIsAddingLesson={setIsAddingLesson}
-        newLesson={newLesson}
-        setNewLesson={setNewLesson}
-        updateNewLessonGoal={updateNewLessonGoal}
-        addNewLessonGoal={addNewLessonGoal}
-        removeNewLessonGoal={removeNewLessonGoal}
-        handleAddLesson={handleAddLesson}
-        getLessonProgress={getLessonProgress}
-        getOutcomeList={getOutcomeList}
-        formatVarianceCompact={formatVarianceCompact}
-      />
+          <button className="today-start-button" type="button">
+            Start Lesson
+          </button>
+        </section>
 
-      <div className="bottom-strip">
-        <div>
-          <span>Pacing</span>
-          <strong>{formatVariance(selectedStatus.variance)}</strong>
-        </div>
+        <section id="today-flow" className="today-section">
+          <div className="today-section-header">
+            <h3>Today's Flow</h3>
+            <p>Teaching sequence for the day</p>
+          </div>
 
-        <div>
-          <span>Readiness</span>
-          <strong>
-            {selectedPrepareNext.missingResourceCount === 0
-              ? "Ready"
-              : `${selectedPrepareNext.missingResourceCount} missing links`}
-          </strong>
-        </div>
+          <div className="today-flow-list">
+            <article className="today-flow-item is-complete">
+              <span className="today-flow-marker" aria-hidden="true">✓</span>
+              <div>
+                <strong>Period 1</strong>
+                <p>Completed</p>
+              </div>
+            </article>
 
-        <div>
-          <span>Coming Next</span>
-          <strong>
-            {selectedNavigation.nextLesson?.LessonTitle ?? "No next lesson"}
-          </strong>
-        </div>
+            <article className="today-flow-item is-current">
+              <span className="today-flow-marker" aria-hidden="true">▶</span>
+              <div>
+                <strong>Period 2 · {courseLabel}</strong>
+                <p>{currentLesson?.LessonTitle ?? "Ready when selected"}</p>
+              </div>
+            </article>
+
+            <article className="today-flow-item">
+              <span className="today-flow-marker" aria-hidden="true">○</span>
+              <div>
+                <strong>Prep</strong>
+                <p>Later today</p>
+              </div>
+            </article>
+
+            <article className="today-flow-item">
+              <span className="today-flow-marker" aria-hidden="true">○</span>
+              <div>
+                <strong>Period 5</strong>
+                <p>Later today</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="before-tomorrow" className="today-section before-tomorrow">
+          <div className="today-section-header">
+            <h3>Before Tomorrow</h3>
+            <p>Nothing needs your attention.</p>
+          </div>
+        </section>
       </div>
     </section>
   );
