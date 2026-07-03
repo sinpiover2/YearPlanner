@@ -1,138 +1,327 @@
-Year Planner Suite Roadmap
+# Year Planner Suite Roadmap
 
 This roadmap tracks both the evolution of the software and the evolution of its underlying philosophy.
 
-The software exists to create instructional awareness while reducing unnecessary cognitive work for teachers.
+The Year Planner Suite is a **teacher decision-support system**.
 
-As the suite grows, every new feature should strengthen that purpose rather than expand beyond it.
+Its purpose is to reduce unnecessary cognitive work while helping teachers make better instructional decisions.
 
-?
+As the suite evolves, every new feature should strengthen that purpose rather than expand beyond it.
 
-Year Planner
+---
 
-Phase 0 – Foundations ?
+# Product Philosophy
 
-Philosophy
+The suite is organized around instructional horizons.
 
-* Established the instructional awareness vision.
-* Defined teacher decision support as the core purpose.
-* Adopted “Awareness before Advice.”
-* Established instructional time as a finite budget.
-* Defined “Two Clocks” as the central mental model.
+Each workspace answers one teacher question.
 
-?
+| Workspace | Teacher Question |
+|-----------|------------------|
+| Forecast | Am I OK? |
+| Units | Where am I in the curriculum? |
+| Today | What am I teaching today? |
+| Lesson Planner | How do I teach this lesson well? |
 
-Phase 1 – Forecast Foundations ?
+Together these workspaces move the teacher naturally from long-term awareness into classroom instruction.
 
-Created the core instructional awareness engine.
+---
+
+# Phase 0 — Foundations ?
+
+Established the philosophy that guides the entire product.
 
 Completed:
 
-* Forecast engine
-* Buffer calculations
-* Section-aware forecasting
-* Forecast pipeline
-* Recoverability model
-* Forecast states
-* Initial interpretation layer
+- Teacher decision support
+- Instructional awareness vision
+- Awareness before Advice
+- Instructional time as a finite budget
+- The Two Clocks mental model
+- Calm interface philosophy
+- Architecture before features
 
-?
+---
 
-Phase 2 – Forecast Experience ?
+# Phase 1 — Forecast Foundations ?
 
-Transformed forecasting into a decision-support experience.
+Built the instructional awareness engine.
 
-Sprint 2.0 – Forecast Foundations ?
+Completed:
 
-* Forecast architecture
-* Forecast banner
-* Core forecasting calculations
+- Forecast engine
+- Buffer calculations
+- Section-aware forecasting
+- Forecast pipeline
+- Recoverability model
+- Forecast states
+- Forecast interpretation layer
 
-Sprint 2.1 – Year Outlook ?
+---
 
-* High-level pacing summary
-* Buffer awareness
-* Section overview
+# Phase 2 — Forecast Workspace ?
 
-Sprint 2.2 – Timeline Orientation ?
+Transformed Forecast into a complete decision-support workspace.
 
-* Calendar-based timeline
-* Unit visualization
-* Expected pace markers
-* School break visualization
-* Timeline refinement
+## Sprint 2.0 — Forecast Foundations ?
 
-Sprint 2.3 – Forecast Cards ?
+- Forecast architecture
+- Forecast banner
+- Core forecasting calculations
 
-* Card architecture
-* Calm instructional language
-* Interpretive recommendation model
-* Projection language
+---
 
-Sprint 2.4 – Forecast Projection ?
+## Sprint 2.1 — Year Outlook ?
 
-* Projection state
-* Projection visibility
-* Projection-aware recoverability
-* True Finish Forecast
+- High-level pacing summary
+- Buffer awareness
+- Section overview
 
-Sprint 2.5 – Forecast Polish ?
+---
 
-* Visual refinement
-* Summary improvements
-* Forecast readability
-* Instructional language improvements
+## Sprint 2.2 — Timeline Orientation ?
 
-Sprint 2.6 – Instructional Context ?
+- Calendar timeline
+- Unit visualization
+- Expected pace markers
+- School break visualization
+- Timeline refinement
 
-* Interactive Year Timeline
-* Selected Unit panel
-* Unit purpose
-* Main learning outcomes
-* Improved instructional hierarchy
+---
 
-Sprint 2.7 – Budget Awareness (Current)
+## Sprint 2.3 — Forecast Cards ?
 
-Current focus:
+- Card architecture
+- Calm instructional language
+- Interpretive recommendations
+- Projection language
 
-Move Forecast from pacing awareness toward instructional budget awareness.
+---
 
-Objectives:
+## Sprint 2.4 — Forecast Projection ?
 
-* Clarify remaining instructional freedom.
-* Strengthen the relationship between instructional purpose and pacing.
-* Improve awareness of future instructional tradeoffs.
-* Preserve the boundary between awareness and instructional decision-making.
+- Projection state
+- Projection visibility
+- Recoverability refinement
+- Finish forecasting
 
-?
+---
 
-Future Applications
+## Sprint 2.5 — Forecast Polish ?
 
-Unit Planner
+- Visual refinement
+- Summary improvements
+- Readability
+- Language refinement
+
+---
+
+## Sprint 2.6 — Instructional Context ?
+
+- Interactive Year Timeline
+- Selected Unit panel
+- Unit purpose
+- Main learning outcomes
+- Improved instructional hierarchy
+
+Forecast is now considered the first production-quality workspace.
+
+---
+
+# Phase 3 — Units Workspace ?
+
+Established curriculum navigation as the second major workspace.
+
+## Sprint 3.0 — Units Foundations ?
+
+- Curriculum navigation
+- Course switching
+- Unit selection
+- Lesson organization
+- Progress tracking
+
+---
+
+## Sprint 3.1 — Units Experience ?
+
+- Unit purpose
+- Main learning outcomes
+- Lesson editing
+- Progress summaries
+- Projected dates
+- Curriculum state indicators
+- Workspace refinement
+- Visual polish
+
+Units now answers:
+
+> **Where am I in the curriculum?**
+
+---
+
+# Phase 4 — Today + Lesson Planner Architecture ?
+
+Current architectural focus has been completed.
 
 Purpose:
 
-Help teachers understand the purpose and structure of instructional investments.
+Create the operational workflow that bridges planning and classroom instruction.
 
-Primary question:
+## Sprint 4.0 — Today Architecture ?
 
-Why is this instructional investment worth making?
+Completed:
+
+- Today workspace architecture
+- Workspace principles
+- Information hierarchy
+- Operational workflow
+- Status philosophy
+- Start Lesson workflow
+- Lesson Planner boundary
+- Today architecture documentation
+
+This establishes the workflow:
+
+Forecast
+
+?
+
+Today
 
 ?
 
 Lesson Planner
 
-Purpose:
+?
 
-Reduce uncertainty before today’s instruction.
-
-Primary question:
-
-How should I prepare for today’s instructional investment?
+Today
 
 ?
 
-Student App
+Forecast
+
+---
+
+# Phase 5 — Today Workspace Implementation
+
+**Current Phase**
+
+## Sprint 4.1 — Today Layout Refactor
+
+Objectives:
+
+- Replace the current Units-derived Today page
+- Implement new information hierarchy
+- Build Hero area
+- Build Today's Flow
+- Build Before Tomorrow
+- Establish Start Lesson entry point
+
+---
+
+## Sprint 4.2 — Hero Card
+
+Objectives:
+
+- Dynamic next lesson
+- Countdown
+- Course / section awareness
+- Primary Start Lesson action
+
+---
+
+## Sprint 4.3 — Today's Flow
+
+Objectives:
+
+- Chronological daily flow
+- Completed / Current / Upcoming states
+- Daily schedule awareness
+
+---
+
+## Sprint 4.4 — Status Layer
+
+Objectives:
+
+- Dynamic status sentence
+- Morning readiness
+- Schedule awareness
+- Gentle instructional guidance
+
+---
+
+## Sprint 4.5 — Before Tomorrow
+
+Objectives:
+
+- Outstanding reflections
+- Logging reminders
+- Quiet attention model
+
+---
+
+## Sprint 4.6 — Start Lesson Workflow
+
+Objectives:
+
+- Transition into Lesson Planner
+- Automatic lesson selection
+- Preserve instructional context
+
+---
+
+# Phase 6 — Lesson Planner
+
+Purpose:
+
+Create the primary instructional workspace.
+
+Teacher question:
+
+> **How do I teach this lesson well?**
+
+Initial objectives:
+
+- Lesson architecture
+- Teaching workflow
+- Materials
+- Teacher notes
+- Reflection
+- Lesson completion workflow
+
+Lesson Planner will become the primary workspace used during instruction.
+
+---
+
+# Phase 7 — Data Model Expansion
+
+Objectives:
+
+- Richer lesson metadata
+- Resource management
+- Assessment support
+- Historical reflections
+- Multi-year instructional memory
+
+---
+
+# Phase 8 — Scenario Intelligence
+
+Objectives:
+
+- What-If planning
+- Alternative pacing scenarios
+- Instructional tradeoff analysis
+- AI-assisted planning
+
+The emphasis remains decision support rather than decision replacement.
+
+---
+
+# Future Applications
+
+## Student App
 
 Purpose:
 
@@ -140,100 +329,104 @@ Help students understand and take ownership of their learning.
 
 Primary question:
 
-What am I responsible for learning?
+> **What am I responsible for learning?**
 
-?
+---
 
-Future Exploration
+# Documentation Roadmap
 
-Potential future areas include:
+Documentation evolves alongside implementation.
 
-* What-If scenario planning
-* Multi-year curriculum planning
-* AI-assisted instructional analysis
-* Curriculum comparison tools
-* Department-level planning
-
-These features should support awareness rather than replace professional judgment.
-
-?
-
-Documentation Roadmap
-
-Documentation is part of the architecture.
-
-It should evolve alongside implementation.
-
-Architecture
+## Architecture
 
 Completed:
 
-* FIRST_PRINCIPLES.md
-* DESIGN_PHILOSOPHY.md
-* SUITE_ARCHITECTURE.md
-* FORECAST_ARCHITECTURE.md
+- FIRST_PRINCIPLES.md
+- DESIGN_PHILOSOPHY.md
+- WORKSPACE_PRINCIPLES.md
+- SUITE_ARCHITECTURE.md
+- FORECAST_ARCHITECTURE.md
+- TODAY_ARCHITECTURE.md
 
-Future:
+Planned:
 
-* LESSON_PLANNER_ARCHITECTURE.md
-* STUDENT_APP_ARCHITECTURE.md
+- LESSON_PLANNER_ARCHITECTURE.md
+- STUDENT_APP_ARCHITECTURE.md
 
-?
+---
 
-Reference
+## Reference
 
 Maintain:
 
-* SYSTEM_INVENTORY.md
-* API_REFERENCE.md
-* SHEET_STRUCTURE.md
-* REQUIREMENTS.md
+- SYSTEM_INVENTORY.md
+- API_REFERENCE.md
+- SHEET_STRUCTURE.md
+- REQUIREMENTS.md
 
 Reference documents describe reality.
 
 Architecture documents describe intent.
 
-Both must remain synchronized.
+Both should remain synchronized.
 
-?
+---
 
-Decision History
+## Decision History
 
 Maintain an ongoing architectural decision log.
 
-Major design decisions should record:
+Every major architectural decision should record:
 
-* the decision
-* the reasoning
-* the implications
+- the decision
+- the reasoning
+- the implications
 
-This preserves institutional memory as the suite evolves.
+This preserves institutional knowledge as the project grows.
 
-?
+---
 
-Long-Term Vision
+# Long-Term Vision
 
-The Year Planner Suite is not a collection of educational applications.
+The Year Planner Suite is a unified instructional awareness system.
 
-It is a unified instructional awareness system.
+It progressively narrows a teacher's focus.
 
-Each application supports a different horizon of teaching.
-
-* Year Planner helps teachers steward the school year.
-* Unit Planner helps teachers steward instructional investments.
-* Lesson Planner helps teachers steward today’s instruction.
-* Student App helps students steward their own learning.
-
-Together, they reduce unnecessary cognitive work while preserving professional judgment.
+Forecast
 
 ?
 
-Success
+Units
 
-The success of this project will not be measured by the number of applications or features it contains.
+?
 
-It will be measured by whether teachers spend less time managing instruction and more time thinking about students.
+Today
 
-Every feature should move the suite toward that goal.
+?
+
+Lesson Planner
+
+Each workspace prepares the teacher for the next.
+
+The software should remember state so teachers don't have to.
+
+It should reduce uncertainty before asking the teacher to act.
+
+It should always leave the teacher feeling more prepared than when they opened it.
+
+---
+
+# Success
+
+Success will not be measured by the number of features.
+
+It will be measured by whether teachers:
+
+- think less about managing instruction
+- think more about students
+- feel prepared before they teach
+- trust the software to remember what matters
+
+Every feature should strengthen that outcome.
 
 If it does not, it should not be built.
