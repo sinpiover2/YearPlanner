@@ -2680,3 +2680,176 @@ button {
     flex-direction: column;
   }
 }
+
+/* Teacher Desk */
+
+.teacher-desk-workspace {
+  background: #f8fafc;
+  min-height: 720px;
+}
+
+.teacher-desk-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 28px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.teacher-desk-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.teacher-desk-header h2 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  color: #0f172a;
+}
+
+.teacher-desk-header p {
+  margin: 0;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.teacher-desk-print-button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.teacher-desk-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  padding: 24px 32px 32px;
+}
+
+.teacher-desk-flow-card,
+.teacher-desk-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.teacher-desk-flow-card {
+  padding: 24px;
+}
+
+.teacher-desk-section-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+.teacher-desk-section-header h3,
+.teacher-desk-card h3 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.teacher-desk-section-header p {
+  margin: 0;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.teacher-desk-segments {
+  display: grid;
+  gap: 12px;
+}
+
+.teacher-desk-segment {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.teacher-desk-segment.is-current {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.teacher-desk-segment-marker span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 900;
+}
+
+.teacher-desk-segment.is-current .teacher-desk-segment-marker span {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.teacher-desk-segment-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: baseline;
+}
+
+.teacher-desk-segment-title-row h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.teacher-desk-segment-title-row span {
+  color: #64748b;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.teacher-desk-segment-copy p {
+  margin: 6px 0 0;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.teacher-desk-side-panel {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.teacher-desk-card {
+  padding: 20px;
+}
+
+.teacher-desk-card ul {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.teacher-desk-card p {
+  margin: 12px 0 0;
+  color: #475569;
+  line-height: 1.55;
+}

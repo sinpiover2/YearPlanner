@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 import TodayView from "./components/TodayView";
 import UnitsView from "./components/UnitsView";
 import ForecastView from "./components/ForecastView";
+import TeacherDeskView from "./components/TeacherDeskView";
 import {
   isTrue,
   formatDate,
@@ -1225,11 +1226,20 @@ function App() {
             >
               Forecast
             </button>
+
+            <button
+              className={activeView === "teacherDesk" ? "active-view" : ""}
+              onClick={() => setActiveView("teacherDesk")}
+            >
+              Teacher Desk
+            </button>
           </nav>
 
           {activeView === "today" && (
             <TodayView todayModel={todayModel} />
           )}
+
+          {activeView === "teacherDesk" && <TeacherDeskView />}
 
           {activeView === "units" && (
             <UnitsView
