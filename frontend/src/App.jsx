@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import Sidebar from "./components/Sidebar";
+import ApplicationShell from "./components/ApplicationShell";
+import NavigationRail from "./components/NavigationRail";
 import TodayView from "./components/TodayView";
 import UnitsView from "./components/UnitsView";
 import ForecastView from "./components/ForecastView";
