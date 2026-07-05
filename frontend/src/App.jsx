@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import Sidebar from "./components/Sidebar";
 import ApplicationShell from "./components/ApplicationShell";
-import NavigationRail from "./components/NavigationRail";
 import TodayView from "./components/TodayView";
 import UnitsView from "./components/UnitsView";
 import ForecastView from "./components/ForecastView";
@@ -1179,6 +1178,79 @@ function App() {
     );
   }
 
+  let activeWorkspace = null;
+
+  if (activeView === "today") {
+    activeWorkspace = <TodayView todayModel={todayModel} />;
+  }
+
+  if (activeView === "teacherDesk") {
+    activeWorkspace = <TeacherDeskView />;
+  }
+
+  if (activeView === "units") {
+    activeWorkspace = (
+      <UnitsView
+        courses={courses}
+        units={units}
+        schoolCalendar={schoolCalendar}
+        getProjectedUnits={getProjectedUnits}
+        selectedCourseId={selectedCourseId}
+        selectedUnit={selectedUnit}
+        selectedUnitLessons={selectedUnitLessons}
+        setSelectedCourseId={setSelectedCourseId}
+        setSelectedUnitId={setSelectedUnitId}
+        getCourseLabel={getCourseLabel}
+        selectedDailyProgress={selectedDailyProgress}
+        selectedNavigation={selectedNavigation}
+        activeProgressLessonId={activeProgressLessonId}
+        progressInputs={progressInputs}
+        setProgressInputs={setProgressInputs}
+        setActiveProgressLessonId={setActiveProgressLessonId}
+        handleLogProgress={handleLogProgress}
+        editingLessonId={editingLessonId}
+        editLessonDraft={editLessonDraft}
+        setEditLessonDraft={setEditLessonDraft}
+        setEditingLessonId={setEditingLessonId}
+        startEditingLesson={startEditingLesson}
+        updateGoal={updateGoal}
+        removeGoal={removeGoal}
+        addGoal={addGoal}
+        handleUpdateLesson={handleUpdateLesson}
+        handleMoveLesson={handleMoveLesson}
+        handleDeleteLesson={handleDeleteLesson}
+        isAddingLesson={isAddingLesson}
+        setIsAddingLesson={setIsAddingLesson}
+        newLesson={newLesson}
+        setNewLesson={setNewLesson}
+        updateNewLessonGoal={updateNewLessonGoal}
+        addNewLessonGoal={addNewLessonGoal}
+        removeNewLessonGoal={removeNewLessonGoal}
+        handleAddLesson={handleAddLesson}
+        getLessonProgress={getLessonProgress}
+        getOutcomeList={getOutcomeList}
+        formatVarianceCompact={formatVarianceCompact}
+        formatDate={formatDate}
+      />
+    );
+  }
+
+  if (activeView === "forecast") {
+    activeWorkspace = (
+      <ForecastView
+        overallForecastStateClass={overallForecastStateClass}
+        overallForecastMessage={overallForecastMessage}
+        overallForecastDetail={overallForecastDetail}
+        forecastedSections={forecastedSections}
+        units={units}
+        lessons={lessons}
+        timelineSyncSummaries={timelineSyncSummaries}
+        sectionForecasts={sectionForecasts}
+        hasForecastProgress={hasForecastProgress}
+      />
+    );
+  }
+
   return (
     <main className="app">
       <section className="planner-shell">
@@ -1206,102 +1278,13 @@ function App() {
           math1Units={math1Units}
         />
 
-        <section className="main-workspace">
-          <nav className="view-tabs">
-            <button
-              className={activeView === "today" ? "active-view" : ""}
-              onClick={() => setActiveView("today")}
-            >
-              Today
-            </button>
-
-            <button
-              className={activeView === "units" ? "active-view" : ""}
-              onClick={() => setActiveView("units")}
-            >
-              Units
-            </button>
-
-            <button
-              className={activeView === "forecast" ? "active-view" : ""}
-              onClick={() => setActiveView("forecast")}
-            >
-              Forecast
-            </button>
-
-            <button
-              className={activeView === "teacherDesk" ? "active-view" : ""}
-              onClick={() => setActiveView("teacherDesk")}
-            >
-              Teacher Desk
-            </button>
-          </nav>
-
-          {activeView === "today" && (
-            <TodayView todayModel={todayModel} />
-          )}
-
-          {activeView === "teacherDesk" && <TeacherDeskView />}
-
-          {activeView === "units" && (
-            <UnitsView
-              courses={courses}
-              units={units}
-              schoolCalendar={schoolCalendar}
-              getProjectedUnits={getProjectedUnits}
-              selectedCourseId={selectedCourseId}
-              selectedUnit={selectedUnit}
-              selectedUnitLessons={selectedUnitLessons}
-              setSelectedCourseId={setSelectedCourseId}
-              setSelectedUnitId={setSelectedUnitId}
-              getCourseLabel={getCourseLabel}
-              selectedDailyProgress={selectedDailyProgress}
-              selectedNavigation={selectedNavigation}
-              activeProgressLessonId={activeProgressLessonId}
-              progressInputs={progressInputs}
-              setProgressInputs={setProgressInputs}
-              setActiveProgressLessonId={setActiveProgressLessonId}
-              handleLogProgress={handleLogProgress}
-              editingLessonId={editingLessonId}
-              editLessonDraft={editLessonDraft}
-              setEditLessonDraft={setEditLessonDraft}
-              setEditingLessonId={setEditingLessonId}
-              startEditingLesson={startEditingLesson}
-              updateGoal={updateGoal}
-              removeGoal={removeGoal}
-              addGoal={addGoal}
-              handleUpdateLesson={handleUpdateLesson}
-              handleMoveLesson={handleMoveLesson}
-              handleDeleteLesson={handleDeleteLesson}
-              isAddingLesson={isAddingLesson}
-              setIsAddingLesson={setIsAddingLesson}
-              newLesson={newLesson}
-              setNewLesson={setNewLesson}
-              updateNewLessonGoal={updateNewLessonGoal}
-              addNewLessonGoal={addNewLessonGoal}
-              removeNewLessonGoal={removeNewLessonGoal}
-              handleAddLesson={handleAddLesson}
-              getLessonProgress={getLessonProgress}
-              getOutcomeList={getOutcomeList}
-              formatVarianceCompact={formatVarianceCompact}
-              formatDate={formatDate}
-            />
-          )}
-
-          {activeView === "forecast" && (
-            <ForecastView
-              overallForecastStateClass={overallForecastStateClass}
-              overallForecastMessage={overallForecastMessage}
-              overallForecastDetail={overallForecastDetail}
-              forecastedSections={forecastedSections}
-              units={units}
-              lessons={lessons}
-              timelineSyncSummaries={timelineSyncSummaries}
-              sectionForecasts={sectionForecasts}
-              hasForecastProgress={hasForecastProgress}
-            />
-          )}
-        </section>
+        <ApplicationShell
+          status={status}
+          activeView={activeView}
+          setActiveView={setActiveView}
+        >
+          {activeWorkspace}
+        </ApplicationShell>
       </section>
     </main>
   );

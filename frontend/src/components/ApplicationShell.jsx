@@ -1,36 +1,31 @@
-function ApplicationShell({
-  title,
-  subtitle,
-  navigation,
-  activeView,
-  onNavigate,
-}) {
-  return (
-    <aside className="application-shell">
-      <header className="application-shell-header">
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
-      </header>
+const WORKSPACES = [
+  { id: "today", label: "Today" },
+  { id: "units", label: "Units" },
+  { id: "forecast", label: "Forecast" },
+  { id: "teacherDesk", label: "Teacher Desk" },
+];
 
-      <nav
-        className="application-shell-nav"
-        aria-label="Application Navigation"
-      >
-        {navigation.map((item) => (
+function ApplicationShell({ status, activeView, setActiveView, children }) {
+  return (
+    <section className="main-workspace" aria-label="Year Planner workspace">
+      <nav className="view-tabs" aria-label="Workspace navigation">
+        {WORKSPACES.map((workspace) => (
           <button
-            key={item.id}
-            className={activeView === item.id ? "active" : ""}
-            onClick={() => onNavigate(item.id)}
+            key={workspace.id}
+            className={activeView === workspace.id ? "active-view" : ""}
+            onClick={() => setActiveView(workspace.id)}
           >
-            {item.label}
+            {workspace.label}
           </button>
         ))}
       </nav>
 
-      <footer className="application-shell-footer">
-        <small>Connected</small>
-      </footer>
-    </aside>
+      {children}
+
+      <p className="application-status" role="status">
+        {status}
+      </p>
+    </section>
   );
 }
 
