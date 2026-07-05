@@ -1240,7 +1240,6 @@ function App() {
     <main className="app">
       <section className="planner-shell">
         <Sidebar
-          status={status}
           timeLens={timeLens}
           setTimeLens={setTimeLens}
           timeLensInfo={timeLensInfo}

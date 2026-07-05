@@ -16,7 +16,6 @@ function getVarianceClassName(variance) {
 }
 
 function Sidebar({
-  status,
   timeLens,
   setTimeLens,
   timeLensInfo,
@@ -39,12 +38,6 @@ function Sidebar({
 }) {
   return (
     <aside className="sidebar">
-      <div className="sidebar-title">
-        <h1>Year Planner</h1>
-        <p>2026–27</p>
-        <small>{status}</small>
-      </div>
-
       <div className="time-toggle">
         <button
           className={timeLens === "school" ? "active-time-lens" : ""}

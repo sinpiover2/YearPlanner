@@ -59,20 +59,21 @@ button {
   background: #f7f5ee;
 }
 
-.sidebar-title {
+.application-shell-header {
+  margin-bottom: 16px;
   padding-bottom: 14px;
   border-bottom: 1px solid #d7dde6;
   text-align: center;
 }
 
-.sidebar-title h1 {
+.application-shell-header h1 {
   margin: 0;
   color: #111827;
   font-size: 22px;
 }
 
-.sidebar-title p,
-.sidebar-title small {
+.application-shell-header p,
+.application-shell-header small {
   margin: 4px 0 0;
   color: #64748b;
   font-weight: 650;
@@ -295,15 +296,6 @@ button {
 .view-tabs button.active-view {
   background: #2a3753;
   color: white;
-}
-
-.application-status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
 }
 
 .workspace-panel {

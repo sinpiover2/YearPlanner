@@ -8,6 +8,12 @@ const WORKSPACES = [
 function ApplicationShell({ status, activeView, setActiveView, children }) {
   return (
     <section className="main-workspace" aria-label="Year Planner workspace">
+      <header className="application-shell-header">
+        <h1>Year Planner</h1>
+        <p>2026–27</p>
+        <small>{status}</small>
+      </header>
+
       <nav className="view-tabs" aria-label="Workspace navigation">
         {WORKSPACES.map((workspace) => (
           <button
@@ -21,10 +27,6 @@ function ApplicationShell({ status, activeView, setActiveView, children }) {
       </nav>
 
       {children}
-
-      <p className="application-status" role="status">
-        {status}
-      </p>
     </section>
   );
 }
