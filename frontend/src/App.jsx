@@ -787,6 +787,9 @@ function App() {
 
   const planningWorkspaceModel = {
     planningModel,
+    onPreviousWeek: () => setPlanningReferenceDate(planningModel.previousWeekDate),
+    onNextWeek: () => setPlanningReferenceDate(planningModel.nextWeekDate),
+    onJumpToToday: () => setPlanningReferenceDate(new Date()),
   };
 
   return (
