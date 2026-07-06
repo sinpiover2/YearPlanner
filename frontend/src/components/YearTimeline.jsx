@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { getSectionTimeline } from "../App";
+import { getSectionTimeline } from "../utils/forecastModel";
 import {
   getCourseLabel,
   formatDays,
