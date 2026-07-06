@@ -295,6 +295,7 @@ function App() {
   });
   const [editingLessonId, setEditingLessonId] = useState(null);
   const [editLessonDraft, setEditLessonDraft] = useState(null);
+  const [planningReferenceDate, setPlanningReferenceDate] = useState(new Date());
 
   useEffect(() => {
     fetchPlannerData()
@@ -474,6 +475,7 @@ function App() {
     selectedNavigation,
     units,
     lessons,
+    referenceDate: planningReferenceDate,
   });
 
   const forecastWorkspaceModel = buildForecastModel({
