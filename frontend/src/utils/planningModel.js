@@ -83,6 +83,8 @@ export function getPlanningModel({
   return {
     title: planningWeek.title,
     schoolDaysLabel: planningWeek.schoolDaysLabel,
+    previousWeekDate: planningWeek.previousWeekDate,
+    nextWeekDate: planningWeek.nextWeekDate,
     weekDays,
     sections,
     sessions,
