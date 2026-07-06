@@ -1,3 +1,4 @@
+import { getPlanningWeek } from "./planningCalendar";
 import { sortLessons } from "./plannerUtils";
 
 function getLessonTitle(lesson) {
@@ -13,6 +14,7 @@ export function getPlanningModel({
   selectedNavigation,
   units,
   lessons,
+  referenceDate = new Date(),
 }) {
   const currentUnit = selectedNavigation?.currentUnit ?? null;
   const currentLesson = selectedNavigation?.currentLesson ?? null;
@@ -28,17 +30,8 @@ export function getPlanningModel({
     ? unitLessons.findIndex((lesson) => lesson.LessonID === currentLesson.LessonID)
     : 0;
 
-  const weekDays = [
-    { key: "shoulder-before", label: "Fri 11", shoulder: true },
-    { key: "mon", label: "Mon 14" },
-    { key: "tue", label: "Tue 15", active: true },
-    { key: "wed", label: "Wed 16" },
-    { key: "thu", label: "Thu 17", alert: true },
-    { key: "fri", label: "Fri 18" },
-    { key: "shoulder-after", label: "Mon 21", shoulder: true },
-  ];
-
-  const teachingDays = weekDays.filter((day) => !day.shoulder);
+  const planningWeek = getPlanningWeek(referenceDate);
+  const { weekDays, teachingDays } = planningWeek;
 
   const sections = selectedCourseSections.map((section) => ({
     id: section.SectionID,
@@ -88,8 +81,8 @@ export function getPlanningModel({
     }));
 
   return {
-    title: "Week of Sep 14",
-    schoolDaysLabel: "School days 4–8 of 180",
+    title: planningWeek.title,
+    schoolDaysLabel: planningWeek.schoolDaysLabel,
     weekDays,
     sections,
     sessions,
