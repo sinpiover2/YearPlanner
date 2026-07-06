@@ -1,8 +1,10 @@
 const WORKSPACES = [
   { id: "today", label: "Today" },
+  { id: "planning", label: "Planning" },
   { id: "units", label: "Units" },
   { id: "forecast", label: "Forecast" },
   { id: "teacherDesk", label: "Teacher Desk" },
+  { id: "lessonSession", label: "Lesson Session" },
 ];
 
 function ApplicationShell({ status, activeView, setActiveView, children }) {

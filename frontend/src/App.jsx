@@ -776,6 +776,8 @@ function App() {
   };
 
   const teacherDeskWorkspaceModel = {};
+  const lessonSessionWorkspaceModel = {};
+  const planningWorkspaceModel = {};
 
   return (
     <main className="app">
@@ -814,6 +816,8 @@ function App() {
             unitsWorkspaceModel={unitsWorkspaceModel}
             forecastWorkspaceModel={forecastWorkspaceModel}
             teacherDeskWorkspaceModel={teacherDeskWorkspaceModel}
+            lessonSessionWorkspaceModel={lessonSessionWorkspaceModel}
+            planningWorkspaceModel={planningWorkspaceModel}
           />
         </ApplicationShell>
       </section>
