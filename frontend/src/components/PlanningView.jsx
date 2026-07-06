@@ -1,57 +1,134 @@
-const WEEK_DAYS = [
-  "Mon, Sep 14",
-  "Tue, Sep 15",
-  "Wed, Sep 16",
-  "Thu, Sep 17",
-  "Fri, Sep 18",
-];
+import { Fragment } from "react";
 
-const SECTIONS = ["Math 8 P2", "Math 8 P3", "Math 1 P5", "Math 1 P6"];
+function SessionCard({ session }) {
+  if (!session) {
+    return (
+      <button className="planning-session-card empty">
+        <span>Open time</span>
+      </button>
+    );
+  }
 
-function PlanningView() {
+  const usedPercent = Math.min(100, (session.used / session.minutes) * 100);
+
+  return (
+    <button className={`planning-session-card ${session.status}`}>
+      <span className="session-card-meta">
+        <span>{session.core ? "·" : "↗"}</span>
+        <span>{session.status}</span>
+        <span className="session-status-dot" />
+      </span>
+
+      <strong>{session.title}</strong>
+
+      {session.chips?.length ? (
+        <span className="session-chip-row">
+          {session.chips.map((chip) => (
+            <span className="session-chip" key={chip}>
+              {chip}
+            </span>
+          ))}
+        </span>
+      ) : null}
+
+      <span className="session-composition-bar">
+        <span style={{ width: `${usedPercent}%` }} />
+      </span>
+
+      <span className="session-card-footer">
+        <span>
+          {session.open || `${session.used} of ${session.minutes} min`}
+        </span>
+        {session.needs?.length ? (
+          <span>{session.needs.join(" · ")}</span>
+        ) : null}
+      </span>
+    </button>
+  );
+}
+
+function PlanningView({ planningModel }) {
+  const { title, schoolDaysLabel, weekDays, sections, sessions, shelf } =
+    planningModel;
+
   return (
     <section className="workspace-panel planning-workspace">
-      <header className="workspace-header">
-        <div>
+      <header className="planning-header">
+        <div className="planning-title-group">
           <p className="eyebrow">Planning</p>
-          <h2>Week Planning Board</h2>
-          <p>
-            Build the teaching week first. Open a Lesson Session only when a day
-            needs more space.
-          </p>
+          <h2>{title}</h2>
         </div>
 
         <div className="planning-controls">
-          <button>← Previous</button>
-          <button>Today</button>
-          <button>Next →</button>
+          <button>‹</button>
+          <button>Jump</button>
+          <button>›</button>
         </div>
+
+        <p className="planning-school-days">{schoolDaysLabel}</p>
       </header>
 
       <div className="planning-board">
-        <div className="planning-grid planning-grid-header">
-          <div className="planning-section-heading">Section</div>
-          {WEEK_DAYS.map((day) => (
-            <div className="planning-day-heading" key={day}>
-              {day}
+        <div className="planning-week-grid">
+          <div className="planning-corner" />
+
+          {weekDays.map((day) => (
+            <div
+              className={[
+                "planning-day-heading",
+                day.shoulder ? "shoulder" : "",
+                day.active ? "active" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              key={day.key}
+            >
+              {day.label}
+              {day.alert ? <span className="planning-day-alert">•</span> : null}
             </div>
+          ))}
+
+          {sections.map((section) => (
+            <Fragment key={section.id}>
+              <div
+                className="planning-section-label"
+                key={`${section.id}-label`}
+              >
+                {section.label}
+              </div>
+
+              {weekDays.map((day) => {
+                const session = sessions[`${section.id}-${day.key}`];
+
+                return (
+                  <div
+                    className={["planning-cell", day.shoulder ? "shoulder" : ""]
+                      .filter(Boolean)
+                      .join(" ")}
+                    key={`${section.id}-${day.key}`}
+                  >
+                    <SessionCard session={session} />
+                  </div>
+                );
+              })}
+            </Fragment>
           ))}
         </div>
 
-        {SECTIONS.map((section) => (
-          <div className="planning-grid planning-row" key={section}>
-            <div className="planning-section-label">{section}</div>
+        <footer className="unit-shelf">
+          <button className="unit-shelf-toggle">⌃</button>
+          <span className="unit-shelf-label">{shelf.unitLabel}</span>
 
-            {WEEK_DAYS.map((day) => (
-              <button className="planning-session-card" key={`${section}-${day}`}>
-                <span className="planning-session-title">Lesson Session</span>
-                <span className="planning-session-line">0) Welcome</span>
-                <span className="planning-session-line">1) Load curriculum item</span>
-                <span className="planning-session-status">Draft</span>
+          <div className="unit-shelf-items">
+            {shelf.items.map((item) => (
+              <button className="unit-shelf-item" key={item.id}>
+                {item.title}
               </button>
             ))}
           </div>
-        ))}
+
+          <span className="unit-shelf-summary">{shelf.summary}</span>
+        </footer>
       </div>
     </section>
   );

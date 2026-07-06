@@ -5,6 +5,7 @@ import ApplicationShell from "./components/ApplicationShell";
 import WorkspaceHost from "./components/WorkspaceHost";
 import { buildForecastModel } from "./utils/forecastModel";
 import { getTodayModel } from "./utils/todayModel";
+import { getPlanningModel } from "./utils/planningModel";
 import {
   isTrue,
   formatDate,
@@ -468,6 +469,13 @@ function App() {
     getCourseNavigation,
   });
 
+  const planningModel = getPlanningModel({
+    selectedCourseSections,
+    selectedNavigation,
+    units,
+    lessons,
+  });
+
   const forecastWorkspaceModel = buildForecastModel({
     sections,
     units,
@@ -775,9 +783,9 @@ function App() {
     formatDate,
   };
 
-  const teacherDeskWorkspaceModel = {};
-  const lessonSessionWorkspaceModel = {};
-  const planningWorkspaceModel = {};
+  const planningWorkspaceModel = {
+    planningModel,
+  };
 
   return (
     <main className="app">
@@ -815,8 +823,6 @@ function App() {
             todayWorkspaceModel={todayWorkspaceModel}
             unitsWorkspaceModel={unitsWorkspaceModel}
             forecastWorkspaceModel={forecastWorkspaceModel}
-            teacherDeskWorkspaceModel={teacherDeskWorkspaceModel}
-            lessonSessionWorkspaceModel={lessonSessionWorkspaceModel}
             planningWorkspaceModel={planningWorkspaceModel}
           />
         </ApplicationShell>
