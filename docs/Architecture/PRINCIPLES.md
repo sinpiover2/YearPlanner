@@ -1,10 +1,30 @@
 # Principles
 
-These principles define the long-term design philosophy of Year Planner.
+These principles define the long-term philosophy of Year Planner.
 
-Architecture, implementation, and future features should all reinforce these principles.
+Architecture, implementation, interaction design, and future features should reinforce these principles.
 
-When uncertainty arises, these principles take precedence over convenience.
+When implementation decisions become difficult, these principles take precedence over convenience.
+
+---
+
+# Product Vision
+
+Year Planner exists to help teachers teach a coherent year with calm confidence.
+
+The application integrates:
+
+- curriculum
+- pacing
+- lesson planning
+- daily teaching
+- reflection
+
+into one continuous instructional workflow.
+
+Its purpose is not to help teachers manage more information.
+
+Its purpose is to reduce uncertainty.
 
 ---
 
@@ -12,27 +32,71 @@ When uncertainty arises, these principles take precedence over convenience.
 
 Year Planner is an instructional operating system.
 
-Its purpose is to help teachers move confidently from long-range planning to daily instruction.
+It helps teachers move confidently from long-range planning to daily instruction while maintaining awareness of the entire school year.
 
-The application exists to reduce cognitive load, improve instructional awareness, and support thoughtful decision makingÑnot to become another place teachers manage information.
+The application exists to reduce cognitive load, improve instructional awareness, and support thoughtful decision making.
+
+When class begins, the teacher should feel preparedÑnot dependent on the software.
 
 ---
 
 # Teacher-Centered Design
 
-The application should reflect how teachers naturally think.
+Teachers do not think in database tables.
 
-Teachers do not think in terms of database tables or software modules.
+They do not think in software modules.
 
-They think in questions.
+They think in instructional questions.
 
-The architecture should answer those questions in the order they naturally arise.
+Every workspace should answer one clear question.
+
+Those questions should appear in the same order teachers naturally think.
+
+---
+
+# The Instructional Lifecycle
+
+Teaching is a continuous cycle.
+
+Year Planner exists to support every stage without breaking the teacher's mental model.
+
+```
+Forecast
+
+?
+
+Planning
+
+?
+
+Today
+
+?
+
+Lesson Session
+
+?
+
+Teach
+
+?
+
+Reflection
+
+?
+
+Next Year
+```
+
+Each stage should naturally lead to the next.
+
+Nothing should feel disconnected.
 
 ---
 
 # Progressive Focus
 
-The interface should become quieter as the teacher gets closer to teaching.
+The interface should become quieter as the teacher approaches the classroom.
 
 Each workspace intentionally narrows attention.
 
@@ -41,7 +105,7 @@ Forecast
 
 ?
 
-Units
+Planning
 
 ?
 
@@ -49,24 +113,20 @@ Today
 
 ?
 
-Teacher Desk
-
-?
-
-Printed Agenda
+Lesson Session
 
 ?
 
 Teach
 ```
 
-Forecast provides broad awareness.
+Forecast provides awareness.
 
-Units narrows instructional focus.
+Planning creates clarity.
 
-Today establishes operational readiness.
+Today creates focus.
 
-Teacher Desk becomes the final thinking space.
+Lesson Session supports great teaching.
 
 Teaching happens away from the software.
 
@@ -76,7 +136,7 @@ Teaching happens away from the software.
 
 The goal is not to have the application open during instruction.
 
-The goal is to prepare the teacher so thoroughly that the software is no longer needed once class begins.
+The goal is to prepare the teacher so thoroughly that the software becomes unnecessary during class.
 
 The application succeeds when it builds confidence rather than dependency.
 
@@ -86,111 +146,40 @@ The final feeling before teaching should be:
 
 ---
 
-# Ownership
+# Calm Is a Feature
 
-Every responsibility belongs to one owner.
+Teachers make hundreds of decisions every day.
 
-Ownership should be obvious.
+Year Planner should reduce that burden.
 
-Responsibilities should not be duplicated.
+Every screen should reduce uncertainty.
 
-When ownership is clear:
+Every interaction should reduce cognitive load.
 
-- implementation becomes simpler
-- maintenance becomes easier
-- future features become more predictable
+The interface should feel:
 
----
+- calm
+- predictable
+- trustworthy
+- supportive
 
-# The Application Shell Owns Orientation
+Avoid:
 
-The Application Shell answers:
+- unnecessary visual noise
+- unnecessary alerts
+- unnecessary choices
+- unnecessary interruptions
+- information that does not improve decisions
 
-> **Where am I?**
-
-It owns:
-
-- application identity
-- global navigation
-- application status
-- workspace hosting
-
-The shell never owns instructional thinking.
+If a feature increases anxiety without improving decisions, it should not be built.
 
 ---
 
-# Workspaces Own Domain Thinking
-
-Each workspace exists to answer a distinct instructional question.
-
-## Forecast
-
-Answers:
-
-> **Am I OK?**
-
-Owns:
-
-- pacing
-- projections
-- time awareness
-- instructional risk
-
----
-
-## Units
-
-Answers:
-
-> **Where is this instruction going?**
-
-Owns:
-
-- course context
-- section context
-- unit progression
-- curriculum navigation
-
----
-
-## Today
-
-Answers:
-
-> **What am I teaching today?**
-
-Owns:
-
-- daily operational awareness
-- teaching sequence
-- today's changes
-- immediate preparation
-
----
-
-## Teacher Desk
-
-Answers:
-
-> **Am I ready?**
-
-Owns:
-
-- lesson preparation
-- instructional sequence
-- teaching materials
-- teacher notes
-- final rehearsal before class
-
----
-
-# Information Flows Toward Action
+# Information Exists to Support Decisions
 
 Information should always become more actionable.
 
-The application should help teachers move from awareness to decision.
-
-Information generally flows in this order:
+The application should move teachers through a consistent progression:
 
 ```
 Reality
@@ -208,28 +197,186 @@ Recommendation
 Action
 ```
 
-The interface should interpret information rather than merely display it.
+Raw information is rarely the goal.
+
+The application should help teachers understand what matters.
 
 ---
 
-# Model Builders Shape Information
+# Clear Ownership
 
-Views should display information.
+Every responsibility belongs to one owner.
 
-They should not assemble or interpret it.
+Ownership should be obvious.
 
-Model builders prepare domain-specific information before it reaches the interface.
+Responsibilities should never be duplicated.
 
-Benefits include:
+When ownership is clear:
 
-- simpler components
-- clearer ownership
-- improved testability
-- easier maintenance
+- implementation becomes simpler
+- maintenance becomes easier
+- future development becomes more predictable
 
-Views should render.
+---
 
-Model builders should think.
+# Application Shell
+
+The Application Shell answers:
+
+> **Where am I?**
+
+It owns:
+
+- application identity
+- navigation
+- application status
+- workspace hosting
+
+It never owns instructional thinking.
+
+---
+
+# Workspace Responsibilities
+
+Each workspace exists to answer one instructional question.
+
+## Forecast
+
+Answers:
+
+> **Am I okay?**
+
+Owns:
+
+- pacing
+- projections
+- instructional risk
+- long-range awareness
+
+Forecast interprets.
+
+It does not plan.
+
+---
+
+## Planning
+
+Answers:
+
+> **What should I prepare?**
+
+Owns:
+
+- weekly planning
+- Lesson Session arrangement
+- curriculum placement
+- instructional organization
+
+Planning is the operational center of the application.
+
+It connects curriculum, pacing, and lesson preparation.
+
+---
+
+## Units
+
+Answers:
+
+> **Where is this instruction going?**
+
+Owns:
+
+- curriculum
+- unit progression
+- lesson sequence
+- instructional intent
+
+Units defines what should be taught.
+
+It does not decide when or how.
+
+---
+
+## Today
+
+Answers:
+
+> **What am I teaching today?**
+
+Owns:
+
+- today's teaching
+- operational readiness
+- today's changes
+- launching Lesson Session
+
+Today should be calm, focused, and immediately actionable.
+
+---
+
+## Lesson Session
+
+Answers:
+
+> **How do I teach this lesson well?**
+
+Owns:
+
+- instructional composition
+- activity sequence
+- materials
+- timing
+- teacher preparation
+
+Lesson Session is not a workspace.
+
+It is an editor opened from Planning and Today.
+
+---
+
+# Information Flows Forward
+
+Information should naturally flow through the instructional lifecycle.
+
+```
+Curriculum
+
+?
+
+Lesson Sessions
+
+?
+
+Today's Teaching
+
+?
+
+Reflection
+
+?
+
+Curriculum Improvement
+```
+
+Nothing should exist in isolation.
+
+Planning is where these systems come together.
+
+---
+
+# Views Render
+
+Views present information.
+
+They should not assemble it.
+
+They should not interpret it.
+
+Model builders prepare information before it reaches the interface.
+
+Views render.
+
+Models think.
 
 ---
 
@@ -239,14 +386,14 @@ Refactoring changes ownership.
 
 It should not change behavior.
 
-A successful refactor:
+Successful refactoring:
 
 - simplifies architecture
 - improves clarity
 - reduces coupling
 - preserves user experience
 
-Behavioral changes belong in feature work, not refactoring work.
+Behavioral changes belong in feature work.
 
 ---
 
@@ -256,49 +403,30 @@ Redesign changes the product.
 
 Refactoring changes the implementation.
 
-These activities should remain separate whenever possible.
+These activities should remain separate.
 
 Separating them reduces risk and makes architectural progress easier to evaluate.
 
 ---
 
-# Architecture Should Enable Growth
+# Architecture Enables Growth
 
-The architecture should make future work easier.
+Architecture should make future work easier.
 
-New workspaces should be added without requiring existing workspaces to change.
+New workspaces should fit naturally into existing ownership.
 
-New capabilities should fit naturally within the established ownership model.
+New capabilities should strengthen the instructional lifecycle rather than bypass it.
 
-When architecture is stable, features become simpler to build.
-
----
-
-# Calm Over Complexity
-
-Teachers make hundreds of decisions every day.
-
-The software should reduce that burden.
-
-The interface should be:
-
-- calm
-- predictable
-- trustworthy
-- supportive
-
-It should avoid unnecessary visual noise, unnecessary choices, and unnecessary interruptions.
+Good architecture reduces the cost of future ideas.
 
 ---
 
-# Build for Years, Not Sprints
+# Build for Years
 
 Every implementation decision should support the long-term evolution of the application.
 
-Short-term convenience should not compromise long-term clarity.
+Prefer solutions that improve clarity over those that merely solve today's problem.
 
-When faced with competing solutions, prefer the one that makes future development easier to understand, extend, and maintain.
+Architecture is a long-term investment.
 
-Architecture is an investment.
-
-Each sprint should strengthen it.
+Every sprint should strengthen it.
