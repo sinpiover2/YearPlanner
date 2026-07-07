@@ -17,8 +17,16 @@ function PlanningGrid({ weekDays, sections, sessions }) {
             .join(" ")}
           key={day.key}
         >
-          {day.label}
-          {day.alert ? <span className="planning-day-alert">•</span> : null}
+          {day.shoulder ? (
+            <span className="planning-shoulder-date">
+              {day.label.replace(", ", "\n")}
+            </span>
+          ) : (
+            <>
+              {day.label}
+              {day.alert ? <span className="planning-day-alert">•</span> : null}
+            </>
+          )}
         </div>
       ))}
 
@@ -38,7 +46,11 @@ function PlanningGrid({ weekDays, sections, sessions }) {
                   .join(" ")}
                 key={`${section.id}-${day.key}`}
               >
-                <SessionTile session={session} />
+                {day.shoulder ? (
+                  <span className="planning-shoulder-dot" />
+                ) : (
+                  <SessionTile session={session} />
+                )}
               </div>
             );
           })}
