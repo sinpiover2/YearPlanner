@@ -13,7 +13,6 @@ function SessionTile({ session }) {
   return (
     <button className={`planning-session-card ${session.status}`} type="button">
       <span className="session-card-meta">
-        <span className="session-card-identity">{session.sectionLabel || "Session"}</span>
         <span className="session-status-dot" aria-label={session.status} />
       </span>
 

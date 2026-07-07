@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import Sidebar from "./components/Sidebar";
 import ApplicationShell from "./components/ApplicationShell";
 import WorkspaceHost from "./components/WorkspaceHost";
 import { buildForecastModel } from "./utils/forecastModel";
@@ -795,29 +794,6 @@ function App() {
   return (
     <main className="app">
       <section className="planner-shell">
-        <Sidebar
-          timeLens={timeLens}
-          setTimeLens={setTimeLens}
-          timeLensInfo={timeLensInfo}
-          selectedCourseId={selectedCourseId}
-          setSelectedCourseId={setSelectedCourseId}
-          setSelectedUnitId={setSelectedUnitId}
-          math8Navigation={math8Navigation}
-          math1Navigation={math1Navigation}
-          math8Status={math8Status}
-          math1Status={math1Status}
-          math8OptionalDays={math8OptionalDays}
-          math1OptionalDays={math1OptionalDays}
-          calculateProgressPercent={calculateProgressPercent}
-          formatVarianceCompact={formatVarianceCompact}
-          selectedSection={selectedSection}
-          selectedCourseSections={selectedCourseSections}
-          setSelectedSectionId={setSelectedSectionId}
-          renderUnitChips={renderUnitChips}
-          math8Units={math8Units}
-          math1Units={math1Units}
-        />
-
         <ApplicationShell
           status={status}
           activeView={activeView}
