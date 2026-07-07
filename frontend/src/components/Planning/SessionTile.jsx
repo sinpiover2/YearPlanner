@@ -1,46 +1,39 @@
 function SessionTile({ session }) {
   if (!session) {
     return (
-      <button className="planning-session-card empty">
+      <button className="planning-session-card empty" type="button">
         <span>Open time</span>
       </button>
     );
   }
 
   const usedPercent = Math.min(100, (session.used / session.minutes) * 100);
+  const hasOpenTime = Boolean(session.open);
 
   return (
-    <button className={`planning-session-card ${session.status}`}>
+    <button className={`planning-session-card ${session.status}`} type="button">
       <span className="session-card-meta">
-        <span>{session.core ? "·" : "↗"}</span>
-        <span>{session.status}</span>
-        <span className="session-status-dot" />
+        <span className="session-card-identity">{session.sectionLabel || "Session"}</span>
+        <span className="session-status-dot" aria-label={session.status} />
       </span>
 
-      <strong>{session.title}</strong>
-
-      {session.chips?.length ? (
-        <span className="session-chip-row">
-          {session.chips.map((chip) => (
-            <span className="session-chip" key={chip}>
-              {chip}
-            </span>
-          ))}
-        </span>
-      ) : null}
+      <strong className="session-card-title">
+        <span className="session-link-glyph">↗</span>
+        {session.title}
+      </strong>
 
       <span className="session-composition-bar">
         <span style={{ width: `${usedPercent}%` }} />
       </span>
 
-      <span className="session-card-footer">
-        <span>
-          {session.open || `${session.used} of ${session.minutes} min`}
+      {(hasOpenTime || session.needs?.length) ? (
+        <span className="session-card-footer">
+          <span>{session.open}</span>
+          {session.needs?.length ? (
+            <span>{session.needs.join(" · ")}</span>
+          ) : null}
         </span>
-        {session.needs?.length ? (
-          <span>{session.needs.join(" · ")}</span>
-        ) : null}
-      </span>
+      ) : null}
     </button>
   );
 }

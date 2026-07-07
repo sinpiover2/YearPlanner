@@ -3000,14 +3000,14 @@ button {
 .planning-session-card {
   display: flex;
   width: 100%;
-  min-height: 104px;
+  min-height: 94px;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   border: 1px solid #d7dde6;
   border-radius: 14px;
   background: #ffffff;
   color: #0f172a;
-  padding: 10px;
+  padding: 9px;
   text-align: left;
   transition: transform .15s ease, box-shadow .15s ease;
 }
@@ -3025,20 +3025,41 @@ button {
   color: #64748b;
 }
 
-.planning-session-card strong {
-  margin: 2px 0;
-  font-size: 0.98rem;
-  line-height: 1.22;
+.session-card-title {
+  display: -webkit-box;
+  margin: 4px 0 6px;
+  overflow: hidden;
+  color: #111827;
+  font-size: 1.18rem;
+  font-weight: 850;
+  line-height: 1.18;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.session-link-glyph {
+  display: none;
 }
 
 .session-card-meta,
 .session-card-footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   color: #64748b;
   font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.session-card-identity {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.72rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .session-status-dot {

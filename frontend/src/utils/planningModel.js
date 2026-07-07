@@ -51,6 +51,7 @@ export function getPlanningModel({
       sessions[`${section.id}-${day.key}`] = {
         id: `${section.id}-${day.key}`,
         sectionId: section.id,
+        sectionLabel: section.label,
         dayKey: day.key,
         title: getLessonTitle(lesson),
         core: getLessonTitle(lesson),
@@ -64,7 +65,7 @@ export function getPlanningModel({
             : dayIndex === 1
               ? "planned"
               : "draft",
-        chips: dayIndex === 1 ? ["next up"] : [],
+        chips: [],
         open: used < 55 ? `${55 - used} min open` : "",
       };
     });
