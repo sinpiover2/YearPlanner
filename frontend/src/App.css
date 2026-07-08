@@ -2925,13 +2925,14 @@ button {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  padding: 22px 28px 18px;
+  padding: 22px 30px 18px;
 }
 
 .planning-week-grid {
   display: grid;
-  grid-template-columns: 52px 32px repeat(5, minmax(148px, 1fr)) 32px;
-  gap: 12px;
+  grid-template-columns: 52px 30px repeat(5, minmax(160px, 1fr)) 30px;
+  column-gap: 18px;
+  row-gap: 10px;
   align-items: stretch;
   width: 100%;
 }
@@ -3143,3 +3144,13 @@ button {
   white-space: nowrap;
 }
 
+
+.planning-cell.active-day {
+  border-radius: 16px;
+  background: #f6f8fb;
+}
+
+.planning-cell.active-day .planning-session-card {
+  border-color: #b8c4d6;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}

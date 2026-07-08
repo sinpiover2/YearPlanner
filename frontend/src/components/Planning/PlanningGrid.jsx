@@ -41,7 +41,11 @@ function PlanningGrid({ weekDays, sections, sessions }) {
 
             return (
               <div
-                className={["planning-cell", day.shoulder ? "shoulder" : ""]
+                className={[
+                  "planning-cell",
+                  day.shoulder ? "shoulder" : "",
+                  day.active ? "active-day" : "",
+                ]
                   .filter(Boolean)
                   .join(" ")}
                 key={`${section.id}-${day.key}`}
