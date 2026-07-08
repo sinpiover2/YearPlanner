@@ -794,6 +794,10 @@ function App() {
     onJumpToToday: () => setPlanningReferenceDate(new Date()),
   };
 
+  const lessonSessionWorkspaceModel = {
+    activeLessonContext,
+  };
+
   return (
     <main className="app">
       <section className="planner-shell">
@@ -808,6 +812,7 @@ function App() {
             unitsWorkspaceModel={unitsWorkspaceModel}
             forecastWorkspaceModel={forecastWorkspaceModel}
             planningWorkspaceModel={planningWorkspaceModel}
+            lessonSessionWorkspaceModel={lessonSessionWorkspaceModel}
           />
         </ApplicationShell>
       </section>
