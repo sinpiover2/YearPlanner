@@ -147,6 +147,51 @@ This reflects actual teaching, where activities often spill over or need to be c
 
 A moved item should preserve origin history rather than becoming disconnected from its original plan.
 
+## D10 — Session Items have a lifecycle
+
+A SessionItem is not only created and completed.
+
+It moves through an instructional lifecycle:
+
+- Plan
+- Prepare
+- Teach
+- Reflect
+- Harvest
+- Archive
+
+Plan answers:
+
+> What will happen?
+
+Prepare answers:
+
+> What do I need ready?
+
+Teach answers:
+
+> What is happening now?
+
+Reflect answers:
+
+> What happened?
+
+Harvest answers:
+
+> What should survive into future curriculum or routines?
+
+Archive preserves the enacted record.
+
+Reflection is temporary.
+
+Harvest is permanent.
+
+Reflection captures what happened.
+
+Harvest decides what deserves to improve the durable curriculum, reusable teaching moves, deliverables, or future planning defaults.
+
+Version 1 does not need a full Harvest workflow, but reflection data should be stored so that future "Promote to curriculum" or "Save as routine" actions remain possible.
+
 ## Proposed minimal object model
 
 ### LessonSession
