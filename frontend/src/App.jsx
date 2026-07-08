@@ -295,6 +295,7 @@ function App() {
   const [editingLessonId, setEditingLessonId] = useState(null);
   const [editLessonDraft, setEditLessonDraft] = useState(null);
   const [planningReferenceDate, setPlanningReferenceDate] = useState(new Date());
+  const [activeLessonContext, setActiveLessonContext] = useState(null);
 
   useEffect(() => {
     fetchPlannerData()
@@ -786,6 +787,8 @@ function App() {
 
   const planningWorkspaceModel = {
     planningModel,
+    activeLessonContext,
+    setActiveLessonContext,
     onPreviousWeek: () => setPlanningReferenceDate(planningModel.previousWeekDate),
     onNextWeek: () => setPlanningReferenceDate(planningModel.nextWeekDate),
     onJumpToToday: () => setPlanningReferenceDate(new Date()),

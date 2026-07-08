@@ -1,7 +1,13 @@
 import { Fragment } from "react";
 import SessionTile from "./SessionTile";
 
-function PlanningGrid({ weekDays, sections, sessions }) {
+function PlanningGrid({
+  weekDays,
+  sections,
+  sessions,
+  selectedSessionId,
+  onSelectSession,
+}) {
   return (
     <div className="planning-week-grid">
       <div className="planning-corner" />
@@ -53,7 +59,11 @@ function PlanningGrid({ weekDays, sections, sessions }) {
                 {day.shoulder ? (
                   <span className="planning-shoulder-dot" />
                 ) : (
-                  <SessionTile session={session} />
+                  <SessionTile
+                    session={session}
+                    selected={session?.id === selectedSessionId}
+                    onSelect={onSelectSession}
+                  />
                 )}
               </div>
             );

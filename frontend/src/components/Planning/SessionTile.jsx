@@ -1,4 +1,4 @@
-function SessionTile({ session }) {
+function SessionTile({ session, selected = false, onSelect }) {
   if (!session) {
     return (
       <button className="planning-session-card empty" type="button">
@@ -11,7 +11,18 @@ function SessionTile({ session }) {
   const hasOpenTime = Boolean(session.open);
 
   return (
-    <button className={`planning-session-card ${session.status}`} type="button">
+    <button
+      className={[
+        "planning-session-card",
+        session.status,
+        selected ? "selected" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      type="button"
+      onClick={() => onSelect?.(session)}
+      aria-pressed={selected}
+    >
       <span className="session-card-meta">
         <span className="session-status-dot" aria-label={session.status} />
       </span>
