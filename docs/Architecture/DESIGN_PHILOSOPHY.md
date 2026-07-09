@@ -214,6 +214,16 @@ If the answer to any of these is no, the feature probably belongs somewhere else
 
 ?
 
+## Interface Chrome
+
+Interface chrome exists to support decisions.
+
+When a screen feels visually heavy, remove software before removing information.
+
+Density should come from instructional content rather than interface furniture.
+
+The application should increasingly resemble the teacher's work rather than the tools used to edit it.
+
 Success
 
 Success is not measured by the number of features.

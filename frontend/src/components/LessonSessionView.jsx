@@ -3,15 +3,14 @@ import { useState } from "react";
 function LessonSessionView({ activeLessonContext }) {
   const [editingItemIndex, setEditingItemIndex] = useState(null);
   const [openItemIndex, setOpenItemIndex] = useState(1);
-
-  const sessionItems = [
+  const [sessionItems, setSessionItems] = useState([
     {
       action: "Welcome students and check permission slips.",
       phase: "Warm-up",
       type: "Admin",
       minutes: 4,
       detail: "Settle the room and clear the logistics before instruction begins.",
-      targets: [],
+      learningTargets: [],
       moves: ["Keep this brief.", "Do not let logistics consume the launch."],
       evidence: [],
     },
@@ -21,7 +20,7 @@ function LessonSessionView({ activeLessonContext }) {
       type: "Instruction",
       minutes: 25,
       detail: "Amplify 1.3 · Creating Multistep Transformations",
-      targets: [
+      learningTargets: [
         "I can visualize multistep transformations.",
         "I can describe multistep transformations verbally.",
       ],
@@ -37,7 +36,7 @@ function LessonSessionView({ activeLessonContext }) {
       type: "Instruction",
       minutes: 12,
       detail: "Use two contrasting student examples.",
-      targets: ["I can describe multistep transformations verbally."],
+      learningTargets: ["I can describe multistep transformations verbally."],
       moves: ["Press for sequence language: first, then, finally."],
       evidence: ["Whole-class discussion"],
     },
@@ -47,11 +46,11 @@ function LessonSessionView({ activeLessonContext }) {
       type: "Assessment",
       minutes: 6,
       detail: "One visualizing item and one verbal description item.",
-      targets: [],
+      learningTargets: [],
       moves: ["Collect before dismissal."],
       evidence: ["Exit ticket"],
     },
-  ];
+  ]);
 
   return (
     <section className="workspace-panel lesson-session-workspace">
@@ -90,8 +89,17 @@ function LessonSessionView({ activeLessonContext }) {
                   {isEditing ? (
                     <input
                       className="session-item-action-input"
-                      defaultValue={item.action}
+                      value={item.action}
                       autoFocus
+                      onChange={(event) => {
+                        setSessionItems((items) =>
+                          items.map((currentItem, itemIndex) =>
+                            itemIndex === index
+                              ? { ...currentItem, action: event.target.value }
+                              : currentItem,
+                          ),
+                        );
+                      }}
                       onBlur={() => setEditingItemIndex(null)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter") {
@@ -124,18 +132,122 @@ function LessonSessionView({ activeLessonContext }) {
                 </div>
               </div>
 
+              <div className="session-item-controls" aria-label="Session item controls">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSessionItems((items) => {
+                      if (index === 0) return items;
+
+                      const nextItems = [...items];
+                      const [movedItem] = nextItems.splice(index, 1);
+                      nextItems.splice(index - 1, 0, movedItem);
+                      return nextItems;
+                    });
+
+                    setOpenItemIndex(Math.max(0, index - 1));
+                    setEditingItemIndex(null);
+                  }}
+                  disabled={index === 0}
+                >
+                  ↑
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSessionItems((items) => {
+                      if (index === items.length - 1) return items;
+
+                      const nextItems = [...items];
+                      const [movedItem] = nextItems.splice(index, 1);
+                      nextItems.splice(index + 1, 0, movedItem);
+                      return nextItems;
+                    });
+
+                    setOpenItemIndex(index + 1);
+                    setEditingItemIndex(null);
+                  }}
+                  disabled={index === sessionItems.length - 1}
+                >
+                  ↓
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSessionItems((items) =>
+                      items.filter((_, itemIndex) => itemIndex !== index),
+                    );
+                    setOpenItemIndex(null);
+                    setEditingItemIndex(null);
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+
               {isOpen ? (
                 <div className="session-item-body">
                   <section>
-                    <h4>Why</h4>
-                    <p>{item.detail}</p>
-                    {item.targets.length ? (
-                      <ul>
-                        {item.targets.map((target) => (
-                          <li key={target}>{target}</li>
-                        ))}
-                      </ul>
-                    ) : null}
+                    <h4>Learning</h4>
+
+                    <ul className="session-item-learning-list">
+                      {(item.learningTargets ?? []).map((target, targetIndex) => (
+                        <li key={targetIndex}>
+                          <input
+                            className="session-item-quiet-input"
+                            value={target}
+                            placeholder="I can..."
+                            onChange={(event) => {
+                              setSessionItems((items) =>
+                                items.map((currentItem, itemIndex) =>
+                                  itemIndex === index
+                                    ? {
+                                        ...currentItem,
+                                        learningTargets:
+                                          currentItem.learningTargets.map(
+                                            (t, i) =>
+                                              i === targetIndex
+                                                ? event.target.value
+                                                : t,
+                                          ),
+                                      }
+                                    : currentItem,
+                                ),
+                              );
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.currentTarget.blur();
+                              }
+                            }}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      className="session-item-add-link"
+                      type="button"
+                      onClick={() => {
+                        setSessionItems((items) =>
+                          items.map((currentItem, itemIndex) =>
+                            itemIndex === index
+                              ? {
+                                  ...currentItem,
+                                  learningTargets: [
+                                    ...(currentItem.learningTargets ?? []),
+                                    "I can ",
+                                  ],
+                                }
+                              : currentItem,
+                          ),
+                        );
+                      }}
+                    >
+                      + Add Learning Target
+                    </button>
                   </section>
 
                   <section>
@@ -165,8 +277,32 @@ function LessonSessionView({ activeLessonContext }) {
           );
         })}
 
-        <button className="add-session-item-button" type="button">
-          + Add Session Item
+        <button
+          className="add-session-item-button"
+          type="button"
+          onClick={() => {
+            const newIndex = sessionItems.length;
+
+            setSessionItems((items) => [
+              ...items,
+              {
+                action: "",
+                phase: "Plan",
+                type: "Instruction",
+                minutes: 5,
+                detail: "Add context when useful.",
+                learningTargets: [],
+                learningTargets: [],
+                moves: [],
+                evidence: [],
+              },
+            ]);
+
+            setOpenItemIndex(newIndex);
+            setEditingItemIndex(newIndex);
+          }}
+        >
+          + Next Teaching Step
         </button>
       </div>
     </section>
