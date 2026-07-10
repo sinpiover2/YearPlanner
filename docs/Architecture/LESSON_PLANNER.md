@@ -27,9 +27,15 @@ It answers:
 
 A Lesson Session is the actual class period the teacher plans, teaches, and reflects on.
 
-It may reference one or more planned curriculum lessons, but it is not identical to them.
+It may begin from one or more Planned Curriculum Lessons, but once created it becomes an independent instructional outline.
 
-It may also include items that are not tied to the planned curriculum.
+Lesson Sessions own enactment.
+
+Curriculum Lessons own intent.
+
+Teachers should feel completely free to revise, reorder, replace, split, merge, or omit instructional actions while planning or teaching.
+
+These revisions belong to the Lesson Session unless the teacher explicitly chooses to improve the curriculum.
 
 It answers:
 
@@ -80,44 +86,65 @@ Each line item may optionally connect to:
 
 ## Student Deliverables
 
-Lesson Session owns the student-facing deliverables for that class.
+Deliverables belong to the Lesson Session.
 
-Examples:
+A Deliverable is not simply a note.
+
+It represents work assigned to students during that instructional session.
+
+Examples include:
 
 - handout
-- notebook entry
-- Desmos activity
-- Kiddom / Amplify task
 - assignment
+- notebook work
+- Desmos activity
+- Amplify / Kiddom work
 - exit ticket
 - homework
 - submitted product
+
+A Deliverable may optionally include a due date.
+
+Because Deliverables have their own instructional lifecycle, they should be treated as first-class instructional objects rather than ordinary notes.
 
 ## Ownership boundaries
 
 Units owns planned curriculum.
 
-Planning organizes the week and selects the active lesson context.
+Planning organizes instructional sessions.
 
-Lesson Planner owns the enacted session.
+Lesson Planner owns enacted instruction.
 
 Forecast owns pacing and instructional risk.
 
-Today launches the correct session for the current day.
+Today launches the correct Lesson Session.
+
+Changes made while planning belong to the Lesson Session by default.
+
+Updating the Curriculum Lesson should always require an explicit, intentional action.
 
 ## Important principle
 
-Lesson Planner should not simply edit the planned curriculum lesson.
+Lesson Planner is a trusted instructional notebook.
 
-It should help the teacher build and teach the actual class session.
+It should help teachers think, revise, and experiment safely.
 
-The UI may say "Lesson Planner," but the architecture should treat this as Session Planning.
+Planning should feel effortless.
+
+Experimentation should feel safe.
+
+Teachers should never worry that improving today's lesson will accidentally modify the durable curriculum.
 
 ## Long-term implication
 
-Reflection should attach to enacted Lesson Sessions while also being able to improve the durable curriculum over time.
+Reflection attaches to Lesson Sessions.
 
-This allows the app to preserve both:
+Curriculum improvement attaches to Curriculum Lessons.
 
-- what was supposed to happen
-- what actually happened
+A Lesson Session may eventually recommend improvements back to the curriculum, but those improvements should always be reviewed and intentionally accepted.
+
+The system therefore preserves both:
+
+- what was intended
+- what was enacted
+- how instruction evolved over time

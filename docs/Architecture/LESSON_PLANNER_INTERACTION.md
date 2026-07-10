@@ -1,4 +1,4 @@
-# Lesson Planner Ñ Interaction Philosophy
+# Lesson Planner — Interaction Philosophy
 
 ## Purpose of This Document
 
@@ -34,7 +34,7 @@ Its job is to receive teaching thoughts and quietly arrange them into something 
 
 Teachers do not arrive with finished lessons.
 
-They arrive with fragments Ñ a good question, a worry about pacing, an activity that worked last year, a thing a student always gets wrong.
+They arrive with fragments — a good question, a worry about pacing, an activity that worked last year, a thing a student always gets wrong.
 
 A finished lesson is what those fragments become.
 
@@ -112,7 +112,7 @@ They should feel the software is helping reveal the lesson they were already bui
 
 The unit of a lesson is not a category.
 
-It is an action Ñ a thing students do, or a thing the teacher does with them.
+It is an action — a thing students do, or a thing the teacher does with them.
 
 Everything else hangs from that action.
 
@@ -152,7 +152,7 @@ So the collapsed view is not a summary of the real interface.
 
 It is the real interface.
 
-It should read as an outline Ñ a sequence of instructional actions a teacher can take in at a glance Ñ not as a stack of separate objects to be managed one at a time.
+It should read as an outline — a sequence of instructional actions a teacher can take in at a glance — not as a stack of separate objects to be managed one at a time.
 
 An outline is something you read down.
 
@@ -180,7 +180,7 @@ Expansion exists so a teacher can think more deeply about one action without los
 
 It deepens the current place; it does not relocate the teacher to a new one.
 
-Because of this, expansion should reveal only what focused thinking needs, and it should read as the same object growing more considered Ñ not as a different kind of surface appearing.
+Because of this, expansion should reveal only what focused thinking needs, and it should read as the same object growing more considered — not as a different kind of surface appearing.
 
 An expanded item that feels like a form has broken the metaphor.
 
@@ -198,7 +198,7 @@ They should read as facets of one thought, arranged for the eye that is reading 
 
 When a collection is empty, it should remain silent.
 
-An action with no evidence yet attached should show no evidence Ñ not an announcement that evidence is absent.
+An action with no evidence yet attached should show no evidence — not an announcement that evidence is absent.
 
 The teacher should encounter a collection only when they have given it something to hold, or when they reach for it deliberately.
 
@@ -232,7 +232,7 @@ The environment should be generous with that reward.
 
 The teacher's words are the content.
 
-Everything the software adds Ñ labels, controls, indicators, containers Ñ is furniture.
+Everything the software adds — labels, controls, indicators, containers — is furniture.
 
 Furniture exists to serve the content and must never compete with it.
 
@@ -282,7 +282,15 @@ The planner should feel authored.
 
 It should never feel operated.
 
-When a teacher finishes, the feeling they should carry is that they wrote something Ñ an instructional outline that grew under their hands Ñ not that they completed something the software required of them.
+Writing should proceed one thought at a time.
+
+As attention moves from one instructional action to the next, previously completed thoughts should quietly recede without disappearing.
+
+Collapsing an instructional action is not hiding information.
+
+It is acknowledging that, for the moment, the teacher's attention has moved elsewhere.
+
+When a teacher finishes, the feeling they should carry is that they wrote something — an instructional outline that grew under their hands — not that they completed something the software required of them.
 
 ---
 
@@ -304,6 +312,12 @@ Teachers should feel free to move, reshape, merge, divide, or replace instructio
 
 The planner should reward refinement rather than completion.
 
+Revision should always feel safe.
+
+Teachers should assume that every change belongs to the current Lesson Session unless they explicitly choose to improve the curriculum itself.
+
+The software should encourage experimentation by making today's lesson easy to reshape while making changes to the durable curriculum intentional.
+
 ---
 
 ## Authorship Belongs to the Teacher
@@ -316,7 +330,7 @@ It never authors.
 
 This extends the principle already established in `DESIGN_PHILOSOPHY.md`: awareness before advice, and reality before interpretation.
 
-Any help the planner offers should arrive as an offering the teacher can accept, revise, or ignore Ñ never as an accomplished fact the teacher must undo.
+Any help the planner offers should arrive as an offering the teacher can accept, revise, or ignore — never as an accomplished fact the teacher must undo.
 
 The teacher is the expert.
 
@@ -344,7 +358,7 @@ Success is not a fuller interface.
 
 It is a lighter one.
 
-A teacher using Lesson Planner well should feel that they are writing an instructional outline that gradually becomes teachable Ñ not filling out a plan, and not managing a set of objects.
+A teacher using Lesson Planner well should feel that they are writing an instructional outline that gradually becomes teachable — not filling out a plan, and not managing a set of objects.
 
 They should reach the end of planning with more of their attention intact than they started with.
 
@@ -356,7 +370,7 @@ The best version of Lesson Planner is the one that gets out of the way so comple
 
 ---
 
-## Appendix Ñ Observations That Should Remain Implementation Decisions
+## Appendix — Observations That Should Remain Implementation Decisions
 
 The design review that informed this document surfaced several worthwhile observations that are *not* interaction philosophy. They are tactical choices that will change as the product matures, and enshrining them as architecture would freeze decisions that should stay flexible. They belong in the decisions log or the implementation work, not here.
 
@@ -370,4 +384,4 @@ The design review that informed this document surfaced several worthwhile observ
 
 **Typographic and labeling house style.** Sentence case, label restraint, and similar conventions are style-guide matters shared across the suite. They support these principles but are not themselves interaction architecture.
 
-**Specific corrections noted during review** Ñ such as index numbering, the placement of connection status, and the separation of pedagogical phase from lifecycle stage in any selection control Ñ are decisions-log items and bug fixes. They should be recorded where decisions and corrections live, not elevated to philosophy.
+**Specific corrections noted during review** — such as index numbering, the placement of connection status, and the separation of pedagogical phase from lifecycle stage in any selection control — are decisions-log items and bug fixes. They should be recorded where decisions and corrections live, not elevated to philosophy.
