@@ -3494,3 +3494,452 @@ body {
   color: #94a3b8;
 }
 
+
+
+/* Lesson Planner episode-stack vertical slice */
+
+.episode-stack {
+  display: grid;
+  width: min(920px, 100%);
+  gap: 10px;
+}
+
+.teaching-episode {
+  border: 1px solid #e3e8ef;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.teaching-episode.is-open {
+  border-color: #cfd8e3;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.055);
+}
+
+.episode-spine {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 54px;
+  padding: 8px 12px 8px 10px;
+}
+
+.episode-disclosure {
+  width: 24px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #8a96a6;
+  font-size: 0.84rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.teaching-episode:hover .episode-disclosure,
+.teaching-episode:focus-within .episode-disclosure,
+.teaching-episode.is-open .episode-disclosure {
+  opacity: 1;
+}
+
+.episode-spine-main {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.episode-title-button {
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  padding: 3px 0;
+  background: transparent;
+  color: #172033;
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 730;
+  line-height: 1.35;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.episode-title-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #aeb9c7;
+  padding: 3px 0;
+  background: transparent;
+  color: #172033;
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 730;
+  line-height: 1.35;
+}
+
+.episode-title-input:focus {
+  outline: 0;
+}
+
+.episode-spine-meta {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 9px;
+  align-items: center;
+  color: #7b8796;
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+
+.episode-deliverable-mark {
+  font-size: 0.88rem;
+}
+
+.episode-hover-controls {
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.teaching-episode:hover .episode-hover-controls,
+.teaching-episode:focus-within .episode-hover-controls {
+  opacity: 1;
+}
+
+.episode-hover-controls button {
+  display: inline-grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #7b8796;
+  cursor: pointer;
+}
+
+.episode-hover-controls button:hover {
+  background: #f2f5f8;
+  color: #334155;
+}
+
+.episode-hover-controls button:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.episode-body {
+  display: grid;
+  gap: 2px;
+  border-top: 1px solid #edf1f5;
+  padding: 10px 18px 16px 44px;
+}
+
+.episode-block {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 6px;
+  align-items: start;
+}
+
+.episode-block.depth-1 {
+  margin-left: 24px;
+}
+
+.episode-block-glyph {
+  padding-top: 5px;
+  color: #9aa5b4;
+  font-size: 0.78rem;
+  text-align: center;
+  user-select: none;
+}
+
+.episode-block.is-support .episode-block-glyph {
+  color: #657386;
+}
+
+.episode-block-input {
+  display: block;
+  width: 100%;
+  min-height: 31px;
+  resize: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  padding: 4px 0 3px;
+  background: transparent;
+  color: #334155;
+  font: inherit;
+  font-size: 0.91rem;
+  line-height: 1.45;
+}
+
+.episode-block-input:focus {
+  outline: 0;
+  border-bottom-color: #dde4ec;
+  color: #172033;
+}
+
+.episode-block.is-support .episode-block-input {
+  color: #596779;
+  font-size: 0.86rem;
+}
+
+.episode-slash-menu {
+  position: absolute;
+  z-index: 20;
+  top: 32px;
+  left: 24px;
+  display: grid;
+  min-width: 190px;
+  overflow: hidden;
+  border: 1px solid #d9e1ea;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.13);
+}
+
+.episode-slash-menu button {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
+  align-items: center;
+  border: 0;
+  padding: 9px 11px;
+  background: transparent;
+  color: #39485a;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.episode-slash-menu button:hover,
+.episode-slash-menu button:focus {
+  outline: 0;
+  background: #f3f6f9;
+}
+
+.add-episode-button {
+  justify-self: start;
+  border: 0;
+  padding: 8px 4px;
+  background: transparent;
+  color: #748194;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+.add-episode-button:hover {
+  color: #334155;
+}
+
+.lesson-draft-status {
+  margin: -8px 0 0;
+  color: #9aa5b4;
+  font-size: 0.74rem;
+}
+
+
+/* Episode affordance and overflow refinement */
+
+.episode-disclosure {
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  background: #f8fafc;
+  opacity: 0.72;
+  font-size: 0.92rem;
+}
+
+.teaching-episode:hover .episode-disclosure,
+.teaching-episode:focus-within .episode-disclosure,
+.teaching-episode.is-open .episode-disclosure {
+  border-color: #c4cfdb;
+  background: #f1f5f9;
+  color: #475569;
+  opacity: 1;
+}
+
+.episode-title-button {
+  cursor: pointer;
+}
+
+.teaching-episode.is-open .episode-title-button {
+  cursor: text;
+}
+
+.episode-hover-controls {
+  position: relative;
+}
+
+.episode-overflow {
+  position: relative;
+}
+
+.episode-overflow-menu {
+  position: absolute;
+  z-index: 30;
+  top: 32px;
+  right: 0;
+  min-width: 158px;
+  overflow: hidden;
+  border: 1px solid #d9e1ea;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+}
+
+.episode-overflow-menu button {
+  width: 100%;
+  height: auto;
+  justify-content: flex-start;
+  border-radius: 0;
+  padding: 9px 11px;
+  text-align: left;
+}
+
+.episode-overflow-menu .episode-delete-action {
+  color: #7f1d1d;
+}
+
+.episode-overflow-menu .episode-delete-action:hover {
+  background: #fef2f2;
+  color: #7f1d1d;
+}
+
+
+/* Interactive Block-type glyph */
+
+.episode-block-type-toggle {
+  width: 22px;
+  height: 24px;
+  margin-top: 1px;
+  border: 0;
+  border-radius: 7px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.episode-block-type-toggle:hover,
+.episode-block-type-toggle:focus-visible {
+  outline: 0;
+  background: #eef2f6;
+  color: #334155;
+}
+
+.episode-block-type-toggle:active {
+  transform: scale(0.94);
+}
+
+
+/* Outline Block movement and deletion */
+
+.episode-block {
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+}
+
+.episode-block-controls {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  padding-top: 2px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.episode-block:hover .episode-block-controls,
+.episode-block:focus-within .episode-block-controls {
+  opacity: 1;
+}
+
+.episode-block-controls button {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0;
+  background: transparent;
+  color: #8a96a6;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.episode-block-controls button:hover,
+.episode-block-controls button:focus-visible {
+  outline: 0;
+  background: #eef2f6;
+  color: #334155;
+}
+
+.episode-block-controls .episode-block-delete:hover,
+.episode-block-controls .episode-block-delete:focus-visible {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+
+/* Collapsible outline branches */
+
+.episode-block {
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+}
+
+.episode-block-leading {
+  display: grid;
+  grid-template-columns: 18px 22px;
+  align-items: start;
+  min-height: 28px;
+}
+
+.episode-block-branch-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 24px;
+  margin-top: 1px;
+  border: 0;
+  border-radius: 5px;
+  padding: 0;
+  background: transparent;
+  color: #8a96a6;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.episode-block-branch-toggle:hover,
+.episode-block-branch-toggle:focus-visible {
+  outline: 0;
+  background: #eef2f6;
+  color: #334155;
+}
+
+.episode-block-branch-spacer {
+  width: 18px;
+  height: 24px;
+}
+
+.episode-block-leading .episode-block-glyph {
+  align-self: start;
+}
