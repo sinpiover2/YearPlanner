@@ -21,7 +21,15 @@ function WorkspaceHost({
   }
 
   if (activeView === "lesson") {
-    return <LessonSessionView {...lessonSessionWorkspaceModel} />;
+    return (
+      <LessonSessionView
+        key={
+          lessonSessionWorkspaceModel.activeLessonContext?.sessionId ??
+          "lesson-session-prototype"
+        }
+        {...lessonSessionWorkspaceModel}
+      />
+    );
   }
 
   if (activeView === "units") {

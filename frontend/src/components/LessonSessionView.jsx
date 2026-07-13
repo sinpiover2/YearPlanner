@@ -5,11 +5,33 @@ const LEGACY_STORAGE_KEY = "year-planner.lesson-session-items.prototype.v1";
 const COLLAPSED_BLOCKS_STORAGE_KEY =
   "year-planner.lesson-session.collapsed-blocks.v1";
 
+function getSessionStorageKey(baseKey, sessionId) {
+  return sessionId ? `${baseKey}.${sessionId}` : baseKey;
+}
+
 const SUPPORT_TYPES = [
   { type: "learning", label: "Learning", glyph: "◎" },
   { type: "deliverable", label: "Deliverable", glyph: "▢" },
   { type: "materials", label: "Materials", glyph: "◇" },
 ];
+
+const SESSION_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  weekday: "long",
+  month: "short",
+  day: "numeric",
+});
+
+function formatSessionDate(value) {
+  if (!value) return "";
+
+  const [year, month, day] = value.split("-").map(Number);
+
+  if (!year || !month || !day) return value;
+
+  return SESSION_DATE_FORMATTER.format(
+    new Date(year, month - 1, day),
+  );
+}
 
 function createId(prefix) {
   if (globalThis.crypto?.randomUUID) {
@@ -199,14 +221,14 @@ function normalizeStoredState(value) {
   };
 }
 
-function loadCollapsedBlockIds() {
+function loadCollapsedBlockIds(sessionId) {
   if (typeof window === "undefined") {
     return [];
   }
 
   try {
     const stored = window.localStorage.getItem(
-      COLLAPSED_BLOCKS_STORAGE_KEY,
+      getSessionStorageKey(COLLAPSED_BLOCKS_STORAGE_KEY, sessionId),
     );
 
     if (!stored) return [];
@@ -219,16 +241,21 @@ function loadCollapsedBlockIds() {
   }
 }
 
-function loadInitialState() {
+function loadInitialState(sessionId) {
   if (typeof window === "undefined") {
     return createDefaultState();
   }
 
   try {
-    const current = window.localStorage.getItem(STORAGE_KEY);
+    const storageKey = getSessionStorageKey(STORAGE_KEY, sessionId);
+    const current = window.localStorage.getItem(storageKey);
 
     if (current) {
       return normalizeStoredState(JSON.parse(current));
+    }
+
+    if (sessionId) {
+      return createDefaultState();
     }
 
     const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -344,7 +371,9 @@ function LessonSessionView({ activeLessonContext }) {
     redo,
     canUndo,
     canRedo,
-  } = useUndoableState(loadInitialState);
+  } = useUndoableState(() =>
+    loadInitialState(activeLessonContext?.sessionId),
+  );
   const [openEpisodeIds, setOpenEpisodeIds] = useState(() => {
     const initialId =
       plannerState.episodes[1]?.id ??
@@ -359,8 +388,8 @@ function LessonSessionView({ activeLessonContext }) {
   const [durationDraft, setDurationDraft] = useState("");
   const [slashMenu, setSlashMenu] = useState(null);
   const [episodeMenuId, setEpisodeMenuId] = useState(null);
-  const [collapsedBlockIds, setCollapsedBlockIds] = useState(
-    loadCollapsedBlockIds,
+  const [collapsedBlockIds, setCollapsedBlockIds] = useState(() =>
+    loadCollapsedBlockIds(activeLessonContext?.sessionId),
   );
   const inputRefs = useRef(new Map());
 
@@ -400,22 +429,31 @@ function LessonSessionView({ activeLessonContext }) {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(plannerState));
+      window.localStorage.setItem(
+        getSessionStorageKey(
+          STORAGE_KEY,
+          activeLessonContext?.sessionId,
+        ),
+        JSON.stringify(plannerState),
+      );
     } catch (error) {
       console.warn("Could not save the local Lesson Planner draft.", error);
     }
-  }, [plannerState]);
+  }, [activeLessonContext?.sessionId, plannerState]);
 
   useEffect(() => {
     try {
       window.localStorage.setItem(
-        COLLAPSED_BLOCKS_STORAGE_KEY,
+        getSessionStorageKey(
+          COLLAPSED_BLOCKS_STORAGE_KEY,
+          activeLessonContext?.sessionId,
+        ),
         JSON.stringify(collapsedBlockIds),
       );
     } catch (error) {
       console.warn("Could not save collapsed outline branches.", error);
     }
-  }, [collapsedBlockIds]);
+  }, [activeLessonContext?.sessionId, collapsedBlockIds]);
 
   useEffect(() => {
     if (!episodeMenuId) return undefined;
@@ -1089,15 +1127,28 @@ function LessonSessionView({ activeLessonContext }) {
       <header className="workspace-header lesson-session-header">
         <div>
           <p className="eyebrow">Lesson Planner</p>
-          <h2>Build the lesson in teaching episodes.</h2>
-          <p>
-            Arrange the chunks. Open one when you want to think inside it.
-          </p>
+
+          {activeLessonContext?.sessionId ? (
+            <>
+              <h2>{activeLessonContext.sectionLabel}</h2>
+              <p>{formatSessionDate(activeLessonContext.date)}</p>
+              <p className="lesson-session-curriculum-title">
+                {activeLessonContext.title}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2>Build the lesson in teaching episodes.</h2>
+              <p>
+                Arrange the chunks. Open one when you want to think inside it.
+              </p>
+            </>
+          )}
         </div>
 
         {activeLessonContext?.lessonId ? (
           <div className="lesson-context-pill">
-            {activeLessonContext.lessonId}
+            Curriculum · {activeLessonContext.lessonId}
           </div>
         ) : null}
       </header>
