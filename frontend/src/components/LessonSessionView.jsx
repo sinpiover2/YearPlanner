@@ -250,12 +250,113 @@ function loadInitialState() {
   return createDefaultState();
 }
 
+function useUndoableState(initializer) {
+  const [state, setState] = useState(initializer);
+  const pastRef = useRef([]);
+  const futureRef = useRef([]);
+
+  function setUndoableState(updater, options = {}) {
+    const { record = true } = options;
+
+    setState((current) => {
+      const next =
+        typeof updater === "function" ? updater(current) : updater;
+
+      if (Object.is(next, current)) {
+        return current;
+      }
+
+      if (record) {
+        pastRef.current.push(current);
+
+        if (pastRef.current.length > 100) {
+          pastRef.current.shift();
+        }
+
+        futureRef.current = [];
+      }
+
+      return next;
+    });
+  }
+
+  function undo() {
+    setState((current) => {
+      const previous = pastRef.current.pop();
+
+      if (!previous) {
+        return current;
+      }
+
+      futureRef.current.push(current);
+      return previous;
+    });
+  }
+
+  function redo() {
+    setState((current) => {
+      const next = futureRef.current.pop();
+
+      if (!next) {
+        return current;
+      }
+
+      pastRef.current.push(current);
+      return next;
+    });
+  }
+
+  return {
+    state,
+    setState: setUndoableState,
+    undo,
+    redo,
+    canUndo: pastRef.current.length > 0,
+    canRedo: futureRef.current.length > 0,
+  };
+}
+
+function estimateEpisodeMinutes(blocks) {
+  const estimate = blocks.reduce((total, block) => {
+    if (!block.text?.trim()) {
+      return total;
+    }
+
+    if (block.type === "learning") {
+      return total;
+    }
+
+    if (block.type === "deliverable") {
+      return total + 1;
+    }
+
+    return total + (block.depth === 1 ? 1 : 2);
+  }, 0);
+
+  return Math.max(estimate, 1);
+}
+
 function LessonSessionView({ activeLessonContext }) {
-  const [plannerState, setPlannerState] = useState(loadInitialState);
-  const [openEpisodeId, setOpenEpisodeId] = useState(
-    plannerState.episodes[1]?.id ?? plannerState.episodes[0]?.id ?? null,
-  );
+  const {
+    state: plannerState,
+    setState: setPlannerState,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useUndoableState(loadInitialState);
+  const [openEpisodeIds, setOpenEpisodeIds] = useState(() => {
+    const initialId =
+      plannerState.episodes[1]?.id ??
+      plannerState.episodes[0]?.id ??
+      null;
+
+    return initialId ? new Set([initialId]) : new Set();
+  });
   const [editingTitleId, setEditingTitleId] = useState(null);
+  const [pendingBlockFocusId, setPendingBlockFocusId] = useState(null);
+  const [editingDurationId, setEditingDurationId] = useState(null);
+  const [durationDraft, setDurationDraft] = useState("");
   const [slashMenu, setSlashMenu] = useState(null);
   const [episodeMenuId, setEpisodeMenuId] = useState(null);
   const [collapsedBlockIds, setCollapsedBlockIds] = useState(
@@ -264,6 +365,38 @@ function LessonSessionView({ activeLessonContext }) {
   const inputRefs = useRef(new Map());
 
   const { episodes, deliverables } = plannerState;
+
+  const activeDeliverableCount = new Set(
+    episodes.flatMap((episode) =>
+      episode.blocks
+        .filter(
+          (block) =>
+            block.type === "deliverable" &&
+            block.deliverableId,
+        )
+        .map((block) => block.deliverableId),
+    ),
+  ).size;
+
+  const hasEstimatedDurations = episodes.some(
+    (episode) =>
+      !Number.isFinite(Number(episode.minutes)) ||
+      Number(episode.minutes) <= 0,
+  );
+
+  const totalDisplayedMinutes = episodes.reduce(
+    (total, episode) => {
+      const manualMinutes = Number(episode.minutes);
+
+      return (
+        total +
+        (Number.isFinite(manualMinutes) && manualMinutes > 0
+          ? manualMinutes
+          : estimateEpisodeMinutes(episode.blocks))
+      );
+    },
+    0,
+  );
 
   useEffect(() => {
     try {
@@ -284,19 +417,137 @@ function LessonSessionView({ activeLessonContext }) {
     }
   }, [collapsedBlockIds]);
 
-  function updateEpisode(episodeId, updater) {
-    setPlannerState((current) => ({
-      ...current,
-      episodes: current.episodes.map((episode) =>
-        episode.id === episodeId ? updater(episode) : episode,
-      ),
-    }));
+  useEffect(() => {
+    if (!episodeMenuId) return undefined;
+
+    function closeEpisodeMenu(event) {
+      if (
+        event.type === "keydown" &&
+        event.key !== "Escape"
+      ) {
+        return;
+      }
+
+      if (
+        event.type === "pointerdown" &&
+        event.target.closest(".episode-overflow")
+      ) {
+        return;
+      }
+
+      setEpisodeMenuId(null);
+    }
+
+    window.addEventListener("pointerdown", closeEpisodeMenu);
+    window.addEventListener("keydown", closeEpisodeMenu);
+
+    return () => {
+      window.removeEventListener("pointerdown", closeEpisodeMenu);
+      window.removeEventListener("keydown", closeEpisodeMenu);
+    };
+  }, [episodeMenuId]);
+
+  useEffect(() => {
+    if (!pendingBlockFocusId) return undefined;
+
+    const frame = window.requestAnimationFrame(() => {
+      const input = inputRefs.current.get(pendingBlockFocusId);
+
+      if (!input) return;
+
+      input.focus();
+      const end = input.value.length;
+      input.setSelectionRange(end, end);
+      setPendingBlockFocusId(null);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [pendingBlockFocusId, openEpisodeIds, editingTitleId]);
+
+  useEffect(() => {
+    function handleUndoRedo(event) {
+      const modifier = event.metaKey || event.ctrlKey;
+
+      if (!modifier || event.key.toLowerCase() !== "z") {
+        return;
+      }
+
+      const activeElement = document.activeElement;
+      const tagName = activeElement?.tagName;
+
+      // Inputs and textareas retain their normal native text undo.
+      if (
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        activeElement?.isContentEditable
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (event.shiftKey) {
+        redo();
+      } else {
+        undo();
+      }
+    }
+
+    window.addEventListener("keydown", handleUndoRedo);
+
+    return () => {
+      window.removeEventListener("keydown", handleUndoRedo);
+    };
+  }, [undo, redo]);
+
+  function updateEpisode(
+    episodeId,
+    updater,
+    options = {},
+  ) {
+    setPlannerState(
+      (current) => ({
+        ...current,
+        episodes: current.episodes.map((episode) =>
+          episode.id === episodeId ? updater(episode) : episode,
+        ),
+      }),
+      options,
+    );
   }
 
   function focusBlock(blockId) {
-    window.requestAnimationFrame(() => {
-      inputRefs.current.get(blockId)?.focus();
-    });
+    setPendingBlockFocusId(blockId);
+  }
+
+  function beginDurationEdit(episode) {
+    setDurationDraft(
+      Number.isFinite(Number(episode.minutes)) && Number(episode.minutes) > 0
+        ? String(episode.minutes)
+        : "",
+    );
+    setEditingDurationId(episode.id);
+  }
+
+  function commitDurationEdit(episodeId) {
+    const parsedMinutes = Number.parseInt(durationDraft, 10);
+    const minutes =
+      Number.isFinite(parsedMinutes) && parsedMinutes > 0
+        ? parsedMinutes
+        : null;
+
+    updateEpisode(episodeId, (episode) => ({
+      ...episode,
+      minutes,
+    }));
+
+    setEditingDurationId(null);
+    setDurationDraft("");
+  }
+
+  function cancelDurationEdit() {
+    setEditingDurationId(null);
+    setDurationDraft("");
   }
 
   function addEpisode(afterIndex = episodes.length - 1) {
@@ -312,7 +563,11 @@ function LessonSessionView({ activeLessonContext }) {
       };
     });
 
-    setOpenEpisodeId(episode.id);
+    setOpenEpisodeIds((current) => {
+      const next = new Set(current);
+      next.add(episode.id);
+      return next;
+    });
     setEditingTitleId(episode.id);
   }
 
@@ -345,15 +600,67 @@ function LessonSessionView({ activeLessonContext }) {
       };
     });
 
-    if (openEpisodeId === episodeId) {
-      setOpenEpisodeId(null);
-    }
+    setOpenEpisodeIds((current) => {
+      const next = new Set(current);
+      next.delete(episodeId);
+      return next;
+    });
 
     if (editingTitleId === episodeId) {
       setEditingTitleId(null);
     }
 
     setEpisodeMenuId(null);
+  }
+
+  function splitBlockAtCaret(
+    episodeId,
+    blockIndex,
+    selectionStart,
+    selectionEnd,
+  ) {
+    const episode = episodes.find((item) => item.id === episodeId);
+    const block = episode?.blocks[blockIndex];
+
+    if (!block) return;
+
+    const before = block.text.slice(0, selectionStart);
+    const after = block.text.slice(selectionEnd);
+    const newBlock = {
+      ...createBlock(),
+      text: after,
+      depth: block.depth,
+    };
+
+    setPlannerState((current) => ({
+      ...current,
+      episodes: current.episodes.map((item) => {
+        if (item.id !== episodeId) return item;
+
+        const nextBlocks = [...item.blocks];
+
+        nextBlocks[blockIndex] = {
+          ...nextBlocks[blockIndex],
+          text: before,
+        };
+
+        nextBlocks.splice(blockIndex + 1, 0, newBlock);
+
+        return {
+          ...item,
+          blocks: nextBlocks,
+        };
+      }),
+    }));
+
+    window.requestAnimationFrame(() => {
+      const input = inputRefs.current.get(newBlock.id);
+
+      if (!input) return;
+
+      input.focus();
+      input.setSelectionRange(0, 0);
+    });
   }
 
   function addBlockAfter(episodeId, blockIndex, block = createBlock()) {
@@ -565,6 +872,52 @@ function LessonSessionView({ activeLessonContext }) {
     });
   }
 
+  function joinWithPreviousBlock(episodeId, blockIndex) {
+    if (blockIndex === 0) return;
+
+    const episode = episodes.find((item) => item.id === episodeId);
+    if (!episode) return;
+
+    const previous = episode.blocks[blockIndex - 1];
+    const current = episode.blocks[blockIndex];
+
+    if (!previous || !current) return;
+    if (previous.depth !== current.depth) return;
+
+    const caret = previous.text.length;
+    const previousId = previous.id;
+
+    setPlannerState((state) => ({
+      ...state,
+      episodes: state.episodes.map((item) => {
+        if (item.id !== episodeId) return item;
+
+        const nextBlocks = [...item.blocks];
+
+        nextBlocks[blockIndex - 1] = {
+          ...nextBlocks[blockIndex - 1],
+          text: previous.text + current.text,
+        };
+
+        nextBlocks.splice(blockIndex, 1);
+
+        return {
+          ...item,
+          blocks: nextBlocks,
+        };
+      }),
+    }));
+
+    window.requestAnimationFrame(() => {
+      const input = inputRefs.current.get(previousId);
+
+      if (!input) return;
+
+      input.focus();
+      input.setSelectionRange(caret, caret);
+    });
+  }
+
   function deleteBlock(episodeId, blockIndex) {
     setPlannerState((current) => {
       const episode = current.episodes.find(
@@ -631,30 +984,77 @@ function LessonSessionView({ activeLessonContext }) {
   }
 
   function toggleBlockType(episodeId, blockIndex) {
-    updateEpisode(episodeId, (episode) => ({
-      ...episode,
-      blocks: episode.blocks.map((block, index) => {
-        if (index !== blockIndex) return block;
+    setPlannerState((current) => {
+      const episode = current.episodes.find(
+        (item) => item.id === episodeId,
+      );
 
-        if (block.type === "text") {
-          return {
-            ...block,
-            type: "learning",
-            deliverableId: null,
-          };
-        }
+      const block = episode?.blocks[blockIndex];
 
-        if (block.type === "learning") {
-          return {
-            ...block,
-            type: "text",
-            deliverableId: null,
-          };
-        }
+      if (!episode || !block) {
+        return current;
+      }
 
-        return block;
-      }),
-    }));
+      let nextType = "text";
+
+      if (block.type === "text") {
+        nextType = "learning";
+      } else if (block.type === "learning") {
+        nextType = "deliverable";
+      }
+
+      // Keep the same Deliverable identity when the teacher cycles away
+      // from Deliverable and later cycles back.
+      let deliverableId = block.deliverableId ?? null;
+      let nextDeliverables = current.deliverables;
+
+      if (nextType === "deliverable" && !deliverableId) {
+        deliverableId = createId("deliverable");
+
+        nextDeliverables = [
+          ...current.deliverables,
+          {
+            id: deliverableId,
+            title: block.text,
+            originatingEpisodeId: episodeId,
+          },
+        ];
+      }
+
+      const nextEpisodes = current.episodes.map((item) =>
+        item.id === episodeId
+          ? {
+              ...item,
+              blocks: item.blocks.map((currentBlock, index) =>
+                index === blockIndex
+                  ? {
+                      ...currentBlock,
+                      type: nextType,
+                      deliverableId,
+                    }
+                  : currentBlock,
+              ),
+            }
+          : item,
+      );
+
+      // Remove duplicate orphan Deliverables produced by the earlier bug.
+      // A retained dormant ID still counts as referenced.
+      const referencedDeliverableIds = new Set(
+        nextEpisodes.flatMap((item) =>
+          item.blocks
+            .map((currentBlock) => currentBlock.deliverableId)
+            .filter(Boolean),
+        ),
+      );
+
+      return {
+        episodes: nextEpisodes,
+        deliverables: nextDeliverables.filter((deliverable) =>
+          referencedDeliverableIds.has(deliverable.id),
+        ),
+      };
+    });
   }
 
   function updateBlockText(episodeId, blockIndex, value) {
@@ -667,7 +1067,7 @@ function LessonSessionView({ activeLessonContext }) {
         ...episode,
         blocks: nextBlocks,
       };
-    });
+    }, { record: false });
 
     const episode = episodes.find((current) => current.id === episodeId);
     const block = episode?.blocks[blockIndex];
@@ -704,8 +1104,10 @@ function LessonSessionView({ activeLessonContext }) {
 
       <div className="episode-stack">
         {episodes.map((episode, episodeIndex) => {
-          const isOpen = openEpisodeId === episode.id;
+          const isOpen = openEpisodeIds.has(episode.id);
           const isEditingTitle = editingTitleId === episode.id;
+          const isEditingDuration =
+            editingDurationId === episode.id;
           const hasDeliverable = episode.blocks.some(
             (block) => block.type === "deliverable",
           );
@@ -722,7 +1124,17 @@ function LessonSessionView({ activeLessonContext }) {
                   aria-label={isOpen ? "Collapse episode" : "Expand episode"}
                   aria-expanded={isOpen}
                   onClick={() =>
-                    setOpenEpisodeId(isOpen ? null : episode.id)
+                    setOpenEpisodeIds((current) => {
+                      const next = new Set(current);
+
+                      if (next.has(episode.id)) {
+                        next.delete(episode.id);
+                      } else {
+                        next.add(episode.id);
+                      }
+
+                      return next;
+                    })
                   }
                 >
                   {isOpen ? "▾" : "▸"}
@@ -735,29 +1147,40 @@ function LessonSessionView({ activeLessonContext }) {
                       value={episode.title}
                       autoFocus
                       onChange={(event) =>
-                        updateEpisode(episode.id, (current) => ({
-                          ...current,
-                          title: event.target.value,
-                        }))
+                        updateEpisode(
+                          episode.id,
+                          (current) => ({
+                            ...current,
+                            title: event.target.value,
+                          }),
+                          { record: false },
+                        )
                       }
                       onBlur={() => setEditingTitleId(null)}
                       onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          setEditingTitleId(null);
-                          setOpenEpisodeId(episode.id);
-                          focusBlock(episode.blocks[0].id);
-                        }
-
                         if (
                           event.key === "Enter" &&
                           (event.metaKey || event.ctrlKey)
                         ) {
                           event.preventDefault();
                           addEpisode(episodeIndex);
+                          return;
+                        }
+
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          setEditingTitleId(null);
+                          setOpenEpisodeIds((current) => {
+                            const next = new Set(current);
+                            next.add(episode.id);
+                            return next;
+                          });
+                          focusBlock(episode.blocks[0].id);
+                          return;
                         }
 
                         if (event.key === "Escape") {
+                          event.preventDefault();
                           setEditingTitleId(null);
                         }
                       }}
@@ -768,7 +1191,11 @@ function LessonSessionView({ activeLessonContext }) {
                       type="button"
                       onClick={() => {
                         if (!isOpen) {
-                          setOpenEpisodeId(episode.id);
+                          setOpenEpisodeIds((current) => {
+                            const next = new Set(current);
+                            next.add(episode.id);
+                            return next;
+                          });
                           focusBlock(episode.blocks[0].id);
                           return;
                         }
@@ -781,10 +1208,6 @@ function LessonSessionView({ activeLessonContext }) {
                   )}
 
                   <div className="episode-spine-meta">
-                    {episode.minutes ? (
-                      <span>{episode.minutes} min</span>
-                    ) : null}
-
                     {hasDeliverable ? (
                       <span
                         className="episode-deliverable-mark"
@@ -793,10 +1216,77 @@ function LessonSessionView({ activeLessonContext }) {
                         ▢
                       </span>
                     ) : null}
+                    {isEditingDuration ? (
+                      <span className="episode-duration-editor">
+                        <input
+                          className="episode-duration-input"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={durationDraft}
+                          autoFocus
+                          aria-label="Episode duration in minutes"
+                          onFocus={(event) => event.currentTarget.select()}
+                          onChange={(event) => {
+                            const digitsOnly =
+                              event.target.value.replace(/[^0-9]/g, "");
+                            setDurationDraft(digitsOnly);
+                          }}
+                          onBlur={() =>
+                            commitDurationEdit(episode.id)
+                          }
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              commitDurationEdit(episode.id);
+                            }
+
+                            if (event.key === "Escape") {
+                              event.preventDefault();
+                              cancelDurationEdit();
+                            }
+                          }}
+                        />
+                        <span aria-hidden="true">m</span>
+                      </span>
+                    ) : (
+                      <button
+                        className={`episode-duration-button${
+                          episode.minutes ? "" : " is-estimated"
+                        }`}
+                        type="button"
+                        aria-label={
+                          episode.minutes
+                            ? `Edit ${episode.minutes} minute duration`
+                            : `Edit estimated ${estimateEpisodeMinutes(
+                                episode.blocks,
+                              )} minute duration`
+                        }
+                        title={
+                          episode.minutes
+                            ? "Edit duration"
+                            : "Estimated duration — click to override"
+                        }
+                        onClick={() => beginDurationEdit(episode)}
+                      >
+                        {episode.minutes
+                          ? `${episode.minutes}m`
+                          : `≈${estimateEpisodeMinutes(
+                              episode.blocks,
+                            )}m`}
+                      </button>
+                    )}
+
                   </div>
                 </div>
 
-                <div className="episode-hover-controls">
+                <div
+                  className={`episode-hover-controls${
+                    episodeMenuId === episode.id
+                      ? " has-open-menu"
+                      : ""
+                  }`}
+                >
                   <button
                     type="button"
                     aria-label="Move episode up"
@@ -903,25 +1393,34 @@ function LessonSessionView({ activeLessonContext }) {
                           )}
 
                         {block.type === "text" ||
-                        block.type === "learning" ? (
+                        block.type === "learning" ||
+                        block.type === "deliverable" ? (
                           <button
                             className="episode-block-glyph episode-block-type-toggle"
                             type="button"
                             title={
-                              block.type === "learning"
-                                ? "Change to ordinary outline"
-                                : "Change to learning target"
+                              block.type === "text"
+                                ? "Change to learning target"
+                                : block.type === "learning"
+                                  ? "Change to deliverable"
+                                  : "Change to ordinary outline"
                             }
                             aria-label={
-                              block.type === "learning"
-                                ? "Change this learning target to an ordinary outline line"
-                                : "Change this outline line to a learning target"
+                              block.type === "text"
+                                ? "Change this outline line to a learning target"
+                                : block.type === "learning"
+                                  ? "Change this learning target to a deliverable"
+                                  : "Change this deliverable to an ordinary outline line"
                             }
                             onClick={() =>
                               toggleBlockType(episode.id, blockIndex)
                             }
                           >
-                            {block.type === "learning" ? "◎" : "•"}
+                            {block.type === "learning"
+                              ? "◎"
+                              : block.type === "deliverable"
+                                ? "▢"
+                                : "•"}
                           </button>
                         ) : (
                           <span className="episode-block-glyph">
@@ -970,7 +1469,12 @@ function LessonSessionView({ activeLessonContext }) {
 
                             if (event.key === "Enter" && !event.shiftKey) {
                               event.preventDefault();
-                              addBlockAfter(episode.id, blockIndex);
+                              splitBlockAtCaret(
+                                episode.id,
+                                blockIndex,
+                                event.currentTarget.selectionStart ?? 0,
+                                event.currentTarget.selectionEnd ?? 0,
+                              );
                               return;
                             }
 
@@ -993,10 +1497,98 @@ function LessonSessionView({ activeLessonContext }) {
                               return;
                             }
 
+                            if (
+                              event.key === "Backspace" &&
+                              event.currentTarget.selectionStart === 0 &&
+                              event.currentTarget.selectionEnd === 0
+                            ) {
+                              event.preventDefault();
+
+                              if (block.text.length === 0) {
+                                deleteBlock(episode.id, blockIndex);
+                              } else {
+                                joinWithPreviousBlock(
+                                  episode.id,
+                                  blockIndex,
+                                );
+                              }
+
+                              return;
+                            }
+
+                            if (
+                              event.key === "ArrowUp" &&
+                              !event.metaKey &&
+                              !event.ctrlKey &&
+                              !event.altKey
+                            ) {
+                              const visibleBlocks = episode.blocks.filter(
+                                (currentBlock) =>
+                                  !hiddenBlockIds.has(currentBlock.id),
+                              );
+                              const visibleIndex = visibleBlocks.findIndex(
+                                (currentBlock) =>
+                                  currentBlock.id === block.id,
+                              );
+                              const previousBlock =
+                                visibleBlocks[visibleIndex - 1];
+
+                              if (previousBlock) {
+                                event.preventDefault();
+                                const input = inputRefs.current.get(
+                                  previousBlock.id,
+                                );
+
+                                if (input) {
+                                  input.focus();
+                                  const end = input.value.length;
+                                  input.setSelectionRange(end, end);
+                                }
+                              }
+
+                              return;
+                            }
+
+                            if (
+                              event.key === "ArrowDown" &&
+                              !event.metaKey &&
+                              !event.ctrlKey &&
+                              !event.altKey
+                            ) {
+                              const visibleBlocks = episode.blocks.filter(
+                                (currentBlock) =>
+                                  !hiddenBlockIds.has(currentBlock.id),
+                              );
+                              const visibleIndex = visibleBlocks.findIndex(
+                                (currentBlock) =>
+                                  currentBlock.id === block.id,
+                              );
+                              const nextBlock =
+                                visibleBlocks[visibleIndex + 1];
+
+                              if (nextBlock) {
+                                event.preventDefault();
+                                const input = inputRefs.current.get(
+                                  nextBlock.id,
+                                );
+
+                                if (input) {
+                                  input.focus();
+                                  input.setSelectionRange(0, 0);
+                                }
+                              }
+
+                              return;
+                            }
+
                             if (event.key === "Escape") {
                               event.preventDefault();
                               setSlashMenu(null);
-                              setOpenEpisodeId(null);
+                              setOpenEpisodeIds((current) => {
+                                const next = new Set(current);
+                                next.delete(episode.id);
+                                return next;
+                              });
                               return;
                             }
 
@@ -1102,10 +1694,45 @@ function LessonSessionView({ activeLessonContext }) {
         </button>
       </div>
 
-      <p className="lesson-draft-status">
-        Saved locally · {episodes.length} episodes · {deliverables.length}{" "}
-        deliverables
-      </p>
+      <div className="lesson-summary-row">
+        <span className="lesson-summary-label">
+          {hasEstimatedDurations ? "Estimated total" : "Total"}
+        </span>
+
+        <span className="lesson-summary-minutes">
+          {hasEstimatedDurations ? "≈" : ""}
+          {totalDisplayedMinutes}m
+        </span>
+      </div>
+
+      <div className="lesson-draft-footer">
+        <p className="lesson-draft-status">
+          Saved locally · {episodes.length} episodes ·{" "}
+          {activeDeliverableCount} deliverables
+        </p>
+
+        <div className="lesson-history-controls">
+          <button
+            type="button"
+            disabled={!canUndo}
+            title="Undo"
+            aria-label="Undo last structural change"
+            onClick={undo}
+          >
+            ↶ Undo
+          </button>
+
+          <button
+            type="button"
+            disabled={!canRedo}
+            title="Redo"
+            aria-label="Redo last structural change"
+            onClick={redo}
+          >
+            Redo ↷
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

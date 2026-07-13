@@ -3914,6 +3914,11 @@ body {
 }
 
 .episode-block-branch-toggle {
+  font-size: 1rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
   display: inline-grid;
   place-items: center;
   width: 18px;
@@ -3942,4 +3947,295 @@ body {
 
 .episode-block-leading .episode-block-glyph {
   align-self: start;
+}
+
+
+/* Lesson Planner structural undo / redo */
+
+.lesson-draft-footer {
+  display: flex;
+  width: min(920px, 100%);
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: -8px;
+}
+
+.lesson-draft-footer .lesson-draft-status {
+  margin: 0;
+}
+
+.lesson-history-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.lesson-history-controls button {
+  border: 0;
+  border-radius: 7px;
+  padding: 5px 7px;
+  background: transparent;
+  color: #748194;
+  font: inherit;
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+.lesson-history-controls button:hover:not(:disabled),
+.lesson-history-controls button:focus-visible:not(:disabled) {
+  outline: 0;
+  background: #eef2f6;
+  color: #334155;
+}
+
+.lesson-history-controls button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+
+/* Episode attention refinement — CSS-only */
+
+.episode-stack:has(.teaching-episode:focus-within)
+  .teaching-episode:not(:focus-within) {
+  border-color: #edf1f5;
+  box-shadow: none;
+}
+
+.episode-stack:has(.teaching-episode:focus-within)
+  .teaching-episode:not(:focus-within)
+  .episode-title-button {
+  color: #526071;
+}
+
+.episode-stack:has(.teaching-episode:focus-within)
+  .teaching-episode:not(:focus-within)
+  .episode-spine-meta,
+.episode-stack:has(.teaching-episode:focus-within)
+  .teaching-episode:not(:focus-within)
+  .episode-disclosure {
+  color: #8490a0;
+}
+
+.teaching-episode:focus-within {
+  border-color: #bcc8d5;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.075);
+}
+
+.teaching-episode,
+.episode-title-button,
+.episode-spine-meta,
+.episode-disclosure {
+  transition:
+    border-color 130ms ease-out,
+    box-shadow 130ms ease-out,
+    color 130ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .teaching-episode,
+  .episode-title-button,
+  .episode-spine-meta,
+  .episode-disclosure {
+    transition: none;
+  }
+}
+
+@media print {
+  .teaching-episode,
+  .teaching-episode:focus-within,
+  .episode-stack:has(.teaching-episode:focus-within)
+    .teaching-episode:not(:focus-within) {
+    border-color: #d8dee7;
+    box-shadow: none;
+  }
+
+  .episode-stack:has(.teaching-episode:focus-within)
+    .teaching-episode:not(:focus-within)
+    .episode-title-button,
+  .episode-stack:has(.teaching-episode:focus-within)
+    .teaching-episode:not(:focus-within)
+    .episode-spine-meta,
+  .episode-stack:has(.teaching-episode:focus-within)
+    .teaching-episode:not(:focus-within)
+    .episode-disclosure {
+    color: inherit;
+  }
+}
+
+
+/* Episode overflow-menu interaction safety */
+
+.episode-hover-controls.has-open-menu {
+  z-index: 40;
+}
+
+.episode-hover-controls.has-open-menu > button {
+  pointer-events: none;
+  opacity: 0.28;
+}
+
+.episode-hover-controls.has-open-menu .episode-overflow {
+  pointer-events: auto;
+}
+
+.episode-hover-controls.has-open-menu
+  .episode-overflow
+  > button {
+  pointer-events: auto;
+}
+
+.episode-overflow-menu {
+  z-index: 50;
+  pointer-events: auto;
+}
+
+
+/* Quiet inline Teaching Episode duration */
+
+.episode-duration-button {
+  border: 0;
+  border-radius: 6px;
+  padding: 3px 4px;
+  background: transparent;
+  color: #8793a2;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 620;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.episode-duration-button:hover,
+.episode-duration-button:focus-visible {
+  outline: 0;
+  background: #eef2f6;
+  color: #475569;
+}
+
+.episode-duration-button.is-estimated {
+  color: #98a2b1;
+  font-weight: 560;
+}
+
+.episode-duration-button.is-estimated:hover,
+.episode-duration-button.is-estimated:focus-visible {
+  color: #475569;
+}
+
+.episode-duration-editor {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #7b8796;
+  font-size: 0.72rem;
+  font-weight: 620;
+}
+
+.episode-duration-input {
+  width: 30px;
+  border: 0;
+  border-bottom: 1px solid #aeb9c7;
+  padding: 2px 1px;
+  background: transparent;
+  color: #334155;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1;
+  text-align: right;
+}
+
+.episode-duration-input:focus {
+  outline: 0;
+  border-bottom-color: #64748b;
+}
+
+
+/* Lesson total aligned with episode durations */
+
+.lesson-summary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  width: min(920px, 100%);
+  box-sizing: border-box;
+  margin-top: 4px;
+  padding: 12px 76px 0 44px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.lesson-summary-label {
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.lesson-summary-minutes {
+  min-width: 42px;
+  color: #334155;
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+
+/* Align lesson total with episode title and duration columns */
+
+.lesson-summary-row {
+  padding-left: 42px;
+  padding-right: 102px;
+}
+
+.lesson-summary-label {
+  justify-self: start;
+  text-align: left;
+}
+
+.lesson-summary-minutes {
+  justify-self: end;
+  text-align: right;
+}
+
+
+/* Quiet Block branch disclosure until it is needed */
+
+.episode-block-branch-toggle {
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.episode-block:hover .episode-block-branch-toggle,
+.episode-block:focus-within .episode-block-branch-toggle,
+.episode-block-branch-toggle:focus-visible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .episode-block-branch-toggle {
+    transition: none;
+  }
+}
+
+
+/* Deliverable marker left of fixed duration column */
+
+.episode-spine-meta {
+  display: grid;
+  grid-template-columns: 18px 48px;
+  align-items: center;
+  justify-content: end;
+  column-gap: 6px;
+}
+
+.episode-deliverable-mark {
+  grid-column: 1;
+  justify-self: center;
+}
+
+.episode-duration-button,
+.episode-duration-editor {
+  grid-column: 2;
+  justify-self: end;
 }
