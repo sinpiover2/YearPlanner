@@ -57,6 +57,7 @@ function createEpisode(overrides = {}) {
     id: createId("episode"),
     title: "",
     minutes: null,
+    curriculumLessonId: null,
     blocks: [createBlock()],
     ...overrides,
   };
@@ -119,7 +120,7 @@ function migrateLegacyItem(item) {
   });
 }
 
-function createDefaultState() {
+function createDefaultState(curriculumLessonId = null) {
   return {
     episodes: [
       createEpisode({
@@ -136,6 +137,7 @@ function createDefaultState() {
         id: "prototype-explore",
         title: "Students create multistep transformations.",
         minutes: 25,
+        curriculumLessonId,
         blocks: [
           createBlock({
             text: "Amplify 1.3 — Creating Multistep Transformations",
@@ -182,15 +184,16 @@ function createDefaultState() {
   };
 }
 
-function normalizeStoredState(value) {
+function normalizeStoredState(value, curriculumLessonId = null) {
   if (!value || typeof value !== "object") {
-    return createDefaultState();
+    return createDefaultState(curriculumLessonId);
   }
 
-  const episodes = Array.isArray(value.episodes)
+  let episodes = Array.isArray(value.episodes)
     ? value.episodes.map((episode) => ({
         id: episode.id || createId("episode"),
         title: episode.title ?? "",
+        curriculumLessonId: episode.curriculumLessonId ?? null,
         minutes:
           Number.isFinite(Number(episode.minutes)) &&
           Number(episode.minutes) > 0
@@ -209,8 +212,28 @@ function normalizeStoredState(value) {
       }))
     : [];
 
+  if (
+    curriculumLessonId &&
+    episodes.length &&
+    !episodes.some((episode) => episode.curriculumLessonId)
+  ) {
+    const attachmentIndex = Math.max(
+      episodes.findIndex((episode) => episode.id === "prototype-explore"),
+      episodes.findIndex((episode, index) => index > 0),
+      0,
+    );
+
+    episodes = episodes.map((episode, index) =>
+      index === attachmentIndex
+        ? { ...episode, curriculumLessonId }
+        : episode,
+    );
+  }
+
   return {
-    episodes: episodes.length ? episodes : [createEpisode()],
+    episodes: episodes.length
+      ? episodes
+      : [createEpisode({ curriculumLessonId })],
     deliverables: Array.isArray(value.deliverables)
       ? value.deliverables.map((deliverable) => ({
           id: deliverable.id || createId("deliverable"),
@@ -241,9 +264,9 @@ function loadCollapsedBlockIds(sessionId) {
   }
 }
 
-function loadInitialState(sessionId) {
+function loadInitialState(sessionId, curriculumLessonId) {
   if (typeof window === "undefined") {
-    return createDefaultState();
+    return createDefaultState(curriculumLessonId);
   }
 
   try {
@@ -251,11 +274,14 @@ function loadInitialState(sessionId) {
     const current = window.localStorage.getItem(storageKey);
 
     if (current) {
-      return normalizeStoredState(JSON.parse(current));
+      return normalizeStoredState(
+        JSON.parse(current),
+        curriculumLessonId,
+      );
     }
 
     if (sessionId) {
-      return createDefaultState();
+      return createDefaultState(curriculumLessonId);
     }
 
     const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -274,7 +300,7 @@ function loadInitialState(sessionId) {
     console.warn("Could not load the local Lesson Planner draft.", error);
   }
 
-  return createDefaultState();
+  return createDefaultState(curriculumLessonId);
 }
 
 function useUndoableState(initializer) {
@@ -363,7 +389,11 @@ function estimateEpisodeMinutes(blocks) {
   return Math.max(estimate, 1);
 }
 
-function LessonSessionView({ activeLessonContext }) {
+function LessonSessionView({
+  activeLessonContext,
+  curriculumLessons,
+  getOutcomeList,
+}) {
   const {
     state: plannerState,
     setState: setPlannerState,
@@ -372,7 +402,10 @@ function LessonSessionView({ activeLessonContext }) {
     canUndo,
     canRedo,
   } = useUndoableState(() =>
-    loadInitialState(activeLessonContext?.sessionId),
+    loadInitialState(
+      activeLessonContext?.sessionId,
+      activeLessonContext?.lessonId,
+    ),
   );
   const [openEpisodeIds, setOpenEpisodeIds] = useState(() => {
     const initialId =
@@ -1039,6 +1072,8 @@ function LessonSessionView({ activeLessonContext }) {
         nextType = "learning";
       } else if (block.type === "learning") {
         nextType = "deliverable";
+      } else if (block.type === "deliverable") {
+        nextType = "materials";
       }
 
       // Keep the same Deliverable identity when the teacher cycles away
@@ -1132,9 +1167,6 @@ function LessonSessionView({ activeLessonContext }) {
             <>
               <h2>{activeLessonContext.sectionLabel}</h2>
               <p>{formatSessionDate(activeLessonContext.date)}</p>
-              <p className="lesson-session-curriculum-title">
-                {activeLessonContext.title}
-              </p>
             </>
           ) : (
             <>
@@ -1145,12 +1177,6 @@ function LessonSessionView({ activeLessonContext }) {
             </>
           )}
         </div>
-
-        {activeLessonContext?.lessonId ? (
-          <div className="lesson-context-pill">
-            Curriculum · {activeLessonContext.lessonId}
-          </div>
-        ) : null}
       </header>
 
       <div className="episode-stack">
@@ -1162,6 +1188,15 @@ function LessonSessionView({ activeLessonContext }) {
           const hasDeliverable = episode.blocks.some(
             (block) => block.type === "deliverable",
           );
+          const attachedCurriculumLesson =
+            curriculumLessons.find(
+              (lesson) =>
+                lesson.LessonID === episode.curriculumLessonId,
+            ) ?? null;
+          const attachedCurriculumOutcomes =
+            attachedCurriculumLesson
+              ? getOutcomeList(attachedCurriculumLesson.KeyOutcome)
+              : [];
 
           return (
             <article
@@ -1372,13 +1407,97 @@ function LessonSessionView({ activeLessonContext }) {
 
                     {episodeMenuId === episode.id ? (
                       <div className="episode-overflow-menu">
-                        <button
-                          className="episode-delete-action"
-                          type="button"
-                          onClick={() => deleteEpisode(episode.id)}
-                        >
-                          Delete episode
-                        </button>
+                        <div className="episode-menu-section-label">
+                          Curriculum
+                        </div>
+
+                        {curriculumLessons.length ? (
+                          <div className="episode-curriculum-options">
+                            {curriculumLessons.map((lesson) => {
+                              const isAttached =
+                                lesson.LessonID ===
+                                episode.curriculumLessonId;
+
+                              return (
+                                <button
+                                  className={
+                                    isAttached ? "is-selected" : ""
+                                  }
+                                  type="button"
+                                  key={lesson.LessonID}
+                                  onClick={() => {
+                                    updateEpisode(
+                                      episode.id,
+                                      (current) => ({
+                                        ...current,
+                                        curriculumLessonId:
+                                          lesson.LessonID,
+                                      }),
+                                    );
+                                    setEpisodeMenuId(null);
+                                    setOpenEpisodeIds((current) => {
+                                      const next = new Set(current);
+                                      next.add(episode.id);
+                                      return next;
+                                    });
+                                  }}
+                                >
+                                  <span
+                                    className="episode-curriculum-option-mark"
+                                    aria-hidden="true"
+                                  >
+                                    {isAttached ? "●" : "○"}
+                                  </span>
+
+                                  <span>
+                                    <strong>
+                                      Lesson {lesson.LessonNumber}
+                                    </strong>
+                                    <span>
+                                      {lesson.LessonTitle ||
+                                        "Untitled lesson"}
+                                    </span>
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="episode-menu-empty">
+                            No lessons are available in this unit.
+                          </p>
+                        )}
+
+                        <div className="episode-menu-actions">
+                          {episode.curriculumLessonId ? (
+                            <button
+                              className="episode-detach-curriculum"
+                              type="button"
+                              onClick={() => {
+                                updateEpisode(
+                                  episode.id,
+                                  (current) => ({
+                                    ...current,
+                                    curriculumLessonId: null,
+                                  }),
+                                );
+                                setEpisodeMenuId(null);
+                              }}
+                            >
+                              Remove curriculum attachment
+                            </button>
+                          ) : null}
+
+                          <div className="episode-menu-divider" />
+
+                          <button
+                            className="episode-delete-action"
+                            type="button"
+                            onClick={() => deleteEpisode(episode.id)}
+                          >
+                            Delete episode
+                          </button>
+                        </div>
                       </div>
                     ) : null}
                   </div>
@@ -1387,6 +1506,56 @@ function LessonSessionView({ activeLessonContext }) {
 
               {isOpen ? (
                 <div className="episode-body">
+                  {attachedCurriculumLesson ? (
+                    <details className="episode-curriculum-reference">
+                      <summary>
+                        Curriculum · {attachedCurriculumLesson.LessonTitle}
+                      </summary>
+
+                      <div className="episode-curriculum-reference-body">
+                        <p className="episode-curriculum-identity">
+                          Unit {attachedCurriculumLesson.UnitID?.replace(/.*U/, "")} ·
+                          Lesson {attachedCurriculumLesson.LessonNumber}
+                        </p>
+
+                        {attachedCurriculumLesson.Description ? (
+                          <div>
+                            <h3>Description</h3>
+                            <p>{attachedCurriculumLesson.Description}</p>
+                          </div>
+                        ) : null}
+
+                        {attachedCurriculumOutcomes.length ? (
+                          <div>
+                            <h3>Key outcomes</h3>
+                            <ul>
+                              {attachedCurriculumOutcomes.map((outcome) => (
+                                <li key={outcome}>{outcome}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+
+                        {attachedCurriculumLesson.TeacherNotes ? (
+                          <div>
+                            <h3>Teacher notes</h3>
+                            <p>{attachedCurriculumLesson.TeacherNotes}</p>
+                          </div>
+                        ) : null}
+
+                        {attachedCurriculumLesson.PrimaryLink ? (
+                          <a
+                            href={attachedCurriculumLesson.PrimaryLink}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Open curriculum source ↗
+                          </a>
+                        ) : null}
+                      </div>
+                    </details>
+                  ) : null}
+
                   {(() => {
                     const hiddenBlockIds = getHiddenBlockIds(
                       episode.blocks,
@@ -1445,7 +1614,8 @@ function LessonSessionView({ activeLessonContext }) {
 
                         {block.type === "text" ||
                         block.type === "learning" ||
-                        block.type === "deliverable" ? (
+                        block.type === "deliverable" ||
+                        block.type === "materials" ? (
                           <button
                             className="episode-block-glyph episode-block-type-toggle"
                             type="button"
@@ -1454,14 +1624,18 @@ function LessonSessionView({ activeLessonContext }) {
                                 ? "Change to learning target"
                                 : block.type === "learning"
                                   ? "Change to deliverable"
-                                  : "Change to ordinary outline"
+                                  : block.type === "deliverable"
+                                    ? "Change to materials"
+                                    : "Change to ordinary outline"
                             }
                             aria-label={
                               block.type === "text"
                                 ? "Change this outline line to a learning target"
                                 : block.type === "learning"
                                   ? "Change this learning target to a deliverable"
-                                  : "Change this deliverable to an ordinary outline line"
+                                  : block.type === "deliverable"
+                                    ? "Change this deliverable to materials"
+                                    : "Change these materials to an ordinary outline line"
                             }
                             onClick={() =>
                               toggleBlockType(episode.id, blockIndex)
@@ -1471,7 +1645,9 @@ function LessonSessionView({ activeLessonContext }) {
                               ? "◎"
                               : block.type === "deliverable"
                                 ? "▢"
-                                : "•"}
+                                : block.type === "materials"
+                                  ? "◇"
+                                  : "•"}
                           </button>
                         ) : (
                           <span className="episode-block-glyph">

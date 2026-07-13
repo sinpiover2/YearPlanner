@@ -797,8 +797,16 @@ function App() {
     onJumpToToday: () => setPlanningReferenceDate(new Date()),
   };
 
+  const curriculumLessons = activeLessonContext?.unitId
+    ? lessons.filter(
+        (lesson) => lesson.UnitID === activeLessonContext.unitId,
+      )
+    : [];
+
   const lessonSessionWorkspaceModel = {
     activeLessonContext,
+    curriculumLessons,
+    getOutcomeList,
   };
 
   return (

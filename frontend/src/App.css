@@ -3496,6 +3496,67 @@ body {
 
 
 
+/* Lesson Planner curriculum reference */
+
+.episode-curriculum-reference {
+  width: min(920px, 100%);
+  margin-bottom: 14px;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.episode-curriculum-reference summary {
+  padding: 12px 0;
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.episode-curriculum-reference-body {
+  display: grid;
+  gap: 14px;
+  padding: 0 0 16px;
+  color: #475569;
+}
+
+.episode-curriculum-identity {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.episode-curriculum-reference-body h3 {
+  margin: 0 0 4px;
+  color: #334155;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.episode-curriculum-reference-body p,
+.episode-curriculum-reference-body ul {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.episode-curriculum-reference-body ul {
+  padding-left: 20px;
+}
+
+.episode-curriculum-reference-body a {
+  width: fit-content;
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.episode-curriculum-reference-body a:hover {
+  text-decoration: underline;
+}
+
 /* Lesson Planner episode-stack vertical slice */
 
 .episode-stack {
@@ -3795,8 +3856,9 @@ body {
   z-index: 30;
   top: 32px;
   right: 0;
-  min-width: 158px;
-  overflow: hidden;
+  width: min(300px, calc(100vw - 48px));
+  max-height: 420px;
+  overflow-y: auto;
   border: 1px solid #d9e1ea;
   border-radius: 10px;
   background: #ffffff;
@@ -3810,6 +3872,84 @@ body {
   border-radius: 0;
   padding: 9px 11px;
   text-align: left;
+}
+
+.episode-menu-section-label {
+  padding: 10px 11px 6px;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.episode-curriculum-options {
+  display: grid;
+}
+
+.episode-curriculum-options button {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.episode-curriculum-options button > span:last-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.episode-curriculum-options button strong {
+  color: #334155;
+  font-size: 0.78rem;
+}
+
+.episode-curriculum-options button span span {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.episode-curriculum-options button.is-selected {
+  background: #f1f5f9;
+}
+
+.episode-curriculum-option-mark {
+  color: #64748b;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.episode-menu-empty {
+  margin: 0;
+  padding: 9px 11px 12px;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.episode-detach-curriculum {
+  color: #64748b;
+}
+
+.episode-menu-actions {
+  position: sticky;
+  bottom: 0;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 -5px 12px rgba(15, 23, 42, 0.04);
+}
+
+.episode-menu-actions .episode-menu-divider {
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.episode-menu-actions .episode-menu-divider:first-child {
+  display: none;
 }
 
 .episode-overflow-menu .episode-delete-action {
