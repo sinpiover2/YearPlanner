@@ -803,9 +803,18 @@ function App() {
       )
     : [];
 
+  const lessonSessionCopyTargets = Object.values(
+    planningModel.sessions,
+  ).filter(
+    (session) =>
+      session.dayKey === activeLessonContext?.date &&
+      session.sectionId !== activeLessonContext?.sectionId,
+  );
+
   const lessonSessionWorkspaceModel = {
     activeLessonContext,
     curriculumLessons,
+    copyTargets: lessonSessionCopyTargets,
     getOutcomeList,
   };
 

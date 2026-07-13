@@ -392,6 +392,7 @@ function estimateEpisodeMinutes(blocks) {
 function LessonSessionView({
   activeLessonContext,
   curriculumLessons,
+  copyTargets,
   getOutcomeList,
 }) {
   const {
@@ -421,6 +422,7 @@ function LessonSessionView({
   const [durationDraft, setDurationDraft] = useState("");
   const [slashMenu, setSlashMenu] = useState(null);
   const [episodeMenuId, setEpisodeMenuId] = useState(null);
+  const [copyStatus, setCopyStatus] = useState("");
   const [collapsedBlockIds, setCollapsedBlockIds] = useState(() =>
     loadCollapsedBlockIds(activeLessonContext?.sessionId),
   );
@@ -570,6 +572,81 @@ function LessonSessionView({
       window.removeEventListener("keydown", handleUndoRedo);
     };
   }, [undo, redo]);
+
+  function createIndependentPlannerCopy(sourceState) {
+    const episodeIdMap = new Map();
+    const deliverableIdMap = new Map();
+
+    sourceState.episodes.forEach((episode) => {
+      episodeIdMap.set(episode.id, createId("episode"));
+    });
+
+    sourceState.deliverables.forEach((deliverable) => {
+      deliverableIdMap.set(
+        deliverable.id,
+        createId("deliverable"),
+      );
+    });
+
+    return {
+      episodes: sourceState.episodes.map((episode) => ({
+        ...episode,
+        id: episodeIdMap.get(episode.id),
+        blocks: episode.blocks.map((block) => ({
+          ...block,
+          id: createId("block"),
+          deliverableId: block.deliverableId
+            ? deliverableIdMap.get(block.deliverableId) ?? null
+            : null,
+        })),
+      })),
+      deliverables: sourceState.deliverables.map((deliverable) => ({
+        ...deliverable,
+        id: deliverableIdMap.get(deliverable.id),
+        originatingEpisodeId: deliverable.originatingEpisodeId
+          ? episodeIdMap.get(deliverable.originatingEpisodeId) ?? null
+          : null,
+      })),
+    };
+  }
+
+  function copyPlanToSession(target) {
+    const destinationKey = getSessionStorageKey(
+      STORAGE_KEY,
+      target.sessionId,
+    );
+    const existingDraft = window.localStorage.getItem(destinationKey);
+
+    if (
+      existingDraft &&
+      !window.confirm(
+        `${target.sectionLabel} already has a saved lesson plan. Replace it?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const copiedState = createIndependentPlannerCopy(plannerState);
+
+      window.localStorage.setItem(
+        destinationKey,
+        JSON.stringify(copiedState),
+      );
+      window.localStorage.setItem(
+        getSessionStorageKey(
+          COLLAPSED_BLOCKS_STORAGE_KEY,
+          target.sessionId,
+        ),
+        JSON.stringify([]),
+      );
+
+      setCopyStatus(`Copied to ${target.sectionLabel}.`);
+    } catch (error) {
+      console.warn("Could not copy the Lesson Session plan.", error);
+      setCopyStatus("The lesson plan could not be copied.");
+    }
+  }
 
   function updateEpisode(
     episodeId,
@@ -1177,6 +1254,52 @@ function LessonSessionView({
             </>
           )}
         </div>
+
+        {activeLessonContext?.sessionId ? (
+          <div className="lesson-session-header-actions">
+            {copyTargets?.length ? (
+              <details className="lesson-session-copy-menu">
+                <summary>Copy plan to…</summary>
+
+                <div className="lesson-session-copy-options">
+                  {copyTargets.map((target) => (
+                    <button
+                      type="button"
+                      key={target.id}
+                      onClick={(event) => {
+                        copyPlanToSession({
+                          sessionId: target.id,
+                          sectionId: target.sectionId,
+                          sectionLabel: target.sectionLabel,
+                          date: target.dayKey,
+                        });
+                        event.currentTarget
+                          .closest("details")
+                          ?.removeAttribute("open");
+                      }}
+                    >
+                      <strong>{target.sectionLabel}</strong>
+                      <span>{formatSessionDate(target.dayKey)}</span>
+                    </button>
+                  ))}
+                </div>
+              </details>
+            ) : (
+              <span className="lesson-session-copy-unavailable">
+                No sibling session available
+              </span>
+            )}
+
+            {copyStatus ? (
+              <span
+                className="lesson-session-copy-status"
+                role="status"
+              >
+                {copyStatus}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </header>
 
       <div className="episode-stack">
