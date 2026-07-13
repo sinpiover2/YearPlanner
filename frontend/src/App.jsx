@@ -788,7 +788,10 @@ function App() {
   const planningWorkspaceModel = {
     planningModel,
     activeLessonContext,
-    setActiveLessonContext,
+    onOpenLessonSession: (lessonSessionContext) => {
+      setActiveLessonContext(lessonSessionContext);
+      setActiveView("lesson");
+    },
     onPreviousWeek: () => setPlanningReferenceDate(planningModel.previousWeekDate),
     onNextWeek: () => setPlanningReferenceDate(planningModel.nextWeekDate),
     onJumpToToday: () => setPlanningReferenceDate(new Date()),

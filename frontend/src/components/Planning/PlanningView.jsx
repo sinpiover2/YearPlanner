@@ -6,7 +6,7 @@ import UnitShelf from "./UnitShelf";
 function PlanningView({
   planningModel,
   activeLessonContext,
-  setActiveLessonContext,
+  onOpenLessonSession,
   onPreviousWeek,
   onNextWeek,
   onJumpToToday,
@@ -19,8 +19,7 @@ function PlanningView({
   const selectedSession =
     sessionList.find(
       (session) =>
-        session.lessonId === activeLessonContext?.lessonId &&
-        session.sectionId === activeLessonContext?.sectionId,
+        session.id === activeLessonContext?.sessionId,
     ) ??
     sessionList[0] ??
     null;
@@ -28,12 +27,18 @@ function PlanningView({
   function handleSelectSession(session) {
     if (!session) return;
 
-    setActiveLessonContext({
+    const lessonSessionContext = {
+      sessionId: session.id,
       lessonId: session.lessonId,
       sectionId: session.sectionId,
+      sectionLabel: session.sectionLabel,
       unitId: session.unitId,
+      date: session.dayKey,
+      title: session.title,
       source: "planning",
-    });
+    };
+
+    onOpenLessonSession?.(lessonSessionContext);
   }
 
   return (
