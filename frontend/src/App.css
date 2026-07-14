@@ -3874,8 +3874,15 @@ body {
   background: #f3f6f9;
 }
 
-.add-episode-button {
+.episode-add-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   justify-self: start;
+}
+
+.add-episode-button,
+.paste-episode-button {
   border: 0;
   padding: 8px 4px;
   background: transparent;
@@ -3886,8 +3893,13 @@ body {
   cursor: pointer;
 }
 
-.add-episode-button:hover {
+.add-episode-button:hover,
+.paste-episode-button:hover {
   color: #334155;
+}
+
+.paste-episode-button {
+  font-weight: 620;
 }
 
 .lesson-draft-status {
@@ -4012,6 +4024,10 @@ body {
   padding: 9px 11px 12px;
   color: #64748b;
   font-size: 0.8rem;
+}
+
+.episode-copy-action {
+  color: #334155;
 }
 
 .episode-detach-curriculum {

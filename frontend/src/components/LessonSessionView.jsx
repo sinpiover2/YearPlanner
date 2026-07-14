@@ -4,6 +4,8 @@ const STORAGE_KEY = "year-planner.lesson-session.prototype.v2";
 const LEGACY_STORAGE_KEY = "year-planner.lesson-session-items.prototype.v1";
 const COLLAPSED_BLOCKS_STORAGE_KEY =
   "year-planner.lesson-session.collapsed-blocks.v1";
+const EPISODE_CLIPBOARD_STORAGE_KEY =
+  "year-planner.lesson-session.episode-clipboard.v1";
 
 function getSessionStorageKey(baseKey, sessionId) {
   return sessionId ? `${baseKey}.${sessionId}` : baseKey;
@@ -423,6 +425,13 @@ function LessonSessionView({
   const [slashMenu, setSlashMenu] = useState(null);
   const [episodeMenuId, setEpisodeMenuId] = useState(null);
   const [copyStatus, setCopyStatus] = useState("");
+  const [hasEpisodeClipboard, setHasEpisodeClipboard] = useState(() => {
+    if (typeof window === "undefined") return false;
+
+    return Boolean(
+      window.localStorage.getItem(EPISODE_CLIPBOARD_STORAGE_KEY),
+    );
+  });
   const [collapsedBlockIds, setCollapsedBlockIds] = useState(() =>
     loadCollapsedBlockIds(activeLessonContext?.sessionId),
   );
@@ -645,6 +654,107 @@ function LessonSessionView({
     } catch (error) {
       console.warn("Could not copy the Lesson Session plan.", error);
       setCopyStatus("The lesson plan could not be copied.");
+    }
+  }
+
+  function copyEpisodeToClipboard(episode) {
+    const referencedDeliverableIds = new Set(
+      episode.blocks
+        .map((block) => block.deliverableId)
+        .filter(Boolean),
+    );
+
+    const clipboardPayload = {
+      version: 1,
+      episode,
+      deliverables: plannerState.deliverables.filter((deliverable) =>
+        referencedDeliverableIds.has(deliverable.id),
+      ),
+    };
+
+    try {
+      window.localStorage.setItem(
+        EPISODE_CLIPBOARD_STORAGE_KEY,
+        JSON.stringify(clipboardPayload),
+      );
+      setHasEpisodeClipboard(true);
+      setCopyStatus(`Copied episode: ${episode.title || "Untitled episode"}.`);
+      setEpisodeMenuId(null);
+    } catch (error) {
+      console.warn("Could not copy the teaching episode.", error);
+      setCopyStatus("The teaching episode could not be copied.");
+    }
+  }
+
+  function pasteEpisodeFromClipboard() {
+    try {
+      const stored = window.localStorage.getItem(
+        EPISODE_CLIPBOARD_STORAGE_KEY,
+      );
+
+      if (!stored) {
+        setHasEpisodeClipboard(false);
+        setCopyStatus("No copied episode is available.");
+        return;
+      }
+
+      const payload = JSON.parse(stored);
+      const sourceEpisode = payload?.episode;
+      const sourceDeliverables = Array.isArray(payload?.deliverables)
+        ? payload.deliverables
+        : [];
+
+      if (!sourceEpisode || !Array.isArray(sourceEpisode.blocks)) {
+        throw new Error("Invalid episode clipboard payload.");
+      }
+
+      const pastedEpisodeId = createId("episode");
+      const deliverableIdMap = new Map(
+        sourceDeliverables.map((deliverable) => [
+          deliverable.id,
+          createId("deliverable"),
+        ]),
+      );
+
+      const pastedEpisode = {
+        ...sourceEpisode,
+        id: pastedEpisodeId,
+        blocks: sourceEpisode.blocks.map((block) => ({
+          ...block,
+          id: createId("block"),
+          deliverableId: block.deliverableId
+            ? deliverableIdMap.get(block.deliverableId) ?? null
+            : null,
+        })),
+      };
+
+      const pastedDeliverables = sourceDeliverables.map((deliverable) => ({
+        ...deliverable,
+        id: deliverableIdMap.get(deliverable.id),
+        originatingEpisodeId: pastedEpisodeId,
+      }));
+
+      setPlannerState((current) => ({
+        ...current,
+        episodes: [...current.episodes, pastedEpisode],
+        deliverables: [
+          ...current.deliverables,
+          ...pastedDeliverables,
+        ],
+      }));
+
+      setOpenEpisodeIds((current) => {
+        const next = new Set(current);
+        next.add(pastedEpisodeId);
+        return next;
+      });
+
+      setCopyStatus(
+        `Pasted episode: ${pastedEpisode.title || "Untitled episode"}.`,
+      );
+    } catch (error) {
+      console.warn("Could not paste the teaching episode.", error);
+      setCopyStatus("The copied teaching episode could not be pasted.");
     }
   }
 
@@ -1592,6 +1702,16 @@ function LessonSessionView({
                         )}
 
                         <div className="episode-menu-actions">
+                          <button
+                            className="episode-copy-action"
+                            type="button"
+                            onClick={() =>
+                              copyEpisodeToClipboard(episode)
+                            }
+                          >
+                            Copy episode
+                          </button>
+
                           {episode.curriculumLessonId ? (
                             <button
                               className="episode-detach-curriculum"
@@ -2035,13 +2155,25 @@ function LessonSessionView({
           );
         })}
 
-        <button
-          className="add-episode-button"
-          type="button"
-          onClick={() => addEpisode()}
-        >
-          + Teaching episode
-        </button>
+        <div className="episode-add-controls">
+          <button
+            className="add-episode-button"
+            type="button"
+            onClick={() => addEpisode()}
+          >
+            + Teaching episode
+          </button>
+
+          {hasEpisodeClipboard ? (
+            <button
+              className="paste-episode-button"
+              type="button"
+              onClick={pasteEpisodeFromClipboard}
+            >
+              Paste copied episode
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <div className="lesson-summary-row">
