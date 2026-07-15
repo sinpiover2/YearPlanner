@@ -1367,38 +1367,50 @@ function LessonSessionView({
 
         {activeLessonContext?.sessionId ? (
           <div className="lesson-session-header-actions">
-            {copyTargets?.length ? (
-              <details className="lesson-session-copy-menu">
-                <summary>Copy plan to…</summary>
+            <div className="lesson-session-utility-group">
+              <button
+                type="button"
+                className="lesson-session-utility-button is-primary"
+                onClick={() => window.print()}
+              >
+                Print lesson
+              </button>
 
-                <div className="lesson-session-copy-options">
-                  {copyTargets.map((target) => (
-                    <button
-                      type="button"
-                      key={target.id}
-                      onClick={(event) => {
-                        copyPlanToSession({
-                          sessionId: target.id,
-                          sectionId: target.sectionId,
-                          sectionLabel: target.sectionLabel,
-                          date: target.dayKey,
-                        });
-                        event.currentTarget
-                          .closest("details")
-                          ?.removeAttribute("open");
-                      }}
-                    >
-                      <strong>{target.sectionLabel}</strong>
-                      <span>{formatSessionDate(target.dayKey)}</span>
-                    </button>
-                  ))}
-                </div>
-              </details>
-            ) : (
-              <span className="lesson-session-copy-unavailable">
-                No sibling session available
-              </span>
-            )}
+              {copyTargets?.length ? (
+                <details className="lesson-session-copy-menu">
+                  <summary className="lesson-session-utility-button">
+                    Copy plan to…
+                  </summary>
+
+                  <div className="lesson-session-copy-options">
+                    {copyTargets.map((target) => (
+                      <button
+                        type="button"
+                        key={target.id}
+                        onClick={(event) => {
+                          copyPlanToSession({
+                            sessionId: target.id,
+                            sectionId: target.sectionId,
+                            sectionLabel: target.sectionLabel,
+                            date: target.dayKey,
+                          });
+                          event.currentTarget
+                            .closest("details")
+                            ?.removeAttribute("open");
+                        }}
+                      >
+                        <strong>{target.sectionLabel}</strong>
+                        <span>{formatSessionDate(target.dayKey)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </details>
+              ) : (
+                <span className="lesson-session-copy-unavailable">
+                  No sibling session available
+                </span>
+              )}
+            </div>
 
             {copyStatus ? (
               <span
