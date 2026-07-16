@@ -61,12 +61,18 @@ function normalizeOutcomeText(text) {
   return text.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-function createEpisode(overrides = {}) {
+function createBlankEpisode() {
   return {
     id: createId("episode"),
     title: "",
     minutes: null,
     blocks: [createBlock()],
+  };
+}
+
+function createEpisode(overrides = {}) {
+  return {
+    ...createBlankEpisode(),
     ...overrides,
   };
 }
@@ -145,6 +151,7 @@ function normalizeStoredState(value) {
     ? value.episodes.map((episode) => ({
         id: episode.id || createId("episode"),
         title: episode.title ?? "",
+        curriculumLessonId: episode.curriculumLessonId ?? null,
         minutes:
           Number.isFinite(Number(episode.minutes)) &&
           Number(episode.minutes) > 0
@@ -754,7 +761,7 @@ function LessonSessionView({
   }
 
   function addEpisode(afterIndex = episodes.length - 1) {
-    const episode = createEpisode();
+    const episode = createBlankEpisode();
 
     setPlannerState((current) => {
       const nextEpisodes = [...current.episodes];
@@ -1491,9 +1498,19 @@ function LessonSessionView({
           const hasDeliverable = episode.blocks.some(
             (block) => block.type === "deliverable",
           );
-          const attachedCurriculumOutcomes =
-            attachedCurriculumLesson
-              ? getOutcomeList(attachedCurriculumLesson.KeyOutcome)
+          const episodeCurriculumLessonId =
+            episode.curriculumLessonId ??
+            episode.blocks.find((block) => block.sourceLessonId)
+              ?.sourceLessonId ??
+            null;
+          const episodeCurriculumLesson = episodeCurriculumLessonId
+            ? curriculumLessons.find(
+                (lesson) =>
+                  lesson.LessonID === episodeCurriculumLessonId,
+              ) ?? null
+            : null;
+          const episodeCurriculumOutcomes = episodeCurriculumLesson
+            ? getOutcomeList(episodeCurriculumLesson.KeyOutcome)
               : [];
 
           return (
@@ -1835,46 +1852,46 @@ function LessonSessionView({
               <div
                 className={`episode-body${isOpen ? "" : " is-collapsed"}`}
               >
-                  {attachedCurriculumLesson ? (
+                  {episodeCurriculumLesson ? (
                     <details className="episode-curriculum-reference">
                       <summary>
-                        Curriculum · {attachedCurriculumLesson.LessonTitle}
+                        Curriculum · {episodeCurriculumLesson.LessonTitle}
                       </summary>
 
                       <div className="episode-curriculum-reference-body">
                         <p className="episode-curriculum-identity">
-                          Unit {attachedCurriculumLesson.UnitID?.replace(/.*U/, "")} ·
-                          Lesson {attachedCurriculumLesson.LessonNumber}
+                          Unit {episodeCurriculumLesson.UnitID?.replace(/.*U/, "")} ·
+                          Lesson {episodeCurriculumLesson.LessonNumber}
                         </p>
 
-                        {attachedCurriculumLesson.Description ? (
+                        {episodeCurriculumLesson.Description ? (
                           <div>
                             <h3>Description</h3>
-                            <p>{attachedCurriculumLesson.Description}</p>
+                            <p>{episodeCurriculumLesson.Description}</p>
                           </div>
                         ) : null}
 
-                        {attachedCurriculumOutcomes.length ? (
+                        {episodeCurriculumOutcomes.length ? (
                           <div>
                             <h3>Key outcomes</h3>
                             <ul>
-                              {attachedCurriculumOutcomes.map((outcome) => (
+                              {episodeCurriculumOutcomes.map((outcome) => (
                                 <li key={outcome}>{outcome}</li>
                               ))}
                             </ul>
                           </div>
                         ) : null}
 
-                        {attachedCurriculumLesson.TeacherNotes ? (
+                        {episodeCurriculumLesson.TeacherNotes ? (
                           <div>
                             <h3>Teacher notes</h3>
-                            <p>{attachedCurriculumLesson.TeacherNotes}</p>
+                            <p>{episodeCurriculumLesson.TeacherNotes}</p>
                           </div>
                         ) : null}
 
-                        {attachedCurriculumLesson.PrimaryLink ? (
+                        {episodeCurriculumLesson.PrimaryLink ? (
                           <a
-                            href={attachedCurriculumLesson.PrimaryLink}
+                            href={episodeCurriculumLesson.PrimaryLink}
                             target="_blank"
                             rel="noreferrer"
                           >
