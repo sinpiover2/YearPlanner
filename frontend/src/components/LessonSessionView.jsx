@@ -50,8 +50,14 @@ function createBlock(overrides = {}) {
     text: "",
     depth: 0,
     deliverableId: null,
+    sourceLessonId: null,
+    sourceField: null,
     ...overrides,
   };
+}
+
+function normalizeOutcomeText(text) {
+  return text.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function createEpisode(overrides = {}) {
@@ -209,6 +215,8 @@ function normalizeStoredState(value, curriculumLessonId = null) {
                 text: block.text ?? "",
                 depth: block.depth === 1 ? 1 : 0,
                 deliverableId: block.deliverableId ?? null,
+                sourceLessonId: block.sourceLessonId ?? null,
+                sourceField: block.sourceField ?? null,
               }))
             : [createBlock()],
       }))
@@ -875,6 +883,103 @@ function LessonSessionView({
     }
 
     setEpisodeMenuId(null);
+  }
+
+  function importCurriculumContent(episodeId, lesson) {
+    const episode = episodes.find((item) => item.id === episodeId);
+
+    if (!episode || !lesson) return;
+
+    const existingProvenance = new Set(
+      episode.blocks
+        .filter((block) => block.sourceLessonId === lesson.LessonID)
+        .map((block) => block.sourceField),
+    );
+
+    const candidates = [];
+
+    const description = lesson.Description?.trim();
+
+    if (description && !existingProvenance.has("description")) {
+      candidates.push(
+        createBlock({
+          text: description,
+          type: "text",
+          sourceLessonId: lesson.LessonID,
+          sourceField: "description",
+        }),
+      );
+    }
+
+    const seenOutcomeKeys = new Set();
+
+    for (const outcome of getOutcomeList(lesson.KeyOutcome)) {
+      const normalized = normalizeOutcomeText(outcome);
+
+      if (!normalized || seenOutcomeKeys.has(normalized)) continue;
+
+      seenOutcomeKeys.add(normalized);
+
+      const sourceField = `outcome:${normalized}`;
+
+      if (existingProvenance.has(sourceField)) continue;
+
+      candidates.push(
+        createBlock({
+          text: outcome,
+          type: "learning",
+          sourceLessonId: lesson.LessonID,
+          sourceField,
+        }),
+      );
+    }
+
+    const teacherNotes = lesson.TeacherNotes?.trim();
+
+    if (teacherNotes && !existingProvenance.has("teacherNotes")) {
+      candidates.push(
+        createBlock({
+          text: teacherNotes,
+          type: "text",
+          sourceLessonId: lesson.LessonID,
+          sourceField: "teacherNotes",
+        }),
+      );
+    }
+
+    if (!candidates.length) {
+      setEpisodeMenuId(null);
+      return;
+    }
+
+    const isUntouchedStarterBlock = (block) =>
+      block.text === "" &&
+      block.type === "text" &&
+      block.depth === 0 &&
+      block.deliverableId === null &&
+      !block.sourceLessonId;
+
+    setPlannerState((current) => ({
+      ...current,
+      episodes: current.episodes.map((item) => {
+        if (item.id !== episodeId) return item;
+
+        const blocks =
+          item.blocks.length === 1 &&
+          isUntouchedStarterBlock(item.blocks[0])
+            ? candidates
+            : [...item.blocks, ...candidates];
+
+        return { ...item, blocks };
+      }),
+    }));
+
+    setEpisodeMenuId(null);
+    setOpenEpisodeIds((current) => {
+      const next = new Set(current);
+      next.add(episodeId);
+      return next;
+    });
   }
 
   function splitBlockAtCaret(
@@ -1742,6 +1847,21 @@ function LessonSessionView({
                           >
                             Copy episode
                           </button>
+
+                          {attachedCurriculumLesson ? (
+                            <button
+                              className="episode-import-curriculum-action"
+                              type="button"
+                              onClick={() =>
+                                importCurriculumContent(
+                                  episode.id,
+                                  attachedCurriculumLesson,
+                                )
+                              }
+                            >
+                              Import curriculum content
+                            </button>
+                          ) : null}
 
                           {episode.curriculumLessonId ? (
                             <button
