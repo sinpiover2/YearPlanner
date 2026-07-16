@@ -2392,7 +2392,7 @@ function LessonSessionView({
               height="17pt"
               patternUnits="userSpaceOnUse"
             >
-              <circle cx="1pt" cy="1pt" r="0.65pt" fill="#aeb4bc" />
+              <circle cx="1pt" cy="1pt" r="0.75pt" fill="#9ea4ac" />
             </pattern>
           </defs>
           <rect

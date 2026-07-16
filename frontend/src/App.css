@@ -4604,7 +4604,7 @@ body {
     gap: 16pt;
     margin: 0 0 5pt;
     padding: 0 0 5pt;
-    border-bottom: 1px solid #d0d3d8;
+    border-bottom: 0.6pt solid #a4a8ae;
   }
 
   .lesson-session-header > div > .eyebrow,
@@ -4652,7 +4652,7 @@ body {
     float: left;
     width: calc(60% - 8pt);
     min-width: 0;
-    border-right: 1px solid #cbd5e1;
+    border-right: 0.6pt solid #adb1b7;
   }
 
   .lesson-session-print-notes {
@@ -4725,6 +4725,14 @@ body {
     filter: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  /* Quiet separator between episodes, confined to the left column so it
+     meets the vertical spine cleanly and never crosses into the notes
+     column. Adjacent-sibling (not :last-child) because .episode-stack's
+     final DOM child is the hidden .episode-add-controls, not an episode. */
+  .teaching-episode + .teaching-episode {
+    border-top: 0.5pt solid #b6bac0 !important;
   }
 
   .episode-spine {
@@ -4820,7 +4828,7 @@ body {
     top: 50%;
     left: -8pt;
     width: 8pt;
-    border-top: 1px solid #c4c8ce;
+    border-top: 0.5pt solid #b0b4ba;
   }
 
   /* Outline / block text: compact, quiet, subordinate to the title */
