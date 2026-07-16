@@ -391,6 +391,14 @@ function estimateEpisodeMinutes(blocks) {
   return Math.max(estimate, 1);
 }
 
+function getDisplayedEpisodeMinutes(episode) {
+  const manualMinutes = Number(episode.minutes);
+
+  return Number.isFinite(manualMinutes) && manualMinutes > 0
+    ? manualMinutes
+    : estimateEpisodeMinutes(episode.blocks);
+}
+
 function LessonSessionView({
   activeLessonContext,
   curriculumLessons,
@@ -458,18 +466,16 @@ function LessonSessionView({
   );
 
   const totalDisplayedMinutes = episodes.reduce(
-    (total, episode) => {
-      const manualMinutes = Number(episode.minutes);
-
-      return (
-        total +
-        (Number.isFinite(manualMinutes) && manualMinutes > 0
-          ? manualMinutes
-          : estimateEpisodeMinutes(episode.blocks))
-      );
-    },
+    (total, episode) => total + getDisplayedEpisodeMinutes(episode),
     0,
   );
+
+  const cumulativeMinutesByEpisodeId = new Map();
+  episodes.reduce((runningTotal, episode) => {
+    const nextTotal = runningTotal + getDisplayedEpisodeMinutes(episode);
+    cumulativeMinutesByEpisodeId.set(episode.id, nextTotal);
+    return nextTotal;
+  }, 0);
 
   useEffect(() => {
     try {
@@ -1353,7 +1359,9 @@ function LessonSessionView({
           {activeLessonContext?.sessionId ? (
             <>
               <h2>{activeLessonContext.sectionLabel}</h2>
-              <p>{formatSessionDate(activeLessonContext.date)}</p>
+              <p className="lesson-session-date">
+                {formatSessionDate(activeLessonContext.date)}
+              </p>
             </>
           ) : (
             <>
@@ -1367,6 +1375,12 @@ function LessonSessionView({
 
         {activeLessonContext?.sessionId ? (
           <div className="lesson-session-header-actions">
+            <p className="lesson-session-print-summary">
+              {formatSessionDate(activeLessonContext.date)} · plan{" "}
+              {hasEstimatedDurations ? "~" : ""}
+              {totalDisplayedMinutes}m
+            </p>
+
             <div className="lesson-session-utility-group">
               <button
                 type="button"
@@ -1424,6 +1438,8 @@ function LessonSessionView({
         ) : null}
       </header>
 
+      <div className="lesson-session-print-layout">
+      <div className="lesson-session-print-plan">
       <div className="episode-stack">
         {episodes.map((episode, episodeIndex) => {
           const isOpen = openEpisodeIds.has(episode.id);
@@ -1472,6 +1488,9 @@ function LessonSessionView({
                 </button>
 
                 <div className="episode-spine-main">
+                  <span className="episode-title-print">
+                    {episode.title || "Untitled teaching episode"}
+                  </span>
                   {isEditingTitle ? (
                     <input
                       className="episode-title-input"
@@ -1759,8 +1778,15 @@ function LessonSessionView({
                 </div>
               </div>
 
-              {isOpen ? (
-                <div className="episode-body">
+              <span className="episode-elapsed-print" aria-hidden="true">
+                {String(
+                  cumulativeMinutesByEpisodeId.get(episode.id),
+                ).padStart(2, "0")}
+              </span>
+
+              <div
+                className={`episode-body${isOpen ? "" : " is-collapsed"}`}
+              >
                   {attachedCurriculumLesson ? (
                     <details className="episode-curriculum-reference">
                       <summary>
@@ -2161,8 +2187,7 @@ function LessonSessionView({
                       );
                     });
                   })()}
-                </div>
-              ) : null}
+              </div>
             </article>
           );
         })}
@@ -2226,6 +2251,38 @@ function LessonSessionView({
             Redo ↷
           </button>
         </div>
+      </div>
+      </div>
+
+      <aside
+        className="lesson-session-print-notes"
+        aria-label="Handwritten notes"
+      >
+        <svg
+          className="lesson-session-print-notes-grid"
+          aria-hidden="true"
+          focusable="false"
+          width="100%"
+          height="100%"
+        >
+          <defs>
+            <pattern
+              id="lesson-session-notes-dot-grid"
+              width="17pt"
+              height="17pt"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="1pt" cy="1pt" r="0.65pt" fill="#aeb4bc" />
+            </pattern>
+          </defs>
+          <rect
+            width="100%"
+            height="100%"
+            fill="url(#lesson-session-notes-dot-grid)"
+          />
+        </svg>
+        <h3>Notes</h3>
+      </aside>
       </div>
     </section>
   );
