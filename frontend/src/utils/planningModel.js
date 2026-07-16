@@ -1,8 +1,17 @@
 import { getPlanningWeek } from "./planningCalendar";
 import { sortLessons } from "./plannerUtils";
+import { getLessonSessionSummary } from "./lessonSessionStorage";
 
 function getLessonTitle(lesson) {
   return lesson?.LessonTitle || "Lesson Session";
+}
+
+function getCurriculumLessonLabel(lesson) {
+  if (!lesson) return null;
+
+  return [lesson.LessonCode || lesson.LessonNumber, lesson.LessonTitle]
+    .filter(Boolean)
+    .join(" ") || null;
 }
 
 function getSectionLabel(section) {
@@ -38,35 +47,29 @@ export function getPlanningModel({
     label: getSectionLabel(section),
   }));
 
+  // A cell exists for every section/teaching-day meeting. Whether it shows
+  // a title is entirely driven by real authored content — curriculum is
+  // never auto-projected onto a meeting the teacher hasn't planned.
   const sessions = {};
 
-  sections.forEach((section, sectionIndex) => {
-    teachingDays.forEach((day, dayIndex) => {
-      const lesson = unitLessons[currentLessonIndex + dayIndex];
+  sections.forEach((section) => {
+    teachingDays.forEach((day) => {
+      const sessionId = `${section.id}-${day.key}`;
+      const summary = getLessonSessionSummary(sessionId);
+      const curriculumLesson = summary.curriculumLessonId
+        ? lessons.find(
+            (lesson) => lesson.LessonID === summary.curriculumLessonId,
+          )
+        : null;
 
-      if (!lesson) return;
-
-      const used = Math.min(55, Number(lesson.PlannedDays || 1) * 40 + 7);
-
-      sessions[`${section.id}-${day.key}`] = {
-        id: `${section.id}-${day.key}`,
+      sessions[sessionId] = {
+        id: sessionId,
         sectionId: section.id,
         sectionLabel: section.label,
         dayKey: day.key,
-        title: getLessonTitle(lesson),
-        core: getLessonTitle(lesson),
-        lessonId: lesson.LessonID,
-        unitId: lesson.UnitID,
-        minutes: 55,
-        used,
-        status:
-          dayIndex <= sectionIndex
-            ? "prepared"
-            : dayIndex === 1
-              ? "planned"
-              : "draft",
-        chips: [],
-        open: used < 55 ? `${55 - used} min open` : "",
+        unitId: currentUnit?.UnitID ?? null,
+        ...summary,
+        curriculumLabel: getCurriculumLessonLabel(curriculumLesson),
       };
     });
   });

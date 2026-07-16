@@ -7,14 +7,11 @@ function SessionTile({ session, selected = false, onSelect }) {
     );
   }
 
-  const usedPercent = Math.min(100, (session.used / session.minutes) * 100);
-  const hasOpenTime = Boolean(session.open);
-
   return (
     <button
       className={[
         "planning-session-card",
-        session.status,
+        session.planned ? "planned" : "unplanned",
         selected ? "selected" : "",
       ]
         .filter(Boolean)
@@ -23,27 +20,23 @@ function SessionTile({ session, selected = false, onSelect }) {
       onClick={() => onSelect?.(session)}
       aria-pressed={selected}
     >
-      <span className="session-card-meta">
-        <span className="session-status-dot" aria-label={session.status} />
-      </span>
+      {session.planned ? (
+        <>
+          <span className="session-card-meta">
+            <span className="session-status-dot" aria-label="Planned" />
+          </span>
 
-      <strong className="session-card-title">
-        <span className="session-link-glyph">↗</span>
-        {session.title}
-      </strong>
+          <strong className="session-card-title">{session.title}</strong>
 
-      <span className="session-composition-bar">
-        <span style={{ width: `${usedPercent}%` }} />
-      </span>
-
-      {(hasOpenTime || session.needs?.length) ? (
-        <span className="session-card-footer">
-          <span>{session.open}</span>
-          {session.needs?.length ? (
-            <span>{session.needs.join(" · ")}</span>
+          {session.curriculumLabel ? (
+            <span className="session-card-curriculum">
+              Curriculum · {session.curriculumLabel}
+            </span>
           ) : null}
-        </span>
-      ) : null}
+        </>
+      ) : (
+        <span className="session-card-create">+ Lesson</span>
+      )}
     </button>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { LESSON_SESSION_STORAGE_KEY } from "../utils/lessonSessionStorage";
 
-const STORAGE_KEY = "year-planner.lesson-session.prototype.v2";
+const STORAGE_KEY = LESSON_SESSION_STORAGE_KEY;
 const LEGACY_STORAGE_KEY = "year-planner.lesson-session-items.prototype.v1";
 const COLLAPSED_BLOCKS_STORAGE_KEY =
   "year-planner.lesson-session.collapsed-blocks.v1";
@@ -65,7 +66,6 @@ function createEpisode(overrides = {}) {
     id: createId("episode"),
     title: "",
     minutes: null,
-    curriculumLessonId: null,
     blocks: [createBlock()],
     ...overrides,
   };
@@ -128,80 +128,23 @@ function migrateLegacyItem(item) {
   });
 }
 
-function createDefaultState(curriculumLessonId = null) {
+function createDefaultState() {
   return {
-    episodes: [
-      createEpisode({
-        id: "prototype-welcome",
-        title: "Welcome students and check permission slips.",
-        minutes: 4,
-        blocks: [
-          createBlock({
-            text: "Settle the room and clear logistics before instruction begins.",
-          }),
-        ],
-      }),
-      createEpisode({
-        id: "prototype-explore",
-        title: "Students create multistep transformations.",
-        minutes: 25,
-        curriculumLessonId,
-        blocks: [
-          createBlock({
-            text: "Amplify 1.3 — Creating Multistep Transformations",
-          }),
-          createBlock({
-            type: "learning",
-            text: "I can visualize multistep transformations.",
-            depth: 1,
-          }),
-          createBlock({
-            type: "learning",
-            text: "I can describe multistep transformations verbally.",
-            depth: 1,
-          }),
-          createBlock({
-            type: "materials",
-            text: "Patty paper and transformation grids",
-            depth: 1,
-          }),
-        ],
-      }),
-      createEpisode({
-        id: "prototype-synthesize",
-        title: "Students explain one transformation sequence verbally.",
-        minutes: 12,
-        blocks: [
-          createBlock({
-            text: "Use two contrasting student examples.",
-          }),
-        ],
-      }),
-      createEpisode({
-        id: "prototype-assess",
-        title: "Students complete a short exit ticket.",
-        minutes: 6,
-        blocks: [
-          createBlock({
-            text: "One visualizing item and one verbal-description item.",
-          }),
-        ],
-      }),
-    ],
+    curriculumLessonId: null,
+    episodes: [createEpisode({ title: "Welcome" })],
     deliverables: [],
   };
 }
 
-function normalizeStoredState(value, curriculumLessonId = null) {
+function normalizeStoredState(value) {
   if (!value || typeof value !== "object") {
-    return createDefaultState(curriculumLessonId);
+    return createDefaultState();
   }
 
-  let episodes = Array.isArray(value.episodes)
+  const episodes = Array.isArray(value.episodes)
     ? value.episodes.map((episode) => ({
         id: episode.id || createId("episode"),
         title: episode.title ?? "",
-        curriculumLessonId: episode.curriculumLessonId ?? null,
         minutes:
           Number.isFinite(Number(episode.minutes)) &&
           Number(episode.minutes) > 0
@@ -222,28 +165,15 @@ function normalizeStoredState(value, curriculumLessonId = null) {
       }))
     : [];
 
-  if (
-    curriculumLessonId &&
-    episodes.length &&
-    !episodes.some((episode) => episode.curriculumLessonId)
-  ) {
-    const attachmentIndex = Math.max(
-      episodes.findIndex((episode) => episode.id === "prototype-explore"),
-      episodes.findIndex((episode, index) => index > 0),
-      0,
-    );
-
-    episodes = episodes.map((episode, index) =>
-      index === attachmentIndex
-        ? { ...episode, curriculumLessonId }
-        : episode,
-    );
-  }
-
   return {
+    curriculumLessonId:
+      value.curriculumLessonId ??
+      value.episodes?.find((episode) => episode.curriculumLessonId)
+        ?.curriculumLessonId ??
+      null,
     episodes: episodes.length
       ? episodes
-      : [createEpisode({ curriculumLessonId })],
+      : [createEpisode()],
     deliverables: Array.isArray(value.deliverables)
       ? value.deliverables.map((deliverable) => ({
           id: deliverable.id || createId("deliverable"),
@@ -274,9 +204,9 @@ function loadCollapsedBlockIds(sessionId) {
   }
 }
 
-function loadInitialState(sessionId, curriculumLessonId) {
+function loadInitialState(sessionId) {
   if (typeof window === "undefined") {
-    return createDefaultState(curriculumLessonId);
+    return createDefaultState();
   }
 
   try {
@@ -284,14 +214,11 @@ function loadInitialState(sessionId, curriculumLessonId) {
     const current = window.localStorage.getItem(storageKey);
 
     if (current) {
-      return normalizeStoredState(
-        JSON.parse(current),
-        curriculumLessonId,
-      );
+      return normalizeStoredState(JSON.parse(current));
     }
 
     if (sessionId) {
-      return createDefaultState(curriculumLessonId);
+      return createDefaultState();
     }
 
     const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -310,7 +237,7 @@ function loadInitialState(sessionId, curriculumLessonId) {
     console.warn("Could not load the local Lesson Planner draft.", error);
   }
 
-  return createDefaultState(curriculumLessonId);
+  return createDefaultState();
 }
 
 function useUndoableState(initializer) {
@@ -421,10 +348,7 @@ function LessonSessionView({
     canUndo,
     canRedo,
   } = useUndoableState(() =>
-    loadInitialState(
-      activeLessonContext?.sessionId,
-      activeLessonContext?.lessonId,
-    ),
+    loadInitialState(activeLessonContext?.sessionId),
   );
   const [openEpisodeIds, setOpenEpisodeIds] = useState(() => {
     const initialId =
@@ -440,6 +364,8 @@ function LessonSessionView({
   const [durationDraft, setDurationDraft] = useState("");
   const [slashMenu, setSlashMenu] = useState(null);
   const [episodeMenuId, setEpisodeMenuId] = useState(null);
+  const [curriculumChooserEpisodeId, setCurriculumChooserEpisodeId] =
+    useState(null);
   const [copyStatus, setCopyStatus] = useState("");
   const [hasEpisodeClipboard, setHasEpisodeClipboard] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -453,7 +379,11 @@ function LessonSessionView({
   );
   const inputRefs = useRef(new Map());
 
-  const { episodes, deliverables } = plannerState;
+  const { curriculumLessonId, episodes, deliverables } = plannerState;
+  const attachedCurriculumLesson =
+    curriculumLessons.find(
+      (lesson) => lesson.LessonID === curriculumLessonId,
+    ) ?? null;
 
   const activeDeliverableCount = new Set(
     episodes.flatMap((episode) =>
@@ -612,6 +542,7 @@ function LessonSessionView({
     });
 
     return {
+      curriculumLessonId: sourceState.curriculumLessonId ?? null,
       episodes: sourceState.episodes.map((episode) => ({
         ...episode,
         id: episodeIdMap.get(episode.id),
@@ -1486,6 +1417,12 @@ function LessonSessionView({
               {totalDisplayedMinutes}m
             </p>
 
+            {attachedCurriculumLesson ? (
+              <span className="lesson-context-pill">
+                Curriculum · {attachedCurriculumLesson.LessonTitle || "Untitled lesson"}
+              </span>
+            ) : null}
+
             <div className="lesson-session-utility-group">
               <button
                 type="button"
@@ -1554,11 +1491,6 @@ function LessonSessionView({
           const hasDeliverable = episode.blocks.some(
             (block) => block.type === "deliverable",
           );
-          const attachedCurriculumLesson =
-            curriculumLessons.find(
-              (lesson) =>
-                lesson.LessonID === episode.curriculumLessonId,
-            ) ?? null;
           const attachedCurriculumOutcomes =
             attachedCurriculumLesson
               ? getOutcomeList(attachedCurriculumLesson.KeyOutcome)
@@ -1780,61 +1712,76 @@ function LessonSessionView({
                           Curriculum
                         </div>
 
-                        {curriculumLessons.length ? (
-                          <div className="episode-curriculum-options">
-                            {curriculumLessons.map((lesson) => {
-                              const isAttached =
-                                lesson.LessonID ===
-                                episode.curriculumLessonId;
+                        {curriculumChooserEpisodeId === episode.id ? (
+                          curriculumLessons.length ? (
+                            <div className="episode-curriculum-options">
+                              {curriculumLessons.map((lesson) => {
+                                const isAttached =
+                                  lesson.LessonID ===
+                                  curriculumLessonId;
 
-                              return (
-                                <button
-                                  className={
-                                    isAttached ? "is-selected" : ""
-                                  }
-                                  type="button"
-                                  key={lesson.LessonID}
-                                  onClick={() => {
-                                    updateEpisode(
-                                      episode.id,
-                                      (current) => ({
+                                return (
+                                  <button
+                                    className={
+                                      isAttached ? "is-selected" : ""
+                                    }
+                                    type="button"
+                                    key={lesson.LessonID}
+                                    onClick={() => {
+                                      setPlannerState((current) => ({
                                         ...current,
-                                        curriculumLessonId:
-                                          lesson.LessonID,
-                                      }),
-                                    );
-                                    setEpisodeMenuId(null);
-                                    setOpenEpisodeIds((current) => {
-                                      const next = new Set(current);
-                                      next.add(episode.id);
-                                      return next;
-                                    });
-                                  }}
-                                >
-                                  <span
-                                    className="episode-curriculum-option-mark"
-                                    aria-hidden="true"
+                                        curriculumLessonId: lesson.LessonID,
+                                      }));
+                                      setCurriculumChooserEpisodeId(null);
+                                      setEpisodeMenuId(null);
+                                    }}
                                   >
-                                    {isAttached ? "●" : "○"}
-                                  </span>
-
-                                  <span>
-                                    <strong>
-                                      Lesson {lesson.LessonNumber}
-                                    </strong>
-                                    <span>
-                                      {lesson.LessonTitle ||
-                                        "Untitled lesson"}
+                                    <span
+                                      className="episode-curriculum-option-mark"
+                                      aria-hidden="true"
+                                    >
+                                      {isAttached ? "●" : "○"}
                                     </span>
-                                  </span>
-                                </button>
-                              );
-                            })}
-                          </div>
+
+                                    <span>
+                                      <strong>
+                                        Lesson {lesson.LessonNumber}
+                                      </strong>
+                                      <span>
+                                        {lesson.LessonTitle ||
+                                          "Untitled lesson"}
+                                      </span>
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="episode-menu-empty">
+                              No lessons are available in this unit.
+                            </p>
+                          )
                         ) : (
-                          <p className="episode-menu-empty">
-                            No lessons are available in this unit.
-                          </p>
+                          <div className="episode-menu-actions">
+                            {curriculumLessonId ? (
+                              <span className="episode-menu-empty">
+                                {attachedCurriculumLesson
+                                  ? attachedCurriculumLesson.LessonTitle ||
+                                    "Untitled lesson"
+                                  : "Attached curriculum unavailable"}
+                              </span>
+                            ) : null}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCurriculumChooserEpisodeId(episode.id)
+                              }
+                            >
+                              {curriculumLessonId
+                                ? "Change curriculum…"
+                                : "Attach curriculum…"}
+                            </button>
+                          </div>
                         )}
 
                         <div className="episode-menu-actions">
@@ -1860,25 +1807,6 @@ function LessonSessionView({
                               }
                             >
                               Import curriculum content
-                            </button>
-                          ) : null}
-
-                          {episode.curriculumLessonId ? (
-                            <button
-                              className="episode-detach-curriculum"
-                              type="button"
-                              onClick={() => {
-                                updateEpisode(
-                                  episode.id,
-                                  (current) => ({
-                                    ...current,
-                                    curriculumLessonId: null,
-                                  }),
-                                );
-                                setEpisodeMenuId(null);
-                              }}
-                            >
-                              Remove curriculum attachment
                             </button>
                           ) : null}
 
