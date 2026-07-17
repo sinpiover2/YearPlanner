@@ -787,6 +787,8 @@ function App() {
 
   const planningWorkspaceModel = {
     planningModel,
+    curriculumLessons: lessons,
+    courseLabel: getCourseLabel(selectedCourseId),
     activeLessonContext,
     onOpenLessonSession: (lessonSessionContext) => {
       setActiveLessonContext(lessonSessionContext);

@@ -9,7 +9,7 @@ export function getLessonSessionStorageKey(sessionId) {
     : LESSON_SESSION_STORAGE_KEY;
 }
 
-function readStoredState(sessionId) {
+export function getLessonSessionState(sessionId) {
   if (typeof window === "undefined" || !sessionId) return null;
 
   try {
@@ -49,7 +49,7 @@ function getAuthoredTitle(state) {
 // blank default state, which must not read back as planned. The title shown
 // is whatever the teacher actually wrote, never a projected curriculum name.
 export function getLessonSessionSummary(sessionId) {
-  const state = readStoredState(sessionId);
+  const state = getLessonSessionState(sessionId);
   const planned = hasAuthoredContent(state);
 
   return {

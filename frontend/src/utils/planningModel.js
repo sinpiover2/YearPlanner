@@ -68,6 +68,9 @@ export function getPlanningModel({
         sectionLabel: section.label,
         dayKey: day.key,
         unitId: currentUnit?.UnitID ?? null,
+        unitLabel: [currentUnit?.UnitNumber, currentUnit?.UnitTitle]
+          .filter(Boolean)
+          .join(" "),
         ...summary,
         curriculumLabel: getCurriculumLessonLabel(curriculumLesson),
       };

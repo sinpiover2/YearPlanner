@@ -4,6 +4,8 @@ function PlanningHeader({
   onPreviousWeek,
   onNextWeek,
   onJumpToToday,
+  onPrintDay,
+  canPrintDay,
 }) {
   return (
     <header className="planning-header">
@@ -13,6 +15,9 @@ function PlanningHeader({
       </div>
 
       <div className="planning-controls">
+        <button type="button" onClick={onPrintDay} disabled={!canPrintDay}>
+          Print Day
+        </button>
         <button type="button" onClick={onPreviousWeek} aria-label="Previous week">
           ‹
         </button>
