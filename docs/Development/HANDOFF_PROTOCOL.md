@@ -1,493 +1,121 @@
-.# Handoff Protocol
+# Handoff Protocol
 
 ## Purpose
 
 The sprint handoff is not a summary of the sprint.
 
-It is the onboarding guide for the next development session.
+It is the onboarding document for the next session.
 
-A successful handoff allows a brand-new ChatGPT conversation to become productive within minutes, without rediscovering architecture, searching for documentation, or revisiting completed design decisions.
+A successful handoff lets a brand-new session become productive in under a minute for basic orientation, with deeper context available on demand for anything that needs it.
 
-The handoff is a project artifact and should receive the same care, review, and continuous improvement as production code.
-
----
-
-# Guiding Philosophy
-
-## Optimize for startup friction.
-
-The goal is not to write the longest or most complete document.
-
-The goal is to minimize the amount of thinking required before productive work begins.
-
-Every section should answer one question:
-
-> "Will this help the next sprint start faster?"
-
-If the answer is no, remove it.
+The handoff is a project artifact. It deserves the same care, review, and continuous improvement as production code.
 
 ---
 
-## Explain decisions, not history.
+## Two Kinds of Knowledge
 
-Git records history.
+Year Planner now has two kinds of project knowledge, and a handoff must not mix them.
 
-The handoff explains:
+| Kind | Lives in | Test |
+|---|---|---|
+| Permanent | `docs/Development/PROJECT_CONTEXT.md` (and Architecture docs) | Still true five sprints from now |
+| Sprint-specific | The current sprint's handoff (`docs/History/SPRINT_HANDOFF_X.X.md`) | True only until the next sprint changes it |
 
-- why decisions were made
-- what should not be changed
-- what remains unresolved
-- how to continue without rethinking completed work
+Mission, product vision, design principles, workspace philosophy, information architecture, the four-terminal workflow, coding philosophy — all permanent. They already live in PROJECT_CONTEXT.md.
 
-Avoid turning the handoff into a changelog.
+**A sprint handoff must never restate them. Link to them instead.**
 
----
+If you're about to write a sentence explaining *why* Forecast exists, *why* curriculum stays additive, or *what* the four terminal windows are for — stop. That belongs in PROJECT_CONTEXT.md. If it's already there and still accurate, just link it. If it's missing or wrong, fix PROJECT_CONTEXT.md, then link it.
 
-## Every sprint improves the onboarding process.
-
-The handoff itself is part of the project's architecture.
-
-It should become easier to use every sprint.
-
-If a workflow improvement saves future time, document it.
+A workflow discovery made *this* sprint (e.g. "ignore `.claude/` so local permissions don't pollute git") starts as sprint-specific. Once it's proven and becomes standing practice, it graduates into PROJECT_CONTEXT.md and drops out of future handoffs.
 
 ---
 
-# Before Writing the Handoff
+## The Two-Layer Handoff
 
-Do **not** begin writing immediately.
+Every sprint handoff has two layers.
 
-First review the project from the perspective of someone who has never seen today's work.
+### Layer 1 — 60-Second Startup
 
-Review:
+The top of the document. Everything a new session needs to start working, and nothing else:
 
-- previous sprint handoff
-- architecture documents
-- decision records
-- roadmap
-- sprint notes
-- git history
-- commits completed this sprint
-- documentation created this sprint
-- workflow improvements discovered this sprint
+- Sprint title and a one-paragraph status ("the project is healthy," "X is blocked on Y")
+- Repository state: branch, clean/dirty, ahead/behind origin
+- Recent commits (last 3–5, one line each)
+- Current stopping point: what was true the moment the sprint ended
+- First-hour plan: a concrete numbered sequence, not a reading list
+- Links to permanent reference documents (PROJECT_CONTEXT.md, and any Architecture doc actually relevant this sprint)
 
-Then ask:
+A session that reads only this layer should be able to start working immediately.
 
-- What information did we have to rediscover?
-- What slowed startup?
-- What questions did we repeatedly answer?
-- Which architectural decisions are now settled?
-- What should the next sprint never have to search for?
-- What workflow became easier?
-- What workflow became harder?
-- What belongs in permanent documentation instead of another handoff?
+### Layer 2 — Reference
 
-Only after answering these questions should writing begin.
+Everything else. Read only as needed:
+
+- Sprint accomplishments — what shipped and the reasoning behind it, not a changelog
+- Remaining priorities — ranked, not a roadmap
+- Known issues — bugs, limitations, deferred work, explicit non-goals, technical debt
+- Anything else worth carrying forward (a short "Lessons Learned" is welcome when something genuinely surprised us — see Sprint 5.1's print-scale bug for the kind of thing worth keeping)
 
 ---
 
-# Required Sections
+## Required Sections
 
-Every sprint handoff should contain the following sections.
+Every sprint handoff must contain:
 
----
+1. **Repository state** — branch, clean/dirty, commits ahead of origin. *(Layer 1)*
+2. **Recent commits** — the last handful, one line each. *(Layer 1)*
+3. **Sprint accomplishments** — what shipped this sprint and why. *(Layer 2)*
+4. **Current stopping point** — what's true right now, without further reading. *(Layer 1)*
+5. **First-hour plan** — a concrete sequence for the next session. *(Layer 1)*
+6. **Remaining priorities** — ranked. *(Layer 2)*
+7. **Known issues** — bugs, limitations, deferred work, non-goals. *(Layer 2)*
+8. **Links to permanent reference documents** — PROJECT_CONTEXT.md at minimum. *(Layer 1)*
 
-## Sprint Title
-
-Include:
-
-Sprint number
-
-Descriptive sprint title
-
----
-
-## Sprint Objective
-
-Describe the purpose of the sprint.
-
-Do **not** list features.
-
-Instead explain:
-
-"What problem did this sprint solve?"
+Nothing else is required. Add a section only if it would measurably help the next session start faster — and only after checking it isn't already permanent knowledge that belongs in PROJECT_CONTEXT.md instead.
 
 ---
 
-## Current State
+## Before Writing: Review the Previous Handoff
 
-Provide a concise snapshot.
+Do not start a new handoff from a blank page, and do not start it by copying the last one forward unchanged.
 
-Include:
+Read the previous handoff as if you were the next session, and ask:
 
-Completed
+- What worked? What caused friction?
+- What did we have to rediscover that should have been written down somewhere permanent?
+- What in the previous handoff was actually permanent knowledge, copied forward again instead of moved to PROJECT_CONTEXT.md?
+- What's now obsolete and should be dropped?
+- How can startup get even faster than last time?
 
-Stable
-
-In progress
-
-Known limitations
-
-Current focus
-
-This section should answer:
-
-> "What exists today?"
-
-without requiring further reading.
+**Every new handoff must be a measurable improvement on the one before it** — shorter, clearer, better targeted, or with less duplication. If a section added no value last time, cut it this time.
 
 ---
 
-## Read These First
+## Writing Principles
 
-Provide a prioritized reading order.
-
-Only include documents that are genuinely required.
-
-Do **not** overwhelm the next sprint with unnecessary reading.
-
-The goal is confidence, not completeness.
+- Optimize for startup friction, not completeness. Every section answers: "will this help the next session start faster?" If not, cut it.
+- Explain decisions, not history — git already has history.
+- Never restate what PROJECT_CONTEXT.md already says. Link it.
+- Write for the next sprint, not for the record.
 
 ---
 
-## Architecture
+## End-of-Sprint Checklist
 
-Summarize architectural decisions.
+Before ending a sprint:
 
-Especially include:
-
-- new boundaries
-- abstractions
-- design principles
-- concepts that should not be revisited without good reason
-
-Explain **why**.
+- [ ] `npm run build` passes
+- [ ] `git status` clean
+- [ ] Push complete
+- [ ] Sprint handoff written and committed
+- [ ] PROJECT_CONTEXT.md reviewed — updated only if permanent philosophy, architecture, or workflow actually changed
+- [ ] HANDOFF_PROTOCOL.md reviewed for possible improvements
 
 ---
 
-## Workflow Improvements
-
-Document workflow discoveries with the same care as software improvements.
-
-Examples:
-
-- terminal workflow
-- documentation workflow
-- git workflow
-- testing workflow
-- design workflow
-- review workflow
-- handoff workflow
-
-Workflow improvements compound over time.
-
-Treat them as project assets.
-
----
-
-## Lessons Learned
-
-Record observations worth carrying forward.
-
-Especially:
-
-things that surprised us
-
-things that failed
-
-things that looked good but weren't
-
-unexpected simplifications
-
-design discoveries
-
-implementation discoveries
-
-authoring discoveries
-
-workflow discoveries
-
----
-
-## Explicitly Out of Scope
-
-Protect future work.
-
-List:
-
-- intentionally deferred work
-- rejected ideas
-- things intentionally left unchanged
-
-This prevents accidental scope creep.
-
----
-
-## Next Sprint
-
-Describe only the immediate objective.
-
-Avoid writing a roadmap.
-
-The next sprint should know exactly what success looks like.
-
----
-
-## First Hour Plan
-
-Provide a concrete startup sequence.
-
-Example:
-
-1. Read architecture.
-2. Read decisions.
-3. Run the application.
-4. Verify current behavior.
-5. Build one real example.
-6. Observe friction.
-7. Improve one thing.
-
-The next sprint should never wonder how to begin.
-
----
-
-## Development Notes
-
-Capture information likely to disappear.
-
-Examples:
-
-preferred implementation
-
-UI behavior
-
-important constraints
-
-future considerations
-
-edge cases
-
-temporary compromises
-
-known technical debt
-
----
-
-## Terminal Workflow
-
-Always include the standard workflow.
-
-### 🔵 PROJECT
-
-Project navigation
-
-Editing assistance
-
-Searching
-
-Documentation
-
-Never run npm or git.
-
----
-
-### 🟩 DEV SERVER
-
-Run:
-
-```
-npm run dev
-```
-
-Keep running throughout development.
-
----
-
-### 🟨 BUILD
-
-Run:
-
-```
-npm run build
-```
-
-Use frequently.
-
-Build early.
-
-Build often.
-
----
-
-### 🔴 GIT
-
-All git operations.
-
-Only git commands belong here.
-
----
-
-# Writing Principles
-
-Prefer explanation over chronology.
-
-Prefer principles over implementation details.
-
-Prefer architecture over features.
-
-Prefer clarity over completeness.
-
-Write for the next sprint, not for history.
-
-The handoff should teach.
-
----
-
-# Review Cycle
-
-The first draft is never the final handoff.
-
-Every handoff should go through three passes.
-
----
-
-## Pass 1
-
-Write the document.
-
-Capture everything important.
-
----
-
-## Pass 2
-
-Pretend you are beginning the next sprint.
-
-Read the handoff from top to bottom.
-
-Ask:
-
-What is confusing?
-
-What requires searching?
-
-What questions remain unanswered?
-
-Revise.
-
----
-
-## Pass 3
-
-Reduce startup friction.
-
-Shorten.
-
-Reorder.
-
-Clarify.
-
-Remove unnecessary information.
-
-Improve document flow.
-
-Only after this review should the handoff be committed.
-
----
-
-# Quality Standard
-
-A successful handoff allows a brand-new ChatGPT conversation to:
-
-Understand the project in under ten minutes.
-
-Locate every required document immediately.
-
-Understand current architecture.
-
-Understand current implementation.
-
-Know what not to change.
-
-Know what should happen next.
-
-Begin productive development without orientation questions.
-
-If it cannot do these things, improve the handoff.
-
----
-
-# Continuous Improvement
-
-Every sprint should begin by reviewing the previous handoff.
-
-Ask:
-
-What worked well?
-
-What caused friction?
-
-What was missing?
-
-What information was unnecessary?
-
-How can startup become even faster?
-
-Carry successful ideas forward.
-
-Remove weak ideas.
-
-Improve the protocol whenever a better process is discovered.
-
-The protocol is a living document.
-
----
-
-# Final Review Checklist
-
-Before committing the handoff:
-
-☐ Reviewed previous handoff
-
-☐ Reviewed architecture
-
-☐ Reviewed decisions
-
-☐ Reviewed sprint notes
-
-☐ Reviewed git history
-
-☐ Reviewed documentation created this sprint
-
-☐ Reviewed workflow improvements
-
-☐ Added permanent discoveries
-
-☐ Removed obsolete information
-
-☐ Reduced startup friction
-
-☐ Verified document references
-
-☐ Verified next sprint objective
-
-☐ Read the document as a brand-new ChatGPT conversation
-
-☐ Revised after that review
-
-Only commit after this checklist is complete.
-
----
-
-# Long-Term Principle
+## Long-Term Principle
 
 Every sprint should leave the onboarding process better than it found it.
 
-Reducing development friction is a project improvement.
-
-A better handoff saves time for every future sprint.
-
-Invest in it accordingly.EOF
-code docs/Development/HANDOFF_PROTOCOL.md
-clear
-clear
+A better handoff saves time for every future sprint. Invest in it accordingly.
