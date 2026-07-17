@@ -61,11 +61,34 @@ function normalizeOutcomeText(text) {
   return text.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+const DEFAULT_EPISODE_TITLE_DISPLAY = "Untitled Teaching Episode";
+
+function isDefaultEpisodeTitle(title) {
+  const trimmed = title?.trim() ?? "";
+  return trimmed === "" || trimmed === DEFAULT_EPISODE_TITLE_DISPLAY;
+}
+
+function buildEpisodeTitleFromLesson(lesson) {
+  if (!lesson) return "";
+
+  const numberPart = lesson.LessonNumber
+    ? String(lesson.LessonNumber).trim()
+    : "";
+  const titlePart = lesson.LessonTitle?.trim() ?? "";
+  const providerPart = lesson.Provider?.trim() ?? "";
+
+  const namePart =
+    [numberPart, titlePart].filter(Boolean).join(" ") || "Untitled lesson";
+
+  return providerPart ? `${namePart} (${providerPart})` : namePart;
+}
+
 function createBlankEpisode() {
   return {
     id: createId("episode"),
     title: "",
     minutes: null,
+    curriculumLessonId: null,
     blocks: [createBlock()],
   };
 }
@@ -173,11 +196,10 @@ function normalizeStoredState(value) {
     : [];
 
   return {
-    curriculumLessonId:
-      value.curriculumLessonId ??
-      value.episodes?.find((episode) => episode.curriculumLessonId)
-        ?.curriculumLessonId ??
-      null,
+    // Legacy: only an explicitly saved session-level value is kept here.
+    // Per-episode connections are never aggregated back up into this field,
+    // since episodes may now legitimately connect to different lessons.
+    curriculumLessonId: value.curriculumLessonId ?? null,
     episodes: episodes.length
       ? episodes
       : [createEpisode()],
@@ -387,6 +409,10 @@ function LessonSessionView({
   const inputRefs = useRef(new Map());
 
   const { curriculumLessonId, episodes, deliverables } = plannerState;
+  // Legacy: earlier versions attached a curriculum lesson to the whole
+  // Lesson Session. Connections are now made per Teaching Episode; this
+  // session-level value is kept only so older saved plans still show a
+  // header pill. Nothing writes to it anymore.
   const attachedCurriculumLesson =
     curriculumLessons.find(
       (lesson) => lesson.LessonID === curriculumLessonId,
@@ -819,6 +845,61 @@ function LessonSessionView({
     if (editingTitleId === episodeId) {
       setEditingTitleId(null);
     }
+
+    setEpisodeMenuId(null);
+  }
+
+  function chooseLessonForEpisode(episodeId, lesson) {
+    const episode = episodes.find((item) => item.id === episodeId);
+
+    if (!episode || !lesson) return;
+
+    const generatedTitle = buildEpisodeTitleFromLesson(lesson);
+    const shouldReplaceTitle = isDefaultEpisodeTitle(episode.title)
+      ? true
+      : window.confirm(
+          "Replace the current episode title with the lesson title?",
+        );
+
+    setPlannerState((current) => ({
+      ...current,
+      episodes: current.episodes.map((item) =>
+        item.id === episodeId
+          ? {
+              ...item,
+              curriculumLessonId: lesson.LessonID,
+              title: shouldReplaceTitle ? generatedTitle : item.title,
+            }
+          : item,
+      ),
+    }));
+
+    setCurriculumChooserEpisodeId(null);
+    setEpisodeMenuId(null);
+  }
+
+  function removeLessonConnection(episodeId) {
+    setPlannerState((current) => ({
+      ...current,
+      episodes: current.episodes.map((item) => {
+        if (item.id !== episodeId) return item;
+
+        const attachedLesson = curriculumLessons.find(
+          (lesson) => lesson.LessonID === item.curriculumLessonId,
+        );
+        const generatedTitle = attachedLesson
+          ? buildEpisodeTitleFromLesson(attachedLesson)
+          : null;
+        const shouldClearTitle =
+          generatedTitle && item.title.trim() === generatedTitle.trim();
+
+        return {
+          ...item,
+          curriculumLessonId: null,
+          title: shouldClearTitle ? "" : item.title,
+        };
+      }),
+    }));
 
     setEpisodeMenuId(null);
   }
@@ -1543,7 +1624,7 @@ function LessonSessionView({
 
                 <div className="episode-spine-main">
                   <span className="episode-title-print">
-                    {episode.title || "Untitled teaching episode"}
+                    {episode.title || DEFAULT_EPISODE_TITLE_DISPLAY}
                   </span>
                   {isEditingTitle ? (
                     <input
@@ -1607,7 +1688,7 @@ function LessonSessionView({
                         setEditingTitleId(episode.id);
                       }}
                     >
-                      {episode.title || "Untitled teaching episode"}
+                      {episode.title || DEFAULT_EPISODE_TITLE_DISPLAY}
                     </button>
                   )}
 
@@ -1726,7 +1807,7 @@ function LessonSessionView({
                     {episodeMenuId === episode.id ? (
                       <div className="episode-overflow-menu">
                         <div className="episode-menu-section-label">
-                          Curriculum
+                          Curriculum lesson
                         </div>
 
                         {curriculumChooserEpisodeId === episode.id ? (
@@ -1735,7 +1816,7 @@ function LessonSessionView({
                               {curriculumLessons.map((lesson) => {
                                 const isAttached =
                                   lesson.LessonID ===
-                                  curriculumLessonId;
+                                  episodeCurriculumLessonId;
 
                                 return (
                                   <button
@@ -1744,14 +1825,12 @@ function LessonSessionView({
                                     }
                                     type="button"
                                     key={lesson.LessonID}
-                                    onClick={() => {
-                                      setPlannerState((current) => ({
-                                        ...current,
-                                        curriculumLessonId: lesson.LessonID,
-                                      }));
-                                      setCurriculumChooserEpisodeId(null);
-                                      setEpisodeMenuId(null);
-                                    }}
+                                    onClick={() =>
+                                      chooseLessonForEpisode(
+                                        episode.id,
+                                        lesson,
+                                      )
+                                    }
                                   >
                                     <span
                                       className="episode-curriculum-option-mark"
@@ -1780,12 +1859,10 @@ function LessonSessionView({
                           )
                         ) : (
                           <div className="episode-menu-actions">
-                            {curriculumLessonId ? (
+                            {episodeCurriculumLesson ? (
                               <span className="episode-menu-empty">
-                                {attachedCurriculumLesson
-                                  ? attachedCurriculumLesson.LessonTitle ||
-                                    "Untitled lesson"
-                                  : "Attached curriculum unavailable"}
+                                {episodeCurriculumLesson.LessonTitle ||
+                                  "Untitled lesson"}
                               </span>
                             ) : null}
                             <button
@@ -1794,10 +1871,21 @@ function LessonSessionView({
                                 setCurriculumChooserEpisodeId(episode.id)
                               }
                             >
-                              {curriculumLessonId
-                                ? "Change curriculum…"
-                                : "Attach curriculum…"}
+                              {episodeCurriculumLesson
+                                ? "Change Lesson…"
+                                : "Choose Lesson…"}
                             </button>
+
+                            {episodeCurriculumLesson ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeLessonConnection(episode.id)
+                                }
+                              >
+                                Remove Lesson Connection
+                              </button>
+                            ) : null}
                           </div>
                         )}
 
@@ -1812,14 +1900,14 @@ function LessonSessionView({
                             Copy episode
                           </button>
 
-                          {attachedCurriculumLesson ? (
+                          {episodeCurriculumLesson ? (
                             <button
                               className="episode-import-curriculum-action"
                               type="button"
                               onClick={() =>
                                 importCurriculumContent(
                                   episode.id,
-                                  attachedCurriculumLesson,
+                                  episodeCurriculumLesson,
                                 )
                               }
                             >
