@@ -3926,7 +3926,7 @@ body {
    The reservation covers the menu's own max-height (see
    .episode-add-menu-options) plus its offset and a small buffer. */
 .episode-add-controls:has(.episode-add-menu[open]) {
-  padding-bottom: 440px;
+  padding-bottom: 360px;
 }
 
 .add-episode-button,
@@ -3974,8 +3974,8 @@ body {
   top: calc(100% + 6px);
   left: 0;
   display: grid;
-  width: min(260px, calc(100vw - 48px));
-  max-height: 420px;
+  width: min(224px, calc(100vw - 48px));
+  max-height: 340px;
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid #d9e1ea;
@@ -3986,18 +3986,30 @@ body {
 
 .episode-add-menu-options .episode-menu-divider {
   height: 1px;
-  margin: 4px 0;
+  margin: 2px 0;
   background: #e2e8f0;
 }
 
+.episode-add-menu-section-label {
+  padding: 6px 10px 3px;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 .episode-add-menu-options button {
+  min-height: 33px;
   width: 100%;
+  box-sizing: border-box;
   border: 0;
-  border-bottom: 1px solid #eef2f6;
-  padding: 9px 12px;
+  padding: 6px 10px;
   background: transparent;
   color: #334155;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
+  line-height: 1.25;
   text-align: left;
   cursor: pointer;
 }
@@ -4009,7 +4021,7 @@ body {
 .episode-add-menu-options button:hover,
 .episode-add-menu-options button:focus-visible {
   outline: 0;
-  background: #f1f5f9;
+  background: #f3f6f9;
 }
 
 .lesson-draft-status {

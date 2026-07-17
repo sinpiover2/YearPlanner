@@ -2498,7 +2498,25 @@ function LessonSessionView({
                 </>
               ) : (
                 <>
-                  {EPISODE_TEMPLATES.map((template) => (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      addEpisode(undefined, { title: "" });
+                      event.currentTarget
+                        .closest("details")
+                        ?.removeAttribute("open");
+                    }}
+                  >
+                    New Blank Episode
+                  </button>
+
+                  <div className="episode-menu-divider" />
+
+                  <div className="episode-add-menu-section-label">
+                    Templates
+                  </div>
+
+                  {EPISODE_TEMPLATES.slice(1).map((template) => (
                     <button
                       type="button"
                       key={template.key}
@@ -2519,7 +2537,7 @@ function LessonSessionView({
                     type="button"
                     onClick={() => setIsAddEpisodeCurriculumPickerOpen(true)}
                   >
-                    Attach Curriculum Lesson…
+                    Attach Lesson…
                   </button>
                 </>
               )}
