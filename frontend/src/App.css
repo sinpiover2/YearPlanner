@@ -3758,6 +3758,24 @@ body {
   font-size: 0.88rem;
 }
 
+/* Episode-level "this is the lesson's deliverable" badge, next to the title */
+
+.episode-deliverable-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid #d9e2ec;
+  border-radius: 999px;
+  vertical-align: middle;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: #f8fafc;
+}
+
 .episode-hover-controls {
   display: flex;
   gap: 3px;
@@ -4756,6 +4774,20 @@ body {
     font-weight: 650;
     line-height: 1.3;
     color: #111111;
+  }
+
+  .episode-deliverable-badge {
+    display: inline-block;
+    margin-left: 6pt;
+    padding: 0 4pt;
+    border: 0.6pt solid #6b7280;
+    border-radius: 2pt;
+    vertical-align: middle;
+    color: #374151;
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    background: transparent;
   }
 
   .episode-spine-meta {

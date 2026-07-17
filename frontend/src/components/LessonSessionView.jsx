@@ -89,6 +89,7 @@ function createBlankEpisode() {
     title: "",
     minutes: null,
     curriculumLessonId: null,
+    isDeliverable: false,
     blocks: [createBlock()],
   };
 }
@@ -175,6 +176,7 @@ function normalizeStoredState(value) {
         id: episode.id || createId("episode"),
         title: episode.title ?? "",
         curriculumLessonId: episode.curriculumLessonId ?? null,
+        isDeliverable: Boolean(episode.isDeliverable),
         minutes:
           Number.isFinite(Number(episode.minutes)) &&
           Number(episode.minutes) > 0
@@ -904,6 +906,27 @@ function LessonSessionView({
     setEpisodeMenuId(null);
   }
 
+  // A Lesson Session has at most one deliverable episode at a time: marking
+  // one clears the flag from any other episode rather than allowing several.
+  function toggleEpisodeDeliverable(episodeId) {
+    setPlannerState((current) => {
+      const target = current.episodes.find(
+        (episode) => episode.id === episodeId,
+      );
+      const shouldMark = !target?.isDeliverable;
+
+      return {
+        ...current,
+        episodes: current.episodes.map((episode) => ({
+          ...episode,
+          isDeliverable: shouldMark ? episode.id === episodeId : false,
+        })),
+      };
+    });
+
+    setEpisodeMenuId(null);
+  }
+
   function importCurriculumContent(episodeId, lesson) {
     const episode = episodes.find((item) => item.id === episodeId);
 
@@ -1625,6 +1648,11 @@ function LessonSessionView({
                 <div className="episode-spine-main">
                   <span className="episode-title-print">
                     {episode.title || DEFAULT_EPISODE_TITLE_DISPLAY}
+                    {episode.isDeliverable ? (
+                      <span className="episode-deliverable-badge">
+                        Deliverable
+                      </span>
+                    ) : null}
                   </span>
                   {isEditingTitle ? (
                     <input
@@ -1689,6 +1717,11 @@ function LessonSessionView({
                       }}
                     >
                       {episode.title || DEFAULT_EPISODE_TITLE_DISPLAY}
+                      {episode.isDeliverable ? (
+                        <span className="episode-deliverable-badge">
+                          Deliverable
+                        </span>
+                      ) : null}
                     </button>
                   )}
 
@@ -1898,6 +1931,18 @@ function LessonSessionView({
                             }
                           >
                             Copy episode
+                          </button>
+
+                          <button
+                            className="episode-mark-deliverable-action"
+                            type="button"
+                            onClick={() =>
+                              toggleEpisodeDeliverable(episode.id)
+                            }
+                          >
+                            {episode.isDeliverable
+                              ? "Unmark as Deliverable"
+                              : "Mark as Deliverable"}
                           </button>
 
                           {episodeCurriculumLesson ? (
