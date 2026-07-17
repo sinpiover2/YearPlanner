@@ -55,6 +55,8 @@ export function getLessonSessionSummary(sessionId) {
   return {
     planned,
     title: planned ? getAuthoredTitle(state) ?? NEUTRAL_TITLE : null,
+    state: state?.state ?? null,
+    episodes: Array.isArray(state?.episodes) ? state.episodes : [],
     curriculumLessonId:
       state?.curriculumLessonId ??
       state?.episodes?.find((episode) => episode.curriculumLessonId)

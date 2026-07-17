@@ -7,6 +7,13 @@ function SessionTile({ session, selected = false, onSelect }) {
     );
   }
 
+  const episodes = session.episodes ?? [];
+  const previewEpisodes = episodes.slice(0, 3);
+  const remainingEpisodeCount = Math.max(episodes.length - 3, 0);
+  const hiddenDeliverable = episodes
+    .slice(3)
+    .some((episode) => episode.isDeliverable);
+
   return (
     <button
       className={[
@@ -22,15 +29,55 @@ function SessionTile({ session, selected = false, onSelect }) {
     >
       {session.planned ? (
         <>
-          <span className="session-card-meta">
-            <span className="session-status-dot" aria-label="Planned" />
+          <span className="session-card-identity">
+            <strong className="session-card-title">{session.title}</strong>
+            <span
+              className={[
+                "session-status-dot",
+                session.state ? `state-${session.state}` : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              aria-label={session.state ?? "Planned"}
+            />
           </span>
-
-          <strong className="session-card-title">{session.title}</strong>
 
           {session.curriculumLabel ? (
             <span className="session-card-curriculum">
               Curriculum · {session.curriculumLabel}
+            </span>
+          ) : null}
+
+          {previewEpisodes.length ? (
+            <span className="session-episode-preview">
+              {previewEpisodes.map((episode, index) => (
+                <span
+                  className="session-episode-preview-line"
+                  key={episode.id ?? index}
+                >
+                  <span>{episode.title?.trim() || "Untitled episode"}</span>
+                  {episode.isDeliverable ? (
+                    <span
+                      className="session-episode-deliverable"
+                      aria-label="Deliverable"
+                      title="Deliverable"
+                    />
+                  ) : null}
+                </span>
+              ))}
+
+              {remainingEpisodeCount ? (
+                <span className="session-episode-preview-line is-overflow">
+                  <span>+{remainingEpisodeCount} more</span>
+                  {hiddenDeliverable ? (
+                    <span
+                      className="session-episode-deliverable"
+                      aria-label="Deliverable in remaining episodes"
+                      title="Deliverable"
+                    />
+                  ) : null}
+                </span>
+              ) : null}
             </span>
           ) : null}
         </>

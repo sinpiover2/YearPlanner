@@ -2929,12 +2929,27 @@ button {
 }
 
 .planning-week-grid {
+  position: relative;
   display: grid;
   grid-template-columns: 52px 30px repeat(5, minmax(160px, 1fr)) 30px;
   column-gap: 18px;
   row-gap: 10px;
   align-items: stretch;
   width: 100%;
+}
+
+.planning-week-grid > * {
+  position: relative;
+  z-index: 1;
+}
+
+.planning-week-grid > .planning-selected-day-column {
+  z-index: 0;
+  min-width: 0;
+  margin-inline: -8px;
+  border-radius: 16px;
+  background: #edf2f7;
+  pointer-events: none;
 }
 
 .planning-day-heading {
@@ -2967,9 +2982,10 @@ button.planning-day-heading:focus-visible {
 .planning-day-heading.selected,
 button.planning-day-heading.selected:hover,
 button.planning-day-heading.selected:focus-visible {
-  background: #edf2f7;
-  box-shadow: inset 0 0 0 1px #d8e1eb;
+  background: transparent;
+  box-shadow: none;
   color: #0f172a;
+  font-weight: 800;
 }
 
 .planning-day-heading.shoulder {
@@ -3033,7 +3049,7 @@ button.planning-day-heading.selected:focus-visible {
   width: 100%;
   min-height: 94px;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   border: 1px solid #d7dde6;
   border-radius: 14px;
   background: #ffffff;
@@ -3058,12 +3074,13 @@ button.planning-day-heading.selected:focus-visible {
 
 .session-card-title {
   display: -webkit-box;
-  margin: 4px 0 6px;
+  min-width: 0;
+  margin: 0;
   overflow: hidden;
   color: #111827;
-  font-size: 1.18rem;
-  font-weight: 850;
-  line-height: 1.18;
+  font-size: 0.96rem;
+  font-weight: 800;
+  line-height: 1.2;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -3078,18 +3095,71 @@ button.planning-day-heading.selected:focus-visible {
   white-space: nowrap;
 }
 
-.session-card-meta {
+.session-card-identity {
   display: flex;
-  justify-content: flex-end;
-  min-height: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .session-status-dot {
+  flex: 0 0 auto;
   width: 8px;
   height: 8px;
   border: 2px solid #0f172a;
   border-radius: 999px;
   background: #0f172a;
+}
+
+.session-status-dot.state-draft,
+.session-status-dot.state-planned {
+  border-width: 1px;
+  border-color: #64748b;
+  background: transparent;
+}
+
+.session-status-dot.state-completed {
+  border-color: #94a3b8;
+  background: #94a3b8;
+}
+
+.session-episode-preview {
+  display: grid;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.session-episode-preview-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 8px;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #64748b;
+  font-size: 0.7rem;
+  line-height: 1.25;
+}
+
+.session-episode-preview-line > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-episode-preview-line.is-overflow {
+  color: #8793a2;
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.session-episode-deliverable {
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  justify-self: end;
+  border: 1px solid #94a3b8;
+  border-radius: 1.5px;
+  background: transparent;
 }
 
 .planning-session-card.unplanned {
@@ -3155,16 +3225,6 @@ button.planning-day-heading.selected:focus-visible {
   white-space: nowrap;
 }
 
-
-.planning-cell.selected-day {
-  border-radius: 16px;
-  background: #edf2f7;
-}
-
-.planning-cell.selected-day .planning-session-card {
-  border-color: #b8c4d6;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
-}
 
 .planning-session-card.selected {
   border-color: #94a3b8;
