@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import PlanningGrid from "./PlanningGrid";
 import PlanningHeader from "./PlanningHeader";
-import UnitShelf from "./UnitShelf";
 import LessonSessionPrintView from "../LessonSessionPrintView";
 import { getLessonSessionState } from "../../utils/lessonSessionStorage";
 
@@ -24,7 +23,7 @@ function PlanningView({
   selectedDayKey,
   onSelectDay,
 }) {
-  const { title, schoolDaysLabel, weekDays, sections, sessions, shelf } =
+  const { title, schoolDaysLabel, weekDays, sections, sessions } =
     planningModel;
 
   const sessionList = useMemo(() => Object.values(sessions), [sessions]);
@@ -128,8 +127,6 @@ function PlanningView({
           onSelectDay={onSelectDay}
           onSelectSession={handleSelectSession}
         />
-
-        <UnitShelf shelf={shelf} />
       </div>
 
       {printDaySessions ? (

@@ -1,5 +1,4 @@
 const WORKSPACES = [
-  { id: "today", label: "Today" },
   { id: "planning", label: "Planning" },
   { id: "lesson", label: "Lesson Planner" },
   { id: "units", label: "Units" },

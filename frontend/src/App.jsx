@@ -3,7 +3,6 @@ import "./App.css";
 import ApplicationShell from "./components/ApplicationShell";
 import WorkspaceHost from "./components/WorkspaceHost";
 import { buildForecastModel } from "./utils/forecastModel";
-import { getTodayModel } from "./utils/todayModel";
 import { getPlanningModel } from "./utils/planningModel";
 import {
   isTrue,
@@ -278,7 +277,7 @@ function getProgressForSection(dailyProgress, section) {
 function App() {
   const [plannerData, setPlannerData] = useState(null);
   const [status, setStatus] = useState("Loading planner data...");
-  const [activeView, setActiveView] = useState("today");
+  const [activeView, setActiveView] = useState("planning");
   const [timeLens, setTimeLens] = useState("school");
   const [selectedCourseId, setSelectedCourseId] = useState("M8");
   const [selectedSectionId, setSelectedSectionId] = useState(null);
@@ -458,18 +457,6 @@ function App() {
 
   const selectedPrepareNext =
     selectedCourseId === "IM1" ? math1PrepareNext : math8PrepareNext;
-
-  const todayModel = getTodayModel({
-    selectedCourseId,
-    selectedSection,
-    selectedCourseSections,
-    units,
-    lessons,
-    dailyProgress,
-    getCourseLabel,
-    getProgressForSection,
-    getCourseNavigation,
-  });
 
   const planningModel = getPlanningModel({
     selectedCourseSections,
@@ -739,10 +726,6 @@ function App() {
     );
   }
 
-  const todayWorkspaceModel = {
-    todayModel,
-  };
-
   const unitsWorkspaceModel = {
     courses,
     units,
@@ -833,7 +816,6 @@ function App() {
         >
           <WorkspaceHost
             activeView={activeView}
-            todayWorkspaceModel={todayWorkspaceModel}
             unitsWorkspaceModel={unitsWorkspaceModel}
             forecastWorkspaceModel={forecastWorkspaceModel}
             planningWorkspaceModel={planningWorkspaceModel}

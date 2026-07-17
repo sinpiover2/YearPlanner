@@ -3189,43 +3189,6 @@ button.planning-day-heading.selected:focus-visible {
   font-size: 0.72rem;
 }
 
-.unit-shelf {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 12px;
-}
-
-.unit-shelf-label,
-.unit-shelf-summary {
-  color: #64748b;
-  font-size: 0.84rem;
-  font-weight: 750;
-}
-
-.unit-shelf-items {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  gap: 10px;
-  overflow: hidden;
-}
-
-.unit-shelf-item {
-  max-width: 220px;
-  overflow: hidden;
-  border: 1px solid #d7dde6;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #334155;
-  padding: 6px 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-
 .planning-session-card.selected {
   border-color: #94a3b8;
   box-shadow:

@@ -1,4 +1,3 @@
-import TodayView from "./TodayView";
 import UnitsView from "./UnitsView";
 import ForecastView from "./ForecastView";
 import PlanningView from "./PlanningView";
@@ -6,16 +5,11 @@ import LessonSessionView from "./LessonSessionView";
 
 function WorkspaceHost({
   activeView,
-  todayWorkspaceModel,
   unitsWorkspaceModel,
   forecastWorkspaceModel,
   planningWorkspaceModel,
   lessonSessionWorkspaceModel,
 }) {
-  if (activeView === "today") {
-    return <TodayView {...todayWorkspaceModel} />;
-  }
-
   if (activeView === "planning") {
     return <PlanningView {...planningWorkspaceModel} />;
   }
