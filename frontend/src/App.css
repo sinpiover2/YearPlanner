@@ -3915,6 +3915,14 @@ body {
   justify-self: start;
 }
 
+/* .workspace-panel sets overflow-x, which per spec forces overflow-y to
+   auto too, so a short session (few episodes) can clip this menu's
+   dropdown at the panel's edge instead of letting it overflow visibly.
+   Reserving room in normal flow while it's open keeps it clear of that. */
+.episode-add-controls:has(.episode-add-menu[open]) {
+  padding-bottom: 280px;
+}
+
 .add-episode-button,
 .paste-episode-button {
   border: 0;
@@ -3934,6 +3942,60 @@ body {
 
 .paste-episode-button {
   font-weight: 620;
+}
+
+/* Teaching episode template menu: reuses the "Copy plan to…" popover pattern */
+
+.episode-add-menu {
+  position: relative;
+}
+
+.add-episode-button {
+  list-style: none;
+}
+
+.add-episode-button::-webkit-details-marker {
+  display: none;
+}
+
+.episode-add-menu[open] > .add-episode-button {
+  color: #334155;
+}
+
+.episode-add-menu-options {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 6px);
+  left: 0;
+  display: grid;
+  width: 210px;
+  overflow: hidden;
+  border: 1px solid #d9e1ea;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+}
+
+.episode-add-menu-options button {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #eef2f6;
+  padding: 9px 12px;
+  background: transparent;
+  color: #334155;
+  font-size: 0.84rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.episode-add-menu-options button:last-child {
+  border-bottom: 0;
+}
+
+.episode-add-menu-options button:hover,
+.episode-add-menu-options button:focus-visible {
+  outline: 0;
+  background: #f1f5f9;
 }
 
 .lesson-draft-status {

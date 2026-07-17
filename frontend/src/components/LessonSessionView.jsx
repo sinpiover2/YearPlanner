@@ -18,6 +18,21 @@ const SUPPORT_TYPES = [
   { type: "materials", label: "Materials", glyph: "◇" },
 ];
 
+// Lightweight starting points for a new Teaching Episode. Each one only
+// supplies a suggested title — selecting one creates a normal episode via
+// the same pipeline as "+ Teaching episode" always used. Nothing about the
+// template is kept afterward; there is no link back to this list.
+const EPISODE_TEMPLATES = [
+  { key: "blank", label: "Blank Teaching Episode", title: "" },
+  { key: "welcome", label: "Welcome", title: "Welcome" },
+  { key: "warm-up", label: "Warm-up", title: "Warm-up" },
+  { key: "mini-lesson", label: "Mini Lesson", title: "Mini Lesson" },
+  { key: "investigation", label: "Investigation", title: "Investigation" },
+  { key: "practice", label: "Practice", title: "Practice" },
+  { key: "exit-ticket", label: "Exit Ticket", title: "Exit Ticket" },
+  { key: "reflection", label: "Reflection", title: "Reflection" },
+];
+
 const SESSION_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
   month: "short",
@@ -788,8 +803,9 @@ function LessonSessionView({
     setDurationDraft("");
   }
 
-  function addEpisode(afterIndex = episodes.length - 1) {
-    const episode = createBlankEpisode();
+  function addEpisode(afterIndex = episodes.length - 1, options = {}) {
+    const { title = "" } = options;
+    const episode = createEpisode({ title });
 
     setPlannerState((current) => {
       const nextEpisodes = [...current.episodes];
@@ -2391,13 +2407,28 @@ function LessonSessionView({
         })}
 
         <div className="episode-add-controls">
-          <button
-            className="add-episode-button"
-            type="button"
-            onClick={() => addEpisode()}
-          >
-            + Teaching episode
-          </button>
+          <details className="episode-add-menu">
+            <summary className="add-episode-button">
+              + Teaching episode
+            </summary>
+
+            <div className="episode-add-menu-options">
+              {EPISODE_TEMPLATES.map((template) => (
+                <button
+                  type="button"
+                  key={template.key}
+                  onClick={(event) => {
+                    addEpisode(undefined, { title: template.title });
+                    event.currentTarget
+                      .closest("details")
+                      ?.removeAttribute("open");
+                  }}
+                >
+                  {template.label}
+                </button>
+              ))}
+            </div>
+          </details>
 
           {hasEpisodeClipboard ? (
             <button
