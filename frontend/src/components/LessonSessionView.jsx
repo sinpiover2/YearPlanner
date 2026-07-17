@@ -414,6 +414,7 @@ function LessonSessionView({
     useState(null);
   const [isAddEpisodeCurriculumPickerOpen, setIsAddEpisodeCurriculumPickerOpen] =
     useState(false);
+  const [isAddEpisodeMenuOpen, setIsAddEpisodeMenuOpen] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
   const [hasEpisodeClipboard, setHasEpisodeClipboard] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -426,6 +427,7 @@ function LessonSessionView({
     loadCollapsedBlockIds(activeLessonContext?.sessionId),
   );
   const inputRefs = useRef(new Map());
+  const addEpisodeMenuRef = useRef(null);
 
   const { curriculumLessonId, episodes, deliverables } = plannerState;
   // Legacy: earlier versions attached a curriculum lesson to the whole
@@ -494,6 +496,38 @@ function LessonSessionView({
       console.warn("Could not save collapsed outline branches.", error);
     }
   }, [activeLessonContext?.sessionId, collapsedBlockIds]);
+
+  useEffect(() => {
+    if (!isAddEpisodeMenuOpen) return undefined;
+
+    function closeAddEpisodeMenu() {
+      if (addEpisodeMenuRef.current) {
+        addEpisodeMenuRef.current.open = false;
+      }
+
+      setIsAddEpisodeCurriculumPickerOpen(false);
+    }
+
+    function handlePointerDown(event) {
+      if (!addEpisodeMenuRef.current?.contains(event.target)) {
+        closeAddEpisodeMenu();
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        closeAddEpisodeMenu();
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAddEpisodeMenuOpen]);
 
   useEffect(() => {
     if (!episodeMenuId) return undefined;
@@ -940,23 +974,15 @@ function LessonSessionView({
     setEpisodeMenuId(null);
   }
 
-  // A Lesson Session has at most one deliverable episode at a time: marking
-  // one clears the flag from any other episode rather than allowing several.
   function toggleEpisodeDeliverable(episodeId) {
-    setPlannerState((current) => {
-      const target = current.episodes.find(
-        (episode) => episode.id === episodeId,
-      );
-      const shouldMark = !target?.isDeliverable;
-
-      return {
-        ...current,
-        episodes: current.episodes.map((episode) => ({
-          ...episode,
-          isDeliverable: shouldMark ? episode.id === episodeId : false,
-        })),
-      };
-    });
+    setPlannerState((current) => ({
+      ...current,
+      episodes: current.episodes.map((episode) =>
+        episode.id === episodeId
+          ? { ...episode, isDeliverable: !episode.isDeliverable }
+          : episode,
+      ),
+    }));
 
     setEpisodeMenuId(null);
   }
@@ -2430,8 +2456,11 @@ function LessonSessionView({
 
         <div className="episode-add-controls">
           <details
+            ref={addEpisodeMenuRef}
             className="episode-add-menu"
             onToggle={(event) => {
+              setIsAddEpisodeMenuOpen(event.currentTarget.open);
+
               if (!event.currentTarget.open) {
                 setIsAddEpisodeCurriculumPickerOpen(false);
               }
