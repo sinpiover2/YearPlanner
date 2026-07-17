@@ -3727,6 +3727,10 @@ body {
   display: none;
 }
 
+.episode-block-text-print {
+  display: none;
+}
+
 .episode-title-input {
   width: 100%;
   border: 0;
@@ -3918,9 +3922,11 @@ body {
 /* .workspace-panel sets overflow-x, which per spec forces overflow-y to
    auto too, so a short session (few episodes) can clip this menu's
    dropdown at the panel's edge instead of letting it overflow visibly.
-   Reserving room in normal flow while it's open keeps it clear of that. */
+   Reserving room in normal flow while it's open keeps it clear of that.
+   The reservation covers the menu's own max-height (see
+   .episode-add-menu-options) plus its offset and a small buffer. */
 .episode-add-controls:has(.episode-add-menu[open]) {
-  padding-bottom: 280px;
+  padding-bottom: 440px;
 }
 
 .add-episode-button,
@@ -3968,12 +3974,20 @@ body {
   top: calc(100% + 6px);
   left: 0;
   display: grid;
-  width: 210px;
-  overflow: hidden;
+  width: min(260px, calc(100vw - 48px));
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid #d9e1ea;
   border-radius: 10px;
   background: #ffffff;
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+}
+
+.episode-add-menu-options .episode-menu-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: #e2e8f0;
 }
 
 .episode-add-menu-options button {
@@ -4764,7 +4778,8 @@ body {
   .episode-block-branch-spacer,
   .lesson-summary-row,
   .lesson-draft-footer,
-  .episode-add-controls {
+  .episode-add-controls,
+  .episode-block-input {
     display: none !important;
   }
 
@@ -4933,20 +4948,21 @@ body {
     font-size: 8pt;
   }
 
-  .episode-block-input {
+  /* A live textarea can carry a scrolled-away internal viewport from
+     editing (typing past its visible width scrolls it, and that scroll
+     position is part of the DOM, not the value). Printing that same
+     element would silently clip the start of long lines, so print uses
+     this plain static span instead, which only ever flows and wraps. */
+  .episode-block-text-print {
     display: block !important;
     width: 100%;
-    min-height: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
+    text-align: left;
     color: #4b5563 !important;
     font: inherit;
     font-style: italic !important;
     font-size: 8.5pt;
     line-height: 1.35;
-    resize: none;
-    overflow: visible;
+    white-space: normal;
   }
 
   /* Curriculum reference: quiet indented text, no disclosure chrome */

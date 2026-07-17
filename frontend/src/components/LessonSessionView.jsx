@@ -23,7 +23,7 @@ const SUPPORT_TYPES = [
 // the same pipeline as "+ Teaching episode" always used. Nothing about the
 // template is kept afterward; there is no link back to this list.
 const EPISODE_TEMPLATES = [
-  { key: "blank", label: "Blank Teaching Episode", title: "" },
+  { key: "blank", label: "Blank Episode", title: "" },
   { key: "welcome", label: "Welcome", title: "Welcome" },
   { key: "warm-up", label: "Warm-up", title: "Warm-up" },
   { key: "mini-lesson", label: "Mini Lesson", title: "Mini Lesson" },
@@ -412,6 +412,8 @@ function LessonSessionView({
   const [episodeMenuId, setEpisodeMenuId] = useState(null);
   const [curriculumChooserEpisodeId, setCurriculumChooserEpisodeId] =
     useState(null);
+  const [isAddEpisodeCurriculumPickerOpen, setIsAddEpisodeCurriculumPickerOpen] =
+    useState(false);
   const [copyStatus, setCopyStatus] = useState("");
   const [hasEpisodeClipboard, setHasEpisodeClipboard] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -804,8 +806,8 @@ function LessonSessionView({
   }
 
   function addEpisode(afterIndex = episodes.length - 1, options = {}) {
-    const { title = "" } = options;
-    const episode = createEpisode({ title });
+    const { title = "", curriculumLessonId = null } = options;
+    const episode = createEpisode({ title, curriculumLessonId });
 
     setPlannerState((current) => {
       const nextEpisodes = [...current.episodes];
@@ -823,6 +825,22 @@ function LessonSessionView({
       return next;
     });
     setEditingTitleId(episode.id);
+  }
+
+  // Creates a new episode already connected to a curriculum lesson, via the
+  // same addEpisode pipeline as any other creation path. There is no
+  // existing episode/title to confirm overwriting, so this never shows the
+  // "replace the title?" prompt that changing an existing episode's lesson
+  // does.
+  function addEpisodeFromCurriculumLesson(lesson) {
+    if (!lesson) return;
+
+    addEpisode(undefined, {
+      title: buildEpisodeTitleFromLesson(lesson),
+      curriculumLessonId: lesson.LessonID,
+    });
+
+    setIsAddEpisodeCurriculumPickerOpen(false);
   }
 
   function moveEpisode(index, direction) {
@@ -2332,6 +2350,10 @@ function LessonSessionView({
                           }}
                         />
 
+                        <span className="episode-block-text-print">
+                          {block.text}
+                        </span>
+
                         <div className="episode-block-controls">
                           <button
                             type="button"
@@ -2407,26 +2429,100 @@ function LessonSessionView({
         })}
 
         <div className="episode-add-controls">
-          <details className="episode-add-menu">
+          <details
+            className="episode-add-menu"
+            onToggle={(event) => {
+              if (!event.currentTarget.open) {
+                setIsAddEpisodeCurriculumPickerOpen(false);
+              }
+            }}
+          >
             <summary className="add-episode-button">
-              + Teaching episode
+              + Add Episode
             </summary>
 
             <div className="episode-add-menu-options">
-              {EPISODE_TEMPLATES.map((template) => (
-                <button
-                  type="button"
-                  key={template.key}
-                  onClick={(event) => {
-                    addEpisode(undefined, { title: template.title });
-                    event.currentTarget
-                      .closest("details")
-                      ?.removeAttribute("open");
-                  }}
-                >
-                  {template.label}
-                </button>
-              ))}
+              {isAddEpisodeCurriculumPickerOpen ? (
+                <>
+                  <div className="episode-menu-section-label">
+                    Attach Curriculum Lesson
+                  </div>
+
+                  {curriculumLessons.length ? (
+                    <div className="episode-curriculum-options">
+                      {curriculumLessons.map((lesson) => (
+                        <button
+                          type="button"
+                          key={lesson.LessonID}
+                          onClick={(event) => {
+                            addEpisodeFromCurriculumLesson(lesson);
+                            event.currentTarget
+                              .closest("details")
+                              ?.removeAttribute("open");
+                          }}
+                        >
+                          <span
+                            className="episode-curriculum-option-mark"
+                            aria-hidden="true"
+                          >
+                            ○
+                          </span>
+
+                          <span>
+                            <strong>Lesson {lesson.LessonNumber}</strong>
+                            <span>
+                              {lesson.LessonTitle || "Untitled lesson"}
+                            </span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="episode-menu-empty">
+                      No lessons are available in this unit.
+                    </p>
+                  )}
+
+                  <div className="episode-menu-actions">
+                    <button
+                      type="button"
+                      onClick={(event) =>
+                        event.currentTarget
+                          .closest("details")
+                          ?.removeAttribute("open")
+                      }
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {EPISODE_TEMPLATES.map((template) => (
+                    <button
+                      type="button"
+                      key={template.key}
+                      onClick={(event) => {
+                        addEpisode(undefined, { title: template.title });
+                        event.currentTarget
+                          .closest("details")
+                          ?.removeAttribute("open");
+                      }}
+                    >
+                      {template.label}
+                    </button>
+                  ))}
+
+                  <div className="episode-menu-divider" />
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAddEpisodeCurriculumPickerOpen(true)}
+                  >
+                    Attach Curriculum Lesson…
+                  </button>
+                </>
+              )}
             </div>
           </details>
 
