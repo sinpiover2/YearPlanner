@@ -295,6 +295,7 @@ function App() {
   const [editingLessonId, setEditingLessonId] = useState(null);
   const [editLessonDraft, setEditLessonDraft] = useState(null);
   const [planningReferenceDate, setPlanningReferenceDate] = useState(new Date());
+  const [planningSelectedDayKey, setPlanningSelectedDayKey] = useState(null);
   const [activeLessonContext, setActiveLessonContext] = useState(null);
 
   useEffect(() => {
@@ -789,6 +790,8 @@ function App() {
     planningModel,
     curriculumLessons: lessons,
     courseLabel: getCourseLabel(selectedCourseId),
+    selectedDayKey: planningSelectedDayKey,
+    onSelectDay: setPlanningSelectedDayKey,
     activeLessonContext,
     onOpenLessonSession: (lessonSessionContext) => {
       setActiveLessonContext(lessonSessionContext);
