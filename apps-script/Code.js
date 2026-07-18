@@ -19,6 +19,331 @@ function doGet(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+function isActiveRosterValue(value) {
+  return value === true || String(value).trim().toLowerCase() === "true";
+}
+
+function compareRosterText(left, right) {
+  return String(left || "")
+    .trim()
+    .toLocaleLowerCase()
+    .localeCompare(String(right || "").trim().toLocaleLowerCase());
+}
+
+// Internal-only assembly for a future authenticated transport. doGet never
+// calls this function because the deployed web app permits anonymous access.
+function getSectionRoster(sectionId) {
+  const emptyRoster = {
+    sectionId: sectionId || "",
+    sectionName: "",
+    courseId: "",
+    courseName: "",
+    sortMode: "LastName",
+    columns: ["", "", "", "", ""],
+    students: [],
+  };
+
+  if (!sectionId) return emptyRoster;
+
+  const sections = getSheetData("Sections");
+  const section = sections.find((item) => item.SectionID === sectionId);
+
+  if (!section) return emptyRoster;
+
+  const courses = getSheetData("Courses");
+  const course = courses.find((item) => item.CourseID === section.CourseID);
+  const settings = getSheetData("RosterSettings").find(
+    (item) => item.SectionID === sectionId,
+  );
+  const requestedSortMode = String(settings && settings.SortMode || "").trim();
+  const sortMode = requestedSortMode === "FirstName" ? "FirstName" : "LastName";
+  const columns = [1, 2, 3, 4, 5].map((number) =>
+    String(settings && settings[`Column${number}Label`] || "").trim(),
+  );
+  const studentsById = new Map(
+    getSheetData("Students")
+      .filter((student) => isActiveRosterValue(student.Active))
+      .map((student) => [student.StudentID, student]),
+  );
+  const includedStudentIds = new Set();
+  const rosterStudents = getSheetData("SectionEnrollments")
+    .filter(
+      (enrollment) =>
+        enrollment.SectionID === sectionId &&
+        isActiveRosterValue(enrollment.Active),
+    )
+    .map((enrollment) => studentsById.get(enrollment.StudentID))
+    .filter(Boolean)
+    .filter((student) => {
+      if (includedStudentIds.has(student.StudentID)) return false;
+      includedStudentIds.add(student.StudentID);
+      return true;
+    })
+    .map((student) => {
+      const preferredName = String(student.PreferredName || "").trim();
+      const displayFirstName =
+        preferredName || String(student.LegalFirstName || "").trim();
+      const lastName = String(student.LegalLastName || "").trim();
+
+      return {
+        studentId: String(student.StudentID || ""),
+        displayFirstName,
+        lastName,
+        displayName:
+          sortMode === "FirstName"
+            ? `${displayFirstName} ${lastName}`.trim()
+            : [lastName, displayFirstName].filter(Boolean).join(", "),
+      };
+    });
+
+  rosterStudents.sort((left, right) => {
+    const comparisons =
+      sortMode === "FirstName"
+        ? [
+            compareRosterText(left.displayFirstName, right.displayFirstName),
+            compareRosterText(left.lastName, right.lastName),
+          ]
+        : [
+            compareRosterText(left.lastName, right.lastName),
+            compareRosterText(left.displayFirstName, right.displayFirstName),
+          ];
+
+    return comparisons.find((value) => value !== 0) ||
+      compareRosterText(left.studentId, right.studentId);
+  });
+
+  return {
+    sectionId,
+    sectionName: String(section.SectionName || section.Period || sectionId),
+    courseId: String(section.CourseID || ""),
+    courseName: String(course && (course.CourseName || course.ShortName) || ""),
+    sortMode,
+    columns,
+    students: rosterStudents,
+  };
+}
+
+// Manual development helper. It never runs from doGet/doPost, refuses to
+// overwrite roster records, and intentionally seeds only the four approved
+// Version 1 teaching sections. Review the target spreadsheet before invoking.
+function setupRosterSheetsV1() {
+  const lock = LockService.getScriptLock();
+
+  if (!lock.tryLock(30000)) {
+    throw new Error("Roster setup is already running. Try again later.");
+  }
+
+  try {
+    return setupRosterSheetsV1Locked();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function setupRosterSheetsV1Locked() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const schemas = {
+    Students: [
+      "StudentID",
+      "LegalFirstName",
+      "LegalLastName",
+      "PreferredName",
+      "Active",
+    ],
+    SectionEnrollments: [
+      "EnrollmentID",
+      "SectionID",
+      "StudentID",
+      "Active",
+      "StartDate",
+      "EndDate",
+    ],
+    RosterSettings: [
+      "SectionID",
+      "SortMode",
+      "Column1Label",
+      "Column2Label",
+      "Column3Label",
+      "Column4Label",
+      "Column5Label",
+    ],
+  };
+  const sheetStates = {};
+
+  // Complete validation happens before the first workbook mutation.
+  Object.keys(schemas).forEach((sheetName) => {
+    const sheet = ss.getSheetByName(sheetName);
+
+    if (!sheet) {
+      sheetStates[sheetName] = { sheet: null, hadHeaders: false };
+      return;
+    }
+
+    const lastRow = sheet.getLastRow();
+    const lastColumn = sheet.getLastColumn();
+
+    if (lastRow === 0 && lastColumn === 0) {
+      sheetStates[sheetName] = { sheet, hadHeaders: false };
+      return;
+    }
+
+    if (lastColumn !== schemas[sheetName].length) {
+      throw new Error(
+        `${sheetName} has ${lastColumn} columns; expected exactly ${schemas[sheetName].length}.`,
+      );
+    }
+
+    const existingHeaders = sheet
+      .getRange(1, 1, 1, lastColumn)
+      .getValues()[0];
+
+    if (existingHeaders.join("|") !== schemas[sheetName].join("|")) {
+      throw new Error(`${sheetName} headers do not match the Version 1 schema.`);
+    }
+
+    if (lastRow > 1) {
+      throw new Error(`${sheetName} already contains roster records.`);
+    }
+
+    sheetStates[sheetName] = { sheet, hadHeaders: true };
+  });
+
+  const approvedSections = ["M8-P2", "M8-P3", "IM1-P5", "IM1-P6"];
+  const validSectionIds = new Set(
+    getSheetData("Sections").map((section) => section.SectionID),
+  );
+
+  approvedSections.forEach((sectionId) => {
+    if (!validSectionIds.has(sectionId)) {
+      throw new Error(`Cannot seed roster: section ${sectionId} does not exist.`);
+    }
+  });
+
+  const fictionalStudents = [
+    ["Avery", "Bennett", ""], ["Jordan", "Calder", "Jordy"],
+    ["Mina", "Delgado", ""], ["Theo", "Ellison", "Teddy"],
+    ["Nora", "Farrell", ""], ["Elias", "Gupta", "Eli"],
+    ["Sofia", "Hollis", ""], ["Marcus", "Ibarra", "Marc"],
+    ["Leila", "Jensen", ""], ["Dante", "Kim", ""],
+    ["Ruby", "Lawson", "Rue"], ["Owen", "Mendoza", ""],
+    ["Camila", "Navarro", "Cami"], ["Felix", "Okafor", ""],
+    ["Priya", "Patel", ""], ["Quentin", "Reyes", "Quinn"],
+    ["Amara", "Sato", ""], ["Jonah", "Turner", "Jo"],
+    ["Iris", "Usman", ""], ["Miles", "Vega", ""],
+    ["Elena", "Wolfe", "Lena"], ["Zane", "Xu", ""],
+    ["Maeve", "Young", ""], ["Caleb", "Zamora", "Cal"],
+    ["Talia", "Archer", "Tali"], ["Ronan", "Brooks", ""],
+    ["Keira", "Chandra", ""], ["Desmond", "Doyle", "Des"],
+    ["Freya", "Espinoza", ""], ["Gavin", "Foster", ""],
+    ["Hana", "Griffin", ""], ["Isaac", "Huang", "Ike"],
+    ["Jade", "Ingram", ""], ["Kai", "Jefferson", ""],
+    ["Lucia", "Kaur", "Lucy"], ["Noel", "Lang", ""],
+    ["Orla", "Mercer", ""], ["Parker", "Nolan", "Park"],
+    ["Reina", "Owens", ""], ["Silas", "Price", ""],
+    ["Uma", "Quintero", ""], ["Victor", "Russell", "Vic"],
+    ["Willa", "Shah", ""], ["Xavier", "Tran", "Xavi"],
+    ["Yara", "Underwood", ""], ["Beckett", "Valdez", "Beck"],
+    ["Cleo", "Ward", ""], ["Darius", "Yoon", ""],
+  ];
+  const studentRows = [];
+  const enrollmentRows = [];
+
+  approvedSections.forEach((sectionId, sectionIndex) => {
+    fictionalStudents
+      .slice(sectionIndex * 12, sectionIndex * 12 + 12)
+      .forEach(([firstName, lastName, preferredName]) => {
+        const studentId = `STU-${Utilities.getUuid()}`;
+        const enrollmentId = `ENR-${Utilities.getUuid()}`;
+        studentRows.push([studentId, firstName, lastName, preferredName, true]);
+        enrollmentRows.push([
+          enrollmentId,
+          sectionId,
+          studentId,
+          true,
+          "",
+          "",
+        ]);
+      });
+  });
+  const settingsRows = approvedSections.map((sectionId) => [
+    sectionId,
+    "LastName",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
+  const rowsBySheet = {
+    Students: studentRows,
+    SectionEnrollments: enrollmentRows,
+    RosterSettings: settingsRows,
+  };
+  const createdSheetNames = [];
+
+  // Apps Script has no cross-sheet transaction. If any write fails, newly
+  // created sheets are deleted and pre-existing sheets are restored to their
+  // validated empty/header-only state before the error is rethrown.
+  try {
+    Object.keys(schemas).forEach((sheetName) => {
+      const state = sheetStates[sheetName];
+
+      if (!state.sheet) {
+        state.sheet = ss.insertSheet(sheetName);
+        createdSheetNames.push(sheetName);
+      }
+
+      if (!state.hadHeaders) {
+        state.sheet
+          .getRange(1, 1, 1, schemas[sheetName].length)
+          .setValues([schemas[sheetName]]);
+      }
+    });
+
+    Object.keys(rowsBySheet).forEach((sheetName) => {
+      const rows = rowsBySheet[sheetName];
+      sheetStates[sheetName].sheet
+        .getRange(2, 1, rows.length, schemas[sheetName].length)
+        .setValues(rows);
+    });
+  } catch (error) {
+    const rollbackErrors = [];
+
+    Object.keys(sheetStates).forEach((sheetName) => {
+      const state = sheetStates[sheetName];
+
+      if (!state.sheet) return;
+
+      try {
+        if (createdSheetNames.includes(sheetName)) {
+          ss.deleteSheet(state.sheet);
+        } else if (state.hadHeaders) {
+          const dataRowCount = state.sheet.getMaxRows() - 1;
+          if (dataRowCount > 0) {
+            state.sheet
+              .getRange(2, 1, dataRowCount, schemas[sheetName].length)
+              .clearContent();
+          }
+        } else {
+          state.sheet.clearContents();
+        }
+      } catch (rollbackError) {
+        rollbackErrors.push(`${sheetName}: ${rollbackError.message}`);
+      }
+    });
+
+    if (rollbackErrors.length > 0) {
+      throw new Error(
+        `${error.message} Rollback was incomplete: ${rollbackErrors.join("; ")}`,
+      );
+    }
+
+    throw error;
+  }
+
+  return { ok: true, students: studentRows.length, sections: approvedSections };
+}
+
 function doPost(e) {
   const payload = JSON.parse(e.postData.contents);
 
