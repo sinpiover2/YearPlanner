@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import PlanningGrid from "./PlanningGrid";
 import PlanningHeader from "./PlanningHeader";
-import LessonSessionPrintView from "../LessonSessionPrintView";
 import { getLessonSessionState } from "../../utils/lessonSessionStorage";
+import { buildLessonPrintPayload } from "../../utils/lessonPrintPayload";
+import { printLessonSessions } from "../../utils/combinedPrint";
 
 function getLocalDayKey(date = new Date()) {
   const year = date.getFullYear();
@@ -27,7 +28,6 @@ function PlanningView({
     planningModel;
 
   const sessionList = useMemo(() => Object.values(sessions), [sessions]);
-  const [printDaySessions, setPrintDaySessions] = useState(null);
 
   const selectedSession =
     sessionList.find(
@@ -63,18 +63,28 @@ function PlanningView({
     });
   }, [onSelectDay, weekDays]);
 
-  useEffect(() => {
-    if (!printDaySessions) return undefined;
+  // Gathers every printable Lesson Session for the selected day and POSTs
+  // them to the same Apps Script combined-print endpoint "Print lesson"
+  // uses, so the browser opens exactly one printable document: lesson,
+  // roster, lesson, roster, ... The Apps Script owns all HTML, CSS,
+  // pagination, and roster lookup; React only builds the payloads.
+  function handlePrintDay() {
+    if (!printableDaySessions.length) return;
 
-    const frame = window.requestAnimationFrame(() => window.print());
-    const clearPrintPacket = () => setPrintDaySessions(null);
-    window.addEventListener("afterprint", clearPrintPacket, { once: true });
+    const entries = printableDaySessions.map(({ session, state }) => ({
+      sectionId: session.sectionId,
+      sessionDate: session.dayKey,
+      lessonPayload: buildLessonPrintPayload({
+        sectionLabel: session.sectionLabel,
+        courseLabel,
+        unitLabel: session.unitLabel,
+        episodes: state.episodes,
+        curriculumLessons,
+      }),
+    }));
 
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("afterprint", clearPrintPacket);
-    };
-  }, [printDaySessions]);
+    printLessonSessions(entries);
+  }
 
   function handleSelectSession(session) {
     if (!session) return;
@@ -106,7 +116,7 @@ function PlanningView({
           onSelectDay(getLocalDayKey());
           onJumpToToday();
         }}
-        onPrintDay={() => setPrintDaySessions(printableDaySessions)}
+        onPrintDay={handlePrintDay}
         canPrintDay={printableDaySessions.length > 0}
         printDayLabel={
           selectedDay
@@ -128,25 +138,6 @@ function PlanningView({
           onSelectSession={handleSelectSession}
         />
       </div>
-
-      {printDaySessions ? (
-        <div className="planning-day-print-packet" aria-hidden="true">
-          {printDaySessions.map(({ session, state }, index) => (
-            <div
-              className="planning-day-print-session"
-              key={session.id}
-              data-print-index={index}
-            >
-              <LessonSessionPrintView
-                session={session}
-                state={state}
-                curriculumLessons={curriculumLessons}
-                courseLabel={courseLabel}
-              />
-            </div>
-          ))}
-        </div>
-      ) : null}
     </section>
   );
 }

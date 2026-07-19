@@ -212,7 +212,8 @@
           margin-top: 0;
         }
 
-        .print-page-roster {
+        .print-page-roster,
+        .print-page-break {
           break-before: page;
           page-break-before: always;
         }
@@ -221,68 +222,71 @@
   </head>
   <body>
     <div class="toolbar">
-      <? if (!errorMessage) { ?>
+      <? if (entries.some(function (entry) { return !entry.errorMessage; })) { ?>
         <button type="button" onclick="window.print()">Print</button>
       <? } ?>
     </div>
 
     <div class="print-sheet">
-      <? if (errorMessage) { ?>
-        <section class="error-banner">
-          <h1>This print request could not be completed</h1>
-          <p><?= errorMessage ?></p>
-        </section>
-      <? } else { ?>
-        <section class="print-page print-page-lesson">
-          <header class="lesson-print-header">
-            <div>
-              <h1><?= lesson.sectionLabel || "Lesson Session" ?></h1>
-              <? if (lesson.courseLabel || lesson.unitLabel) { ?>
-                <p><?= [lesson.courseLabel, lesson.unitLabel].filter(Boolean).join(" · ") ?></p>
-              <? } ?>
-            </div>
-            <p><?= formattedSessionDate ?></p>
-          </header>
-
-          <? if (lesson.connectedLessons && lesson.connectedLessons.length) { ?>
-            <p class="lesson-print-context">Curriculum · <?= lesson.connectedLessons.join(" · ") ?></p>
-          <? } ?>
-
-          <? lesson.episodes.forEach(function (episode) { ?>
-            <article class="lesson-print-episode">
-              <h2>
-                <?= episode.title ?>
-                <? if (episode.isDeliverable) { ?>
-                  <span class="lesson-deliverable-badge">Deliverable</span>
+      <? entries.forEach(function (entry, entryIndex) { ?>
+        <? var breakClass = entryIndex > 0 ? " print-page-break" : ""; ?>
+        <? if (entry.errorMessage) { ?>
+          <section class="error-banner<?= breakClass ?>">
+            <h1>This print request could not be completed</h1>
+            <p><?= entry.errorMessage ?></p>
+          </section>
+        <? } else { ?>
+          <section class="print-page print-page-lesson<?= breakClass ?>">
+            <header class="lesson-print-header">
+              <div>
+                <h1><?= entry.lesson.sectionLabel || "Lesson Session" ?></h1>
+                <? if (entry.lesson.courseLabel || entry.lesson.unitLabel) { ?>
+                  <p><?= [entry.lesson.courseLabel, entry.lesson.unitLabel].filter(Boolean).join(" · ") ?></p>
                 <? } ?>
-              </h2>
+              </div>
+              <p><?= entry.formattedSessionDate ?></p>
+            </header>
 
-              <? if (episode.curriculumLabel) { ?>
-                <p class="lesson-print-curriculum">Curriculum · <?= episode.curriculumLabel ?></p>
-              <? } ?>
+            <? if (entry.lesson.connectedLessons && entry.lesson.connectedLessons.length) { ?>
+              <p class="lesson-print-context">Curriculum · <?= entry.lesson.connectedLessons.join(" · ") ?></p>
+            <? } ?>
 
-              <? if (episode.blocks.length) { ?>
-                <ul>
-                  <? episode.blocks.forEach(function (block) { ?>
-                    <li>
-                      <span aria-hidden="true"><?= block.type === "learning" ? "◎" : block.type === "deliverable" ? "▢" : block.type === "materials" ? "◇" : "•" ?></span>
-                      <span><?= block.text ?></span>
-                    </li>
-                  <? }); ?>
-                </ul>
-              <? } ?>
-            </article>
-          <? }); ?>
-        </section>
+            <? entry.lesson.episodes.forEach(function (episode) { ?>
+              <article class="lesson-print-episode">
+                <h2>
+                  <?= episode.title ?>
+                  <? if (episode.isDeliverable) { ?>
+                    <span class="lesson-deliverable-badge">Deliverable</span>
+                  <? } ?>
+                </h2>
 
-        <section class="print-page print-page-roster">
-          <?!= include_('RosterSection', {
-            roster: roster,
-            sessionDate: sessionDate,
-            formattedSessionDate: formattedSessionDate,
-          }); ?>
-        </section>
-      <? } ?>
+                <? if (episode.curriculumLabel) { ?>
+                  <p class="lesson-print-curriculum">Curriculum · <?= episode.curriculumLabel ?></p>
+                <? } ?>
+
+                <? if (episode.blocks.length) { ?>
+                  <ul>
+                    <? episode.blocks.forEach(function (block) { ?>
+                      <li>
+                        <span aria-hidden="true"><?= block.type === "learning" ? "◎" : block.type === "deliverable" ? "▢" : block.type === "materials" ? "◇" : "•" ?></span>
+                        <span><?= block.text ?></span>
+                      </li>
+                    <? }); ?>
+                  </ul>
+                <? } ?>
+              </article>
+            <? }); ?>
+          </section>
+
+          <section class="print-page print-page-roster">
+            <?!= include_('RosterSection', {
+              roster: entry.roster,
+              sessionDate: entry.sessionDate,
+              formattedSessionDate: entry.formattedSessionDate,
+            }); ?>
+          </section>
+        <? } ?>
+      <? }); ?>
     </div>
   </body>
 </html>

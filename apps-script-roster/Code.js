@@ -56,19 +56,69 @@ function doGet(e) {
     .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
-// Combined print entry point used by "Print lesson" in the frontend. The
-// lesson plan (no roster/student data) arrives as a POST form field rather
-// than a query parameter because it can exceed URL length limits and must
-// never appear in browser/server request logs as a query string. This page
-// owns rendering both the lesson and the roster so student data never has
-// to reach the frontend. Any failure renders a single explicit error state
-// rather than a partial or misleadingly blank roster.
+// Combined print entry point used by both "Print lesson" and "Print Day" in
+// the frontend. The lesson plan(s) (no roster/student data) arrive as POST
+// form fields rather than query parameters because they can exceed URL
+// length limits and must never appear in browser/server request logs as a
+// query string. This page owns rendering every lesson + roster pair so
+// student data never has to reach the frontend. Any per-entry failure
+// renders a single explicit error state for that entry rather than a
+// partial or misleadingly blank roster.
 function doPost(e) {
   const params = (e && e.parameter) || {};
-  const sectionId = normalizeSectionId_(params.sectionId);
-  const sessionDate = normalizeSessionDate_(params.sessionDate);
   const template = HtmlService.createTemplateFromFile("CombinedPrint");
+
+  const requests = params.payloads
+    ? parsePrintRequests_(params.payloads)
+    : [
+        {
+          sectionId: params.sectionId,
+          sessionDate: params.sessionDate,
+          lessonPayload: params.lessonPayload,
+        },
+      ];
+
+  template.entries = requests.map(buildPrintEntry_);
+
+  return template
+    .evaluate()
+    .setTitle("Lesson and Roster Print")
+    .addMetaTag("viewport", "width=device-width, initial-scale=1");
+}
+
+// Parses the "payloads" field used by "Print Day": a JSON array of
+// { sectionId, sessionDate, lessonPayload } requests, one per Lesson
+// Session meeting that day. A malformed array yields a single error entry
+// rather than throwing, matching doPost's existing failure handling.
+function parsePrintRequests_(rawPayloads) {
+  try {
+    const parsed = JSON.parse(rawPayloads);
+    return Array.isArray(parsed) && parsed.length ? parsed : [{}];
+  } catch (error) {
+    return [{}];
+  }
+}
+
+// Builds one printable lesson + roster pair, the single unit CombinedPrint
+// repeats for every request. Never throws: any failure is captured as an
+// entry-level errorMessage so one bad entry cannot break the rest of the
+// document.
+function buildPrintEntry_(request) {
   const errors = [];
+  let sectionId = "";
+  let sessionDate = "";
+
+  try {
+    sectionId = normalizeSectionId_(request && request.sectionId);
+  } catch (error) {
+    errors.push("This print request has an invalid section.");
+  }
+
+  try {
+    sessionDate = normalizeSessionDate_(request && request.sessionDate);
+  } catch (error) {
+    errors.push("This print request has an invalid session date.");
+  }
 
   if (!sectionId) {
     errors.push(
@@ -77,12 +127,17 @@ function doPost(e) {
   }
 
   let lesson = null;
+  const lessonPayload = request && request.lessonPayload;
 
-  if (!params.lessonPayload) {
+  if (!lessonPayload) {
     errors.push("This print request is missing the lesson plan content.");
   } else {
     try {
-      lesson = normalizeLessonPayload_(JSON.parse(params.lessonPayload));
+      lesson = normalizeLessonPayload_(
+        typeof lessonPayload === "string"
+          ? JSON.parse(lessonPayload)
+          : lessonPayload,
+      );
     } catch (error) {
       errors.push("The lesson plan could not be read for this print request.");
     }
@@ -98,16 +153,13 @@ function doPost(e) {
     }
   }
 
-  template.sessionDate = sessionDate;
-  template.formattedSessionDate = formatSessionDate_(sessionDate);
-  template.lesson = lesson;
-  template.roster = roster;
-  template.errorMessage = errors.join(" ");
-
-  return template
-    .evaluate()
-    .setTitle("Lesson and Roster Print")
-    .addMetaTag("viewport", "width=device-width, initial-scale=1");
+  return {
+    sessionDate: sessionDate,
+    formattedSessionDate: formatSessionDate_(sessionDate),
+    lesson: lesson,
+    roster: roster,
+    errorMessage: errors.join(" "),
+  };
 }
 
 // Defensively normalizes the posted lesson JSON so a malformed or
