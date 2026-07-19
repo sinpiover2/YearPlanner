@@ -849,6 +849,80 @@ function LessonSessionView({
     }
   }
 
+  function duplicateEpisode(episodeId) {
+    const sourceIndex = episodes.findIndex(
+      (episode) => episode.id === episodeId,
+    );
+    const sourceEpisode = episodes[sourceIndex];
+
+    if (!sourceEpisode) return;
+
+    const duplicatedEpisodeId = createId("episode");
+    const referencedDeliverableIds = new Set(
+      sourceEpisode.blocks
+        .map((block) => block.deliverableId)
+        .filter(Boolean),
+    );
+    const sourceDeliverables = plannerState.deliverables.filter(
+      (deliverable) =>
+        referencedDeliverableIds.has(deliverable.id),
+    );
+    const deliverableIdMap = new Map(
+      sourceDeliverables.map((deliverable) => [
+        deliverable.id,
+        createId("deliverable"),
+      ]),
+    );
+
+    const duplicatedEpisode = {
+      ...sourceEpisode,
+      id: duplicatedEpisodeId,
+      title: sourceEpisode.title
+        ? `${sourceEpisode.title} copy`
+        : "Untitled Teaching Episode copy",
+      blocks: sourceEpisode.blocks.map((block) => ({
+        ...block,
+        id: createId("block"),
+        deliverableId: block.deliverableId
+          ? deliverableIdMap.get(block.deliverableId) ?? null
+          : null,
+      })),
+    };
+
+    const duplicatedDeliverables = sourceDeliverables.map(
+      (deliverable) => ({
+        ...deliverable,
+        id: deliverableIdMap.get(deliverable.id),
+        originatingEpisodeId: duplicatedEpisodeId,
+      }),
+    );
+
+    setPlannerState((current) => {
+      const nextEpisodes = [...current.episodes];
+      nextEpisodes.splice(sourceIndex + 1, 0, duplicatedEpisode);
+
+      return {
+        ...current,
+        episodes: nextEpisodes,
+        deliverables: [
+          ...current.deliverables,
+          ...duplicatedDeliverables,
+        ],
+      };
+    });
+
+    setOpenEpisodeIds((current) => {
+      const next = new Set(current);
+      next.add(duplicatedEpisodeId);
+      return next;
+    });
+
+    setEpisodeMenuId(null);
+    setCopyStatus(
+      `Duplicated episode: ${sourceEpisode.title || "Untitled episode"}.`,
+    );
+  }
+
   function updateEpisode(
     episodeId,
     updater,
@@ -2049,6 +2123,16 @@ function LessonSessionView({
                         )}
 
                         <div className="episode-menu-actions">
+                          <button
+                            className="episode-duplicate-action"
+                            type="button"
+                            onClick={() =>
+                              duplicateEpisode(episode.id)
+                            }
+                          >
+                            Duplicate episode
+                          </button>
+
                           <button
                             className="episode-copy-action"
                             type="button"
