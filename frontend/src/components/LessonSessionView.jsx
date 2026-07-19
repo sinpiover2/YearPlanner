@@ -420,6 +420,7 @@ function LessonSessionView({
   activeLessonContext,
   curriculumLessons,
   copyTargets,
+  bumpTargets,
   getOutcomeList,
   courseLabel,
   unitLabel,
@@ -448,6 +449,7 @@ function LessonSessionView({
   const [durationDraft, setDurationDraft] = useState("");
   const [slashMenu, setSlashMenu] = useState(null);
   const [episodeMenuId, setEpisodeMenuId] = useState(null);
+  const [moveEpisodeChooserId, setMoveEpisodeChooserId] = useState(null);
   const [curriculumChooserEpisodeId, setCurriculumChooserEpisodeId] =
     useState(null);
   const [isAddEpisodeCurriculumPickerOpen, setIsAddEpisodeCurriculumPickerOpen] =
@@ -608,6 +610,7 @@ function LessonSessionView({
       }
 
       setEpisodeMenuId(null);
+      setMoveEpisodeChooserId(null);
     }
 
     window.addEventListener("pointerdown", closeEpisodeMenu);
@@ -920,6 +923,128 @@ function LessonSessionView({
     setEpisodeMenuId(null);
     setCopyStatus(
       `Duplicated episode: ${sourceEpisode.title || "Untitled episode"}.`,
+    );
+  }
+
+  // Transitional, localStorage-only "bump": moves a Teaching Episode into a
+  // later Lesson Session draft for the same section. This does not create a
+  // durable Episode Placement — it edits both drafts' localStorage records
+  // directly, the same way copyPlanToSession does.
+  function moveEpisodeToSession(episodeId, target) {
+    const sourceEpisode = episodes.find(
+      (episode) => episode.id === episodeId,
+    );
+
+    if (!sourceEpisode || !target) return;
+
+    const destinationKey = getSessionStorageKey(STORAGE_KEY, target.id);
+    let destinationDraft;
+
+    try {
+      const stored = window.localStorage.getItem(destinationKey);
+      destinationDraft = stored
+        ? normalizeStoredState(JSON.parse(stored))
+        : createDefaultState();
+    } catch (error) {
+      console.warn(
+        "Could not load the destination Lesson Session draft.",
+        error,
+      );
+      destinationDraft = createDefaultState();
+    }
+
+    const referencedDeliverableIds = new Set(
+      sourceEpisode.blocks
+        .map((block) => block.deliverableId)
+        .filter(Boolean),
+    );
+    const sourceDeliverables = plannerState.deliverables.filter(
+      (deliverable) => referencedDeliverableIds.has(deliverable.id),
+    );
+    const movedEpisodeId = createId("episode");
+    const deliverableIdMap = new Map(
+      sourceDeliverables.map((deliverable) => [
+        deliverable.id,
+        createId("deliverable"),
+      ]),
+    );
+
+    const movedEpisode = {
+      ...sourceEpisode,
+      id: movedEpisodeId,
+      blocks: sourceEpisode.blocks.map((block) => ({
+        ...block,
+        id: createId("block"),
+        deliverableId: block.deliverableId
+          ? deliverableIdMap.get(block.deliverableId) ?? null
+          : null,
+      })),
+    };
+
+    const movedDeliverables = sourceDeliverables.map((deliverable) => ({
+      ...deliverable,
+      id: deliverableIdMap.get(deliverable.id),
+      originatingEpisodeId: movedEpisodeId,
+    }));
+
+    const nextDestinationDraft = {
+      ...destinationDraft,
+      episodes: [...destinationDraft.episodes, movedEpisode],
+      deliverables: [...destinationDraft.deliverables, ...movedDeliverables],
+    };
+
+    try {
+      window.localStorage.setItem(
+        destinationKey,
+        JSON.stringify(nextDestinationDraft),
+      );
+    } catch (error) {
+      console.warn(
+        "Could not save the destination Lesson Session draft.",
+        error,
+      );
+      setCopyStatus("The episode could not be moved.");
+      return;
+    }
+
+    setPlannerState((current) => {
+      const nextEpisodes = current.episodes.filter(
+        (episode) => episode.id !== episodeId,
+      );
+
+      // Only drop deliverables the moved episode referenced, and only if no
+      // remaining episode in this session still references them.
+      const stillReferencedDeliverableIds = new Set(
+        nextEpisodes.flatMap((episode) =>
+          episode.blocks.map((block) => block.deliverableId).filter(Boolean),
+        ),
+      );
+
+      return {
+        ...current,
+        episodes: nextEpisodes.length ? nextEpisodes : [createEpisode()],
+        deliverables: current.deliverables.filter(
+          (deliverable) =>
+            !referencedDeliverableIds.has(deliverable.id) ||
+            stillReferencedDeliverableIds.has(deliverable.id),
+        ),
+      };
+    });
+
+    setOpenEpisodeIds((current) => {
+      const next = new Set(current);
+      next.delete(episodeId);
+      return next;
+    });
+
+    if (editingTitleId === episodeId) {
+      setEditingTitleId(null);
+    }
+
+    setEpisodeMenuId(null);
+    setMoveEpisodeChooserId(null);
+    setCopyStatus(
+      `Moved episode: ${sourceEpisode.title || "Untitled episode"} to ${formatSessionDate(target.dayKey)}.`,
     );
   }
 
@@ -2028,158 +2153,218 @@ function LessonSessionView({
                       type="button"
                       aria-label="Episode actions"
                       aria-expanded={episodeMenuId === episode.id}
-                      onClick={() =>
+                      onClick={() => {
                         setEpisodeMenuId((current) =>
                           current === episode.id ? null : episode.id,
-                        )
-                      }
+                        );
+                        setMoveEpisodeChooserId(null);
+                      }}
                     >
                       ···
                     </button>
 
                     {episodeMenuId === episode.id ? (
                       <div className="episode-overflow-menu">
-                        <div className="episode-menu-section-label">
-                          Curriculum lesson
-                        </div>
+                        {moveEpisodeChooserId === episode.id ? (
+                          <div className="episode-move-chooser">
+                            <div className="episode-menu-section-label">
+                              Move to another session
+                            </div>
 
-                        {curriculumChooserEpisodeId === episode.id ? (
-                          curriculumLessons.length ? (
-                            <div className="episode-curriculum-options">
-                              {curriculumLessons.map((lesson) => {
-                                const isAttached =
-                                  lesson.LessonID ===
-                                  episodeCurriculumLessonId;
-
-                                return (
+                            {bumpTargets?.length ? (
+                              <div className="episode-move-options">
+                                {bumpTargets.map((target) => (
                                   <button
-                                    className={
-                                      isAttached ? "is-selected" : ""
-                                    }
                                     type="button"
-                                    key={lesson.LessonID}
+                                    key={target.id}
                                     onClick={() =>
-                                      chooseLessonForEpisode(
+                                      moveEpisodeToSession(
                                         episode.id,
-                                        lesson,
+                                        target,
                                       )
                                     }
                                   >
-                                    <span
-                                      className="episode-curriculum-option-mark"
-                                      aria-hidden="true"
-                                    >
-                                      {isAttached ? "●" : "○"}
-                                    </span>
-
-                                    <span>
-                                      <strong>
-                                        Lesson {lesson.LessonNumber}
-                                      </strong>
-                                      <span>
-                                        {lesson.LessonTitle ||
-                                          "Untitled lesson"}
-                                      </span>
-                                    </span>
+                                    <strong>
+                                      {formatSessionDate(target.dayKey)}
+                                    </strong>
+                                    <span>{target.sectionLabel}</span>
                                   </button>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <p className="episode-menu-empty">
-                              No lessons are available in this unit.
-                            </p>
-                          )
-                        ) : (
-                          <div className="episode-menu-actions">
-                            {episodeCurriculumLesson ? (
-                              <span className="episode-menu-empty">
-                                {episodeCurriculumLesson.LessonTitle ||
-                                  "Untitled lesson"}
-                              </span>
-                            ) : null}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setCurriculumChooserEpisodeId(episode.id)
-                              }
-                            >
-                              {episodeCurriculumLesson
-                                ? "Change Lesson…"
-                                : "Choose Lesson…"}
-                            </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="episode-menu-empty">
+                                No future sessions are available in this
+                                planning window.
+                              </p>
+                            )}
 
-                            {episodeCurriculumLesson ? (
+                            <div className="episode-menu-actions">
                               <button
+                                className="episode-move-cancel-action"
                                 type="button"
                                 onClick={() =>
-                                  removeLessonConnection(episode.id)
+                                  setMoveEpisodeChooserId(null)
                                 }
                               >
-                                Remove Lesson Connection
+                                ← Back to episode actions
                               </button>
-                            ) : null}
+                            </div>
                           </div>
+                        ) : (
+                          <>
+                            <div className="episode-menu-section-label">
+                              Curriculum lesson
+                            </div>
+
+                            {curriculumChooserEpisodeId === episode.id ? (
+                              curriculumLessons.length ? (
+                                <div className="episode-curriculum-options">
+                                  {curriculumLessons.map((lesson) => {
+                                    const isAttached =
+                                      lesson.LessonID ===
+                                      episodeCurriculumLessonId;
+
+                                    return (
+                                      <button
+                                        className={
+                                          isAttached ? "is-selected" : ""
+                                        }
+                                        type="button"
+                                        key={lesson.LessonID}
+                                        onClick={() =>
+                                          chooseLessonForEpisode(
+                                            episode.id,
+                                            lesson,
+                                          )
+                                        }
+                                      >
+                                        <span
+                                          className="episode-curriculum-option-mark"
+                                          aria-hidden="true"
+                                        >
+                                          {isAttached ? "●" : "○"}
+                                        </span>
+
+                                        <span>
+                                          <strong>
+                                            Lesson {lesson.LessonNumber}
+                                          </strong>
+                                          <span>
+                                            {lesson.LessonTitle ||
+                                              "Untitled lesson"}
+                                          </span>
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="episode-menu-empty">
+                                  No lessons are available in this unit.
+                                </p>
+                              )
+                            ) : (
+                              <div className="episode-menu-actions">
+                                {episodeCurriculumLesson ? (
+                                  <span className="episode-menu-empty">
+                                    {episodeCurriculumLesson.LessonTitle ||
+                                      "Untitled lesson"}
+                                  </span>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setCurriculumChooserEpisodeId(episode.id)
+                                  }
+                                >
+                                  {episodeCurriculumLesson
+                                    ? "Change Lesson…"
+                                    : "Choose Lesson…"}
+                                </button>
+
+                                {episodeCurriculumLesson ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeLessonConnection(episode.id)
+                                    }
+                                  >
+                                    Remove Lesson Connection
+                                  </button>
+                                ) : null}
+                              </div>
+                            )}
+
+                            <div className="episode-menu-actions">
+                              <button
+                                className="episode-duplicate-action"
+                                type="button"
+                                onClick={() =>
+                                  duplicateEpisode(episode.id)
+                                }
+                              >
+                                Duplicate episode
+                              </button>
+
+                              <button
+                                className="episode-copy-action"
+                                type="button"
+                                onClick={() =>
+                                  copyEpisodeToClipboard(episode)
+                                }
+                              >
+                                Copy episode
+                              </button>
+
+                              <button
+                                className="episode-move-action"
+                                type="button"
+                                onClick={() =>
+                                  setMoveEpisodeChooserId(episode.id)
+                                }
+                              >
+                                Move to another session…
+                              </button>
+
+                              <button
+                                className="episode-mark-deliverable-action"
+                                type="button"
+                                onClick={() =>
+                                  toggleEpisodeDeliverable(episode.id)
+                                }
+                              >
+                                {episode.isDeliverable
+                                  ? "Unmark as Deliverable"
+                                  : "Mark as Deliverable"}
+                              </button>
+
+                              {episodeCurriculumLesson ? (
+                                <button
+                                  className="episode-import-curriculum-action"
+                                  type="button"
+                                  onClick={() =>
+                                    importCurriculumContent(
+                                      episode.id,
+                                      episodeCurriculumLesson,
+                                    )
+                                  }
+                                >
+                                  Import curriculum content
+                                </button>
+                              ) : null}
+
+                              <div className="episode-menu-divider" />
+
+                              <button
+                                className="episode-delete-action"
+                                type="button"
+                                onClick={() => deleteEpisode(episode.id)}
+                              >
+                                Delete episode
+                              </button>
+                            </div>
+                          </>
                         )}
-
-                        <div className="episode-menu-actions">
-                          <button
-                            className="episode-duplicate-action"
-                            type="button"
-                            onClick={() =>
-                              duplicateEpisode(episode.id)
-                            }
-                          >
-                            Duplicate episode
-                          </button>
-
-                          <button
-                            className="episode-copy-action"
-                            type="button"
-                            onClick={() =>
-                              copyEpisodeToClipboard(episode)
-                            }
-                          >
-                            Copy episode
-                          </button>
-
-                          <button
-                            className="episode-mark-deliverable-action"
-                            type="button"
-                            onClick={() =>
-                              toggleEpisodeDeliverable(episode.id)
-                            }
-                          >
-                            {episode.isDeliverable
-                              ? "Unmark as Deliverable"
-                              : "Mark as Deliverable"}
-                          </button>
-
-                          {episodeCurriculumLesson ? (
-                            <button
-                              className="episode-import-curriculum-action"
-                              type="button"
-                              onClick={() =>
-                                importCurriculumContent(
-                                  episode.id,
-                                  episodeCurriculumLesson,
-                                )
-                              }
-                            >
-                              Import curriculum content
-                            </button>
-                          ) : null}
-
-                          <div className="episode-menu-divider" />
-
-                          <button
-                            className="episode-delete-action"
-                            type="button"
-                            onClick={() => deleteEpisode(episode.id)}
-                          >
-                            Delete episode
-                          </button>
-                        </div>
                       </div>
                     ) : null}
                   </div>

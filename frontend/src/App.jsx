@@ -799,6 +799,17 @@ function App() {
       session.sectionId !== activeLessonContext?.sectionId,
   );
 
+  // "Bump" targets are later meetings of the *same* section — the only
+  // sessions a Teaching Episode can be moved forward into within this
+  // planning window.
+  const lessonSessionBumpTargets = Object.values(planningModel.sessions)
+    .filter(
+      (session) =>
+        session.sectionId === activeLessonContext?.sectionId &&
+        session.dayKey > (activeLessonContext?.date ?? ""),
+    )
+    .sort((a, b) => (a.dayKey < b.dayKey ? -1 : a.dayKey > b.dayKey ? 1 : 0));
+
   const activeSession = activeLessonContext?.sessionId
     ? planningModel.sessions[activeLessonContext.sessionId]
     : null;
@@ -807,6 +818,7 @@ function App() {
     activeLessonContext,
     curriculumLessons,
     copyTargets: lessonSessionCopyTargets,
+    bumpTargets: lessonSessionBumpTargets,
     getOutcomeList,
     courseLabel: getCourseLabel(selectedCourseId),
     unitLabel: activeSession?.unitLabel ?? "",

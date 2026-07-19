@@ -4190,7 +4190,34 @@ body {
   font-size: 0.8rem;
 }
 
+.episode-move-options {
+  display: grid;
+}
+
+.episode-move-options button {
+  display: grid;
+  gap: 2px;
+}
+
+.episode-move-options button strong {
+  color: #334155;
+  font-size: 0.78rem;
+}
+
+.episode-move-options button span {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.episode-move-cancel-action {
+  color: #64748b;
+}
+
 .episode-copy-action {
+  color: #334155;
+}
+
+.episode-move-action {
   color: #334155;
 }
 
