@@ -14,9 +14,9 @@ function doGet(e) {
     lastUpdated: new Date().toISOString(),
   };
 
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(
+    ContentService.MimeType.JSON,
+  );
 }
 
 function isActiveRosterValue(value) {
@@ -27,7 +27,11 @@ function compareRosterText(left, right) {
   return String(left || "")
     .trim()
     .toLocaleLowerCase()
-    .localeCompare(String(right || "").trim().toLocaleLowerCase());
+    .localeCompare(
+      String(right || "")
+        .trim()
+        .toLocaleLowerCase(),
+    );
 }
 
 // Internal-only assembly for a future authenticated transport. doGet never
@@ -55,10 +59,12 @@ function getSectionRoster(sectionId) {
   const settings = getSheetData("RosterSettings").find(
     (item) => item.SectionID === sectionId,
   );
-  const requestedSortMode = String(settings && settings.SortMode || "").trim();
+  const requestedSortMode = String(
+    (settings && settings.SortMode) || "",
+  ).trim();
   const sortMode = requestedSortMode === "FirstName" ? "FirstName" : "LastName";
   const columns = [1, 2, 3, 4, 5].map((number) =>
-    String(settings && settings[`Column${number}Label`] || "").trim(),
+    String((settings && settings[`Column${number}Label`]) || "").trim(),
   );
   const studentsById = new Map(
     getSheetData("Students")
@@ -108,15 +114,19 @@ function getSectionRoster(sectionId) {
             compareRosterText(left.displayFirstName, right.displayFirstName),
           ];
 
-    return comparisons.find((value) => value !== 0) ||
-      compareRosterText(left.studentId, right.studentId);
+    return (
+      comparisons.find((value) => value !== 0) ||
+      compareRosterText(left.studentId, right.studentId)
+    );
   });
 
   return {
     sectionId,
     sectionName: String(section.SectionName || section.Period || sectionId),
     courseId: String(section.CourseID || ""),
-    courseName: String(course && (course.CourseName || course.ShortName) || ""),
+    courseName: String(
+      (course && (course.CourseName || course.ShortName)) || "",
+    ),
     sortMode,
     columns,
     students: rosterStudents,
@@ -193,12 +203,12 @@ function setupRosterSheetsV1Locked() {
       );
     }
 
-    const existingHeaders = sheet
-      .getRange(1, 1, 1, lastColumn)
-      .getValues()[0];
+    const existingHeaders = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
 
     if (existingHeaders.join("|") !== schemas[sheetName].join("|")) {
-      throw new Error(`${sheetName} headers do not match the Version 1 schema.`);
+      throw new Error(
+        `${sheetName} headers do not match the Version 1 schema.`,
+      );
     }
 
     if (lastRow > 1) {
@@ -215,35 +225,61 @@ function setupRosterSheetsV1Locked() {
 
   approvedSections.forEach((sectionId) => {
     if (!validSectionIds.has(sectionId)) {
-      throw new Error(`Cannot seed roster: section ${sectionId} does not exist.`);
+      throw new Error(
+        `Cannot seed roster: section ${sectionId} does not exist.`,
+      );
     }
   });
 
   const fictionalStudents = [
-    ["Avery", "Bennett", ""], ["Jordan", "Calder", "Jordy"],
-    ["Mina", "Delgado", ""], ["Theo", "Ellison", "Teddy"],
-    ["Nora", "Farrell", ""], ["Elias", "Gupta", "Eli"],
-    ["Sofia", "Hollis", ""], ["Marcus", "Ibarra", "Marc"],
-    ["Leila", "Jensen", ""], ["Dante", "Kim", ""],
-    ["Ruby", "Lawson", "Rue"], ["Owen", "Mendoza", ""],
-    ["Camila", "Navarro", "Cami"], ["Felix", "Okafor", ""],
-    ["Priya", "Patel", ""], ["Quentin", "Reyes", "Quinn"],
-    ["Amara", "Sato", ""], ["Jonah", "Turner", "Jo"],
-    ["Iris", "Usman", ""], ["Miles", "Vega", ""],
-    ["Elena", "Wolfe", "Lena"], ["Zane", "Xu", ""],
-    ["Maeve", "Young", ""], ["Caleb", "Zamora", "Cal"],
-    ["Talia", "Archer", "Tali"], ["Ronan", "Brooks", ""],
-    ["Keira", "Chandra", ""], ["Desmond", "Doyle", "Des"],
-    ["Freya", "Espinoza", ""], ["Gavin", "Foster", ""],
-    ["Hana", "Griffin", ""], ["Isaac", "Huang", "Ike"],
-    ["Jade", "Ingram", ""], ["Kai", "Jefferson", ""],
-    ["Lucia", "Kaur", "Lucy"], ["Noel", "Lang", ""],
-    ["Orla", "Mercer", ""], ["Parker", "Nolan", "Park"],
-    ["Reina", "Owens", ""], ["Silas", "Price", ""],
-    ["Uma", "Quintero", ""], ["Victor", "Russell", "Vic"],
-    ["Willa", "Shah", ""], ["Xavier", "Tran", "Xavi"],
-    ["Yara", "Underwood", ""], ["Beckett", "Valdez", "Beck"],
-    ["Cleo", "Ward", ""], ["Darius", "Yoon", ""],
+    ["Avery", "Bennett", ""],
+    ["Jordan", "Calder", "Jordy"],
+    ["Mina", "Delgado", ""],
+    ["Theo", "Ellison", "Teddy"],
+    ["Nora", "Farrell", ""],
+    ["Elias", "Gupta", "Eli"],
+    ["Sofia", "Hollis", ""],
+    ["Marcus", "Ibarra", "Marc"],
+    ["Leila", "Jensen", ""],
+    ["Dante", "Kim", ""],
+    ["Ruby", "Lawson", "Rue"],
+    ["Owen", "Mendoza", ""],
+    ["Camila", "Navarro", "Cami"],
+    ["Felix", "Okafor", ""],
+    ["Priya", "Patel", ""],
+    ["Quentin", "Reyes", "Quinn"],
+    ["Amara", "Sato", ""],
+    ["Jonah", "Turner", "Jo"],
+    ["Iris", "Usman", ""],
+    ["Miles", "Vega", ""],
+    ["Elena", "Wolfe", "Lena"],
+    ["Zane", "Xu", ""],
+    ["Maeve", "Young", ""],
+    ["Caleb", "Zamora", "Cal"],
+    ["Talia", "Archer", "Tali"],
+    ["Ronan", "Brooks", ""],
+    ["Keira", "Chandra", ""],
+    ["Desmond", "Doyle", "Des"],
+    ["Freya", "Espinoza", ""],
+    ["Gavin", "Foster", ""],
+    ["Hana", "Griffin", ""],
+    ["Isaac", "Huang", "Ike"],
+    ["Jade", "Ingram", ""],
+    ["Kai", "Jefferson", ""],
+    ["Lucia", "Kaur", "Lucy"],
+    ["Noel", "Lang", ""],
+    ["Orla", "Mercer", ""],
+    ["Parker", "Nolan", "Park"],
+    ["Reina", "Owens", ""],
+    ["Silas", "Price", ""],
+    ["Uma", "Quintero", ""],
+    ["Victor", "Russell", "Vic"],
+    ["Willa", "Shah", ""],
+    ["Xavier", "Tran", "Xavi"],
+    ["Yara", "Underwood", ""],
+    ["Beckett", "Valdez", "Beck"],
+    ["Cleo", "Ward", ""],
+    ["Darius", "Yoon", ""],
   ];
   const studentRows = [];
   const enrollmentRows = [];
@@ -255,14 +291,7 @@ function setupRosterSheetsV1Locked() {
         const studentId = `STU-${Utilities.getUuid()}`;
         const enrollmentId = `ENR-${Utilities.getUuid()}`;
         studentRows.push([studentId, firstName, lastName, preferredName, true]);
-        enrollmentRows.push([
-          enrollmentId,
-          sectionId,
-          studentId,
-          true,
-          "",
-          "",
-        ]);
+        enrollmentRows.push([enrollmentId, sectionId, studentId, true, "", ""]);
       });
   });
   const settingsRows = approvedSections.map((sectionId) => [
@@ -367,9 +396,9 @@ function doPost(e) {
     return moveLesson(payload);
   }
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: false, error: "Unknown action" }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: false, error: "Unknown action" }),
+  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 function getSheetData(sheetName) {
@@ -410,9 +439,9 @@ function saveDailyProgress(payload) {
     payload.notes || "",
   ]);
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: true }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: true }),
+  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 function addLesson(payload) {
@@ -451,9 +480,9 @@ function addLesson(payload) {
 
   sheet.appendRow(row);
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: true, lessonId }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: true, lessonId }),
+  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 function updateLesson(payload) {
@@ -470,9 +499,9 @@ function updateLesson(payload) {
   });
 
   if (rowIndex === -1) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ ok: false, error: "Lesson not found" }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(
+      JSON.stringify({ ok: false, error: "Lesson not found" }),
+    ).setMimeType(ContentService.MimeType.JSON);
   }
 
   const updates = {
@@ -491,9 +520,9 @@ function updateLesson(payload) {
     }
   });
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: true }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: true }),
+  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 function deleteLesson(payload) {
@@ -512,9 +541,9 @@ function deleteLesson(payload) {
     }
   }
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: true }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: true }),
+  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 function moveLesson(payload) {
@@ -543,18 +572,18 @@ function moveLesson(payload) {
   });
 
   if (currentIndex === -1) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ ok: false, error: "Lesson not found" }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(
+      JSON.stringify({ ok: false, error: "Lesson not found" }),
+    ).setMimeType(ContentService.MimeType.JSON);
   }
 
   const targetIndex =
     payload.direction === "up" ? currentIndex - 1 : currentIndex + 1;
 
   if (targetIndex < 0 || targetIndex >= unitRows.length) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ ok: true, skipped: true }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(
+      JSON.stringify({ ok: true, skipped: true }),
+    ).setMimeType(ContentService.MimeType.JSON);
   }
 
   const current = unitRows[currentIndex];
@@ -584,9 +613,9 @@ function moveLesson(payload) {
       .setValue(currentLessonNumber);
   }
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: true }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: true }),
+  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 function testSaveDailyProgress() {

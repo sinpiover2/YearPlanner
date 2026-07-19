@@ -1,3 +1,9 @@
+import {
+  getEpisodeLesson,
+  getLessonLabel,
+  hasPrintableEpisodeContent,
+} from "../utils/lessonPrintPayload";
+
 const PRINT_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
   month: "long",
@@ -11,32 +17,6 @@ function formatPrintDate(value) {
   return year && month && day
     ? PRINT_DATE_FORMATTER.format(new Date(year, month - 1, day))
     : value;
-}
-
-function getLessonLabel(lesson) {
-  return [lesson?.LessonNumber, lesson?.LessonTitle]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function getEpisodeLesson(episode, curriculumLessons) {
-  const lessonId =
-    episode.curriculumLessonId ??
-    episode.blocks?.find((block) => block.sourceLessonId)?.sourceLessonId;
-  return curriculumLessons.find((lesson) => lesson.LessonID === lessonId) ?? null;
-}
-
-function hasPrintableEpisodeContent(episode) {
-  const authoredTitle = episode.title?.trim();
-
-  return Boolean(
-    (authoredTitle && authoredTitle !== "Welcome") ||
-      episode.isDeliverable ||
-      episode.curriculumLessonId ||
-      episode.blocks?.some(
-        (block) => block.text?.trim() || block.sourceLessonId,
-      ),
-  );
 }
 
 function LessonSessionPrintView({

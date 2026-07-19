@@ -71,21 +71,41 @@ planning data. Student names must never pass through that anonymous endpoint.
 There is therefore no public roster GET route, and the production frontend does
 not request or render roster data.
 
-`getSectionRoster(sectionId)` remains an internal assembly helper only. It is not
-called by `doGet` or `doPost`, so it is inaccessible through the deployed web
-app. A future authenticated transport may reuse it; that transport must enforce
-teacher access before returning any student-identifying data. The backend will
-continue to own filtering, display-name fallback, sorting, and column labels.
+`getSectionRoster(sectionId)` remains an internal assembly helper in the
+anonymous project during Phase 1. It is not called by `doGet` or `doPost`, so it
+is inaccessible through the deployed anonymous web app. An isolated local copy
+now lives in `apps-script-roster/` for the approved authenticated HTML Service
+application. The backend continues to own filtering, display-name fallback,
+sorting, and column labels.
 
-Deployment of roster access and roster printing is blocked pending an
-authenticated access design. The existing anonymous bulk planner GET remains
-unchanged and contains only the existing non-student planning datasets.
+The roster application is planned for a separate Apps Script project deployed
+as `USER_DEPLOYING` with access restricted to `MYSELF`. Phase 1 is local source
+only: it has not been pushed, deployed, authorized, or connected to modified
+spreadsheet data. The existing anonymous bulk planner GET remains unchanged and
+contains only the existing non-student planning datasets.
 
-## Future print boundary
+## Combined print
 
-Once authenticated access exists, roster data should be held only in temporary
-in-memory print state. It must not be stored in localStorage or in the Lesson
-Session data model. Until then, `Print lesson` remains lesson-only.
+`Print lesson` submits a hidden form POST (not a fetch call, and not a query
+string) to the authenticated roster Apps Script, carrying `sectionId`,
+`sessionDate`, and a small serialized lesson-plan payload (section/course/unit
+labels, connected curriculum lesson labels, and printable episodes/blocks —
+never roster or student data). The Apps Script's `doPost` authenticates the
+user, loads the roster itself via `getSectionRoster_`, and renders one HTML
+Service page: the lesson plan (page 1), a forced page break, then the roster
+(page 2). That page owns the single print action; the frontend never receives
+roster JSON, and the lesson payload is never persisted anywhere. If the
+section/date is missing, the lesson payload can't be parsed, or the roster
+fails to load, the combined page renders a single explicit error state instead
+of a partial or misleadingly blank roster.
+
+The standalone `doGet` roster-only route (`RosterPrint.html`) remains available
+for internal use; its roster table markup and styles are shared with the
+combined page via Apps Script HTML Service template includes
+(`RosterSection.html`, `RosterStyles.html`) rather than duplicated.
+
+Roster data must not be stored in localStorage or in the Lesson Session data
+model.
 
 ## Setup limitation
 

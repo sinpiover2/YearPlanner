@@ -6,3 +6,5 @@ dist/
 
 # Local Google Apps Script clasp configuration
 apps-script/.clasp.json
+
+apps-script-roster/.clasp.json

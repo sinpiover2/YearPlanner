@@ -1,0 +1,45 @@
+<header class="roster-header">
+  <p class="roster-title"><?= roster.sectionName || roster.sectionId || "Section" ?> — Student Roster</p>
+  <? if (formattedSessionDate) { ?>
+    <time datetime="<?= sessionDate ?>"><?= formattedSessionDate ?></time>
+  <? } ?>
+</header>
+
+<? if (roster.students.length === 0) { ?>
+  <p class="empty-state">No roster is available for this section.</p>
+<? } else { ?>
+  <div class="roster-layout">
+    <div class="roster-left">
+      <table class="roster-table">
+        <colgroup>
+          <col class="col-index">
+          <col class="col-student">
+          <? for (let columnIndex = 0; columnIndex < 5; columnIndex += 1) { ?>
+            <col class="col-tracking">
+          <? } ?>
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col" class="col-student-header">Student</th>
+            <? roster.columns.forEach(function (column) { ?>
+              <th scope="col"><?= column ?></th>
+            <? }); ?>
+          </tr>
+        </thead>
+        <tbody>
+          <? roster.students.forEach(function (student, studentIndex) { ?>
+            <tr>
+              <td class="col-index"><?= studentIndex + 1 ?></td>
+              <th scope="row"><?= student.displayName ?></th>
+              <? for (let columnIndex = 0; columnIndex < 5; columnIndex += 1) { ?>
+                <td></td>
+              <? } ?>
+            </tr>
+          <? }); ?>
+        </tbody>
+      </table>
+    </div>
+    <div class="roster-right"></div>
+  </div>
+<? } ?>

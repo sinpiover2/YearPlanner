@@ -799,11 +799,17 @@ function App() {
       session.sectionId !== activeLessonContext?.sectionId,
   );
 
+  const activeSession = activeLessonContext?.sessionId
+    ? planningModel.sessions[activeLessonContext.sessionId]
+    : null;
+
   const lessonSessionWorkspaceModel = {
     activeLessonContext,
     curriculumLessons,
     copyTargets: lessonSessionCopyTargets,
     getOutcomeList,
+    courseLabel: getCourseLabel(selectedCourseId),
+    unitLabel: activeSession?.unitLabel ?? "",
   };
 
   return (

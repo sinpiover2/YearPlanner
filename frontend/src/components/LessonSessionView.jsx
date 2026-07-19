@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { LESSON_SESSION_STORAGE_KEY } from "../utils/lessonSessionStorage";
+import { buildLessonPrintPayload } from "../utils/lessonPrintPayload";
 
 const STORAGE_KEY = LESSON_SESSION_STORAGE_KEY;
 const LEGACY_STORAGE_KEY = "year-planner.lesson-session-items.prototype.v1";
@@ -7,9 +8,44 @@ const COLLAPSED_BLOCKS_STORAGE_KEY =
   "year-planner.lesson-session.collapsed-blocks.v1";
 const EPISODE_CLIPBOARD_STORAGE_KEY =
   "year-planner.lesson-session.episode-clipboard.v1";
+// Authenticated roster Apps Script web app. It owns the combined print
+// document (lesson + roster) so student data never has to reach this
+// frontend; see apps-script-roster/ and docs/Architecture/ROSTER_INFORMATION_MODEL.md.
+const COMBINED_PRINT_URL =
+  "https://script.google.com/a/macros/scottsvalleyusd.org/s/AKfycbz3pelDrU-DTrDmIp4KDt3LAYIOv263Z7ijAgCBAEX2CykwmCDLFzV2EZkX4rftq4TU/exec";
 
 function getSessionStorageKey(baseKey, sessionId) {
   return sessionId ? `${baseKey}.${sessionId}` : baseKey;
+}
+
+// Navigates to the authenticated roster Apps Script via a hidden form POST
+// (not fetch) so the lesson payload never has to fit in a URL and no CORS
+// exception is needed — it's a normal top-level browser navigation. The
+// Apps Script renders lesson + roster as one document and prints once there.
+function submitCombinedPrintRequest({ sectionId, sessionDate, lessonPayload }) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = COMBINED_PRINT_URL;
+  form.target = "_blank";
+  form.style.display = "none";
+
+  const fields = {
+    sectionId,
+    sessionDate,
+    lessonPayload: JSON.stringify(lessonPayload),
+  };
+
+  Object.entries(fields).forEach(([name, value]) => {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+  form.remove();
 }
 
 const SUPPORT_TYPES = [
@@ -385,6 +421,8 @@ function LessonSessionView({
   curriculumLessons,
   copyTargets,
   getOutcomeList,
+  courseLabel,
+  unitLabel,
 }) {
   const {
     state: plannerState,
@@ -438,6 +476,28 @@ function LessonSessionView({
     curriculumLessons.find(
       (lesson) => lesson.LessonID === curriculumLessonId,
     ) ?? null;
+
+  const canPrintLesson = Boolean(
+    activeLessonContext?.sectionId && activeLessonContext?.date,
+  );
+
+  function handlePrintLesson() {
+    if (!canPrintLesson) return;
+
+    const lessonPayload = buildLessonPrintPayload({
+      sectionLabel: activeLessonContext.sectionLabel,
+      courseLabel,
+      unitLabel,
+      episodes,
+      curriculumLessons,
+    });
+
+    submitCombinedPrintRequest({
+      sectionId: activeLessonContext.sectionId,
+      sessionDate: activeLessonContext.date,
+      lessonPayload,
+    });
+  }
 
   const activeDeliverableCount = new Set(
     episodes.flatMap((episode) =>
@@ -1598,7 +1658,13 @@ function LessonSessionView({
               <button
                 type="button"
                 className="lesson-session-utility-button is-primary"
-                onClick={() => window.print()}
+                disabled={!canPrintLesson}
+                title={
+                  canPrintLesson
+                    ? undefined
+                    : "Print lesson is unavailable because the section or session date is missing."
+                }
+                onClick={handlePrintLesson}
               >
                 Print lesson
               </button>
