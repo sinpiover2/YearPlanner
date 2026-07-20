@@ -45,6 +45,7 @@ function UnitsView({
   handleDeleteLesson,
   isAddingLesson,
   setIsAddingLesson,
+  isAddingLessonSaving,
   newLesson,
   setNewLesson,
   updateNewLessonGoal,
@@ -309,6 +310,7 @@ function UnitsView({
             handleDeleteLesson={handleDeleteLesson}
             isAddingLesson={isAddingLesson}
             setIsAddingLesson={setIsAddingLesson}
+            isAddingLessonSaving={isAddingLessonSaving}
             newLesson={newLesson}
             setNewLesson={setNewLesson}
             updateNewLessonGoal={updateNewLessonGoal}

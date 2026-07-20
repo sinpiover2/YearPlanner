@@ -20,6 +20,7 @@ function LessonTable({
   handleDeleteLesson,
   isAddingLesson,
   setIsAddingLesson,
+  isAddingLessonSaving,
   newLesson,
   setNewLesson,
   updateNewLessonGoal,
@@ -367,10 +368,17 @@ function LessonTable({
             </div>
 
             <div className="edit-actions">
-              <button onClick={handleAddLesson}>Add lesson</button>
+              <button
+                onClick={handleAddLesson}
+                disabled={isAddingLessonSaving}
+                aria-busy={isAddingLessonSaving}
+              >
+                {isAddingLessonSaving ? "Adding…" : "Add lesson"}
+              </button>
 
               <button
                 className="secondary-button"
+                disabled={isAddingLessonSaving}
                 onClick={() => {
                   setNewLesson({
                     lessonTitle: "",

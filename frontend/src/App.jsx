@@ -294,6 +294,7 @@ function App() {
   const [savingLessonId, setSavingLessonId] = useState(null);
   const [activeProgressLessonId, setActiveProgressLessonId] = useState(null);
   const [isAddingLesson, setIsAddingLesson] = useState(false);
+  const [isAddingLessonSaving, setIsAddingLessonSaving] = useState(false);
   const [newLesson, setNewLesson] = useState({
     lessonTitle: "",
     plannedDays: 1,
@@ -619,11 +620,14 @@ function App() {
   }
 
   async function handleAddLesson() {
-    console.log("ADD LESSON CLICKED", newLesson);
+    if (isAddingLessonSaving) return;
+
     if (!selectedUnit || !newLesson.lessonTitle.trim()) {
       alert("Please enter a lesson title.");
       return;
     }
+
+    setIsAddingLessonSaving(true);
 
     try {
       await addLesson({
@@ -651,6 +655,8 @@ function App() {
     } catch (error) {
       console.error(error);
       alert("Could not add lesson.");
+    } finally {
+      setIsAddingLessonSaving(false);
     }
   }
 
@@ -775,6 +781,7 @@ function App() {
     handleDeleteLesson,
     isAddingLesson,
     setIsAddingLesson,
+    isAddingLessonSaving,
     newLesson,
     setNewLesson,
     updateNewLessonGoal,
