@@ -18,6 +18,8 @@
 ## 3. Verify Repository
 
 - [ ] git status clean
+- [ ] Determine current branch
+- [ ] If not on main, determine whether the sprint branch should be merged before starting new work
 - [ ] main up to date
 - [ ] Review recent commits if needed
 
