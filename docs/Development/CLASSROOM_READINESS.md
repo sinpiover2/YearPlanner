@@ -25,6 +25,21 @@ polish, and classroom validation.
 
 ---
 
+# Current Sprint Focus (Sprint 5.5)
+
+Objective:
+Make planning feel immediate and trustworthy.
+
+Success criteria:
+
+- [ ] No user wonders whether a click worked.
+- [ ] Duplicate lesson creation prevented.
+- [ ] Lesson creation feels immediate.
+- [ ] UI clearly communicates work in progress.
+- [ ] Largest planning delays identified and reduced.
+
+---
+
 # A. Real Data
 
 ## School Calendar
