@@ -194,6 +194,14 @@ These documents preserve important context so architectural decisions do not nee
 
 ?
 
+Lessons Learned
+
+`docs/LESSONS_LEARNED.md` captures durable, cross-cutting project knowledge that should never need re-learning.
+
+It is not architecture (why the system is designed the way it is), not sprint history (what happened, sprint by sprint), and not workflow procedure (how development is run day to day). It sits alongside those folders as the accumulated judgment behind all three.
+
+?
+
 Roadmap
 
 The Roadmap folder tracks planned development.

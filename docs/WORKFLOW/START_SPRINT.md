@@ -1,14 +1,21 @@
 # Start Sprint
 
-## 1. Read (under 60 seconds)
+## 1. Read the Handoff (under 60 seconds)
 
-- [ ] Read the latest sprint handoff
-- [ ] Read only the 60-Second Startup section
+- [ ] Read the latest sprint handoff — Layer 1 (60-Second Startup) only
 - [ ] Confirm today's sprint goal
 
 ---
 
-## 2. Verify Repository
+## 2. Orient
+
+- [ ] Review DEVELOPMENT_WORKFLOW.md for any process changes since last sprint
+- [ ] Review CLASSROOM_READINESS.md — the current execution document — for the active priority
+- [ ] Review the workflow improvements recorded in the previous sprint's retrospective
+
+---
+
+## 3. Verify Repository
 
 - [ ] git status clean
 - [ ] main up to date
@@ -16,7 +23,7 @@
 
 ---
 
-## 3. Open Development Environment
+## 4. Open Development Environment
 
 - [ ] 🟩 DEV server running
 - [ ] 🟨 BUILD terminal ready
@@ -25,7 +32,7 @@
 
 ---
 
-## 4. Validate Build
+## 5. Validate Build
 
 - [ ] npm run build passes
 - [ ] Launch local application
@@ -33,6 +40,14 @@
 
 ---
 
-## 5. Begin Work
+## 6. Begin Work
 
 - [ ] Execute the First-Hour Plan from the handoff
+
+---
+
+## Principle
+
+These workflow documents are living documents.
+
+Every sprint should be easier to start than the last one. If anything in this checklist caused friction today, improve the document before ending the sprint — not "next time."

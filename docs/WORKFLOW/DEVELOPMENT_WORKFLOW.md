@@ -158,6 +158,17 @@ Commit
 Push
 ```
 
+Before starting Implement, state:
+
+- **Terminal** — which of the four windows (DEV / BUILD / PROJECT / GIT) this work runs in
+- **Deployment** — required or not
+- **Apps Script project** — which one, if any
+- **Browser testing** — required or not
+- **GitHub push** — required or not
+- **Stopping point** — where to pause and wait for user verification
+
+Stating these up front prevents mid-task confusion about where work is happening and when to check in.
+
 ---
 
 # Definition of Done
@@ -280,21 +291,31 @@ This keeps the development process consistent without relying on memory.
 
 ---
 
-# Continuous Improvement
+# Continuous Workflow Improvement
 
-The workflow is part of the project.
+The workflow is part of the project, and it should get better every sprint.
 
-Whenever we discover a better way to work:
+Whenever friction occurs during development, ask:
 
-1. Update this document.
-2. Adopt the improvement.
-3. Use it in future sprints.
+> Is this a one-time issue, or should the workflow prevent this forever?
+
+Common sources of recurring friction:
+
+- deployment confusion
+- repeated manual work
+- forgotten testing
+- unclear terminal usage
+- architectural rediscovery
+- poor handoffs
+- unnecessary backtracking
+
+If it will happen again, fix the workflow documents before ending the sprint — not after. Update the document, adopt the improvement immediately, and use it starting next sprint.
 
 ---
 
 # Periodic Architecture Review
 
-Approximately every 5�10 sprints, schedule an Architecture Review Sprint.
+Approximately every 5�10 sprints, schedule an Architecture Review Sprint.
 
 No new features are added.
 
