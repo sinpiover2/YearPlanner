@@ -222,16 +222,24 @@ function getPrepareNext(courseId, units, lessons, dailyProgress, count = 3) {
   };
 }
 
+function isSectionActive(section) {
+  const activeValue = section.Active;
+  return activeValue === undefined || activeValue === "" || isTrue(activeValue);
+}
+
 function getSectionsForCourse(courseId, sections) {
   return sections
-    .filter((section) => {
-      const activeValue = section.Active;
-      const isActive =
-        activeValue === undefined || activeValue === "" || isTrue(activeValue);
-
-      return section.CourseID === courseId && isActive;
-    })
+    .filter((section) => section.CourseID === courseId && isSectionActive(section))
     .sort((a, b) => Number(a.SortOrder || 999) - Number(b.SortOrder || 999));
+}
+
+// Planning shows the full teaching-day period structure (every active
+// section across every course), independent of whichever course is
+// selected elsewhere in the app.
+function getPlanningSections(sections) {
+  return sections
+    .filter(isSectionActive)
+    .sort((a, b) => Number(a.Period || 999) - Number(b.Period || 999));
 }
 
 function getSelectedSectionForCourse(courseId, sections, selectedSectionId) {
@@ -350,6 +358,8 @@ function App() {
   const selectedCourseSections =
     selectedCourseId === "IM1" ? math1Sections : math8Sections;
 
+  const planningSections = getPlanningSections(sections);
+
   const math8MeetingDays = getSectionMeetingDays(
     selectedMath8Section,
     schoolCalendar,
@@ -458,11 +468,19 @@ function App() {
   const selectedPrepareNext =
     selectedCourseId === "IM1" ? math1PrepareNext : math8PrepareNext;
 
+  const planningNavigationByCourse = {
+    M8: math8Navigation,
+    IM1: math1Navigation,
+  };
+
   const planningModel = getPlanningModel({
-    selectedCourseSections,
-    selectedNavigation,
+    planningSections,
+    planningNavigationByCourse,
+    selectedCourseId,
     units,
     lessons,
+    schoolCalendar,
+    schedulePatterns,
     referenceDate: planningReferenceDate,
   });
 

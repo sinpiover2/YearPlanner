@@ -99,6 +99,8 @@ function PlanningView({
       unitId: session.unitId,
       date: session.dayKey,
       title: session.title,
+      schoolDayNumber: session.schoolDayNumber,
+      courseSessionNumber: session.courseSessionNumber,
       source: "planning",
     };
 

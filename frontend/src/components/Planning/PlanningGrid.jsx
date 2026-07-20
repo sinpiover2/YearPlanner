@@ -78,7 +78,9 @@ function PlanningGrid({
           </div>
 
           {weekDays.map((day, dayIndex) => {
-            const session = sessions[`${section.id}-${day.key}`];
+            const session = section.isPlaceholder
+              ? null
+              : sessions[`${section.id}-${day.key}`];
 
             return (
               <div
@@ -98,7 +100,7 @@ function PlanningGrid({
               >
                 {day.shoulder ? (
                   <span className="planning-shoulder-dot" />
-                ) : (
+                ) : section.isPlaceholder ? null : (
                   <SessionTile
                     session={session}
                     selected={session?.id === selectedSessionId}

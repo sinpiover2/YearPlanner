@@ -1794,6 +1794,21 @@ function LessonSessionView({
               <p className="lesson-session-date">
                 {formatSessionDate(activeLessonContext.date)}
               </p>
+              {activeLessonContext.schoolDayNumber != null ||
+              activeLessonContext.courseSessionNumber != null ? (
+                <p className="lesson-session-day-meta">
+                  {[
+                    activeLessonContext.schoolDayNumber != null
+                      ? `School Day ${activeLessonContext.schoolDayNumber}`
+                      : null,
+                    activeLessonContext.courseSessionNumber != null
+                      ? `Course Session ${activeLessonContext.courseSessionNumber}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              ) : null}
             </>
           ) : (
             <>

@@ -1,4 +1,9 @@
-import { getPlanningWeek } from "./planningCalendar";
+import {
+  getPlanningWeek,
+  buildCalendarIndex,
+  buildScheduleIndex,
+  buildSectionMeetingMaps,
+} from "./planningCalendar";
 import { sortLessons } from "./plannerUtils";
 import { getLessonSessionSummary } from "./lessonSessionStorage";
 
@@ -18,15 +23,13 @@ function getSectionLabel(section) {
   return section?.SectionName || section?.Period || section?.SectionID || "Section";
 }
 
-export function getPlanningModel({
-  selectedCourseSections,
-  selectedNavigation,
-  units,
-  lessons,
-  referenceDate = new Date(),
-}) {
-  const currentUnit = selectedNavigation?.currentUnit ?? null;
-  const currentLesson = selectedNavigation?.currentLesson ?? null;
+// Resolves a single course's current unit/lesson into the shape sessions
+// and the shelf need. Each course navigates independently, so this must be
+// computed per CourseID rather than once globally — otherwise sections
+// from the non-selected course inherit the wrong curriculum context.
+function getCourseContext(courseNavigation, lessons, units) {
+  const currentUnit = courseNavigation?.currentUnit ?? null;
+  const currentLesson = courseNavigation?.currentLesson ?? null;
 
   const unitLessons = currentUnit
     ? sortLessons(
@@ -39,21 +42,95 @@ export function getPlanningModel({
     ? unitLessons.findIndex((lesson) => lesson.LessonID === currentLesson.LessonID)
     : 0;
 
-  const planningWeek = getPlanningWeek(referenceDate);
+  return { currentUnit, currentLesson, unitLessons, currentLessonIndex };
+}
+
+const PERIOD_FOUR_PLACEHOLDER = {
+  id: "planning-period-4-placeholder",
+  label: "Period 4",
+  isPlaceholder: true,
+};
+
+// Period 4 currently has no active section, so the grid would otherwise
+// skip straight from Period 3 to Period 5. Reserve an always-empty row for
+// it, positioned by each section's real Period number rather than array
+// order, until Period 4 scheduling is designed.
+function insertPeriodFourPlaceholder(sections, rawSections) {
+  const hasPeriodFour = rawSections.some(
+    (section) => Number(section.Period) === 4,
+  );
+  if (hasPeriodFour) return sections;
+
+  const insertIndex = rawSections.findIndex(
+    (section) => Number(section.Period) > 4,
+  );
+  const index = insertIndex === -1 ? sections.length : insertIndex;
+
+  return [
+    ...sections.slice(0, index),
+    PERIOD_FOUR_PLACEHOLDER,
+    ...sections.slice(index),
+  ];
+}
+
+export function getPlanningModel({
+  planningSections,
+  planningNavigationByCourse = {},
+  selectedCourseId,
+  units,
+  lessons,
+  schoolCalendar = [],
+  schedulePatterns = [],
+  referenceDate = new Date(),
+}) {
+  const courseContextCache = new Map();
+  function getCachedCourseContext(courseId) {
+    if (!courseContextCache.has(courseId)) {
+      courseContextCache.set(
+        courseId,
+        getCourseContext(planningNavigationByCourse[courseId], lessons, units),
+      );
+    }
+    return courseContextCache.get(courseId);
+  }
+
+  const calendarIndex = buildCalendarIndex(schoolCalendar);
+  const scheduleIndex = buildScheduleIndex(schedulePatterns);
+  const sectionMeetingMaps = buildSectionMeetingMaps(
+    planningSections,
+    calendarIndex,
+    scheduleIndex,
+  );
+
+  const planningWeek = getPlanningWeek({ referenceDate, calendarIndex });
   const { weekDays, teachingDays } = planningWeek;
 
-  const sections = selectedCourseSections.map((section) => ({
-    id: section.SectionID,
-    label: getSectionLabel(section),
-  }));
+  const sections = insertPeriodFourPlaceholder(
+    planningSections.map((section) => ({
+      id: section.SectionID,
+      label: getSectionLabel(section),
+      courseId: section.CourseID,
+      blockGroup: section.BlockGroup,
+    })),
+    planningSections,
+  );
 
-  // A cell exists for every section/teaching-day meeting. Whether it shows
-  // a title is entirely driven by real authored content — curriculum is
-  // never auto-projected onto a meeting the teacher hasn't planned.
+  // A cell exists only for a real section meeting: InstructionalDay must be
+  // true and the section's BlockGroup must meet that weekday per
+  // SchedulePatterns. Non-meeting days simply have no entry, so the grid
+  // renders its existing "open" empty state rather than inviting a lesson
+  // that can't happen. Whether a meeting shows a title is entirely driven
+  // by real authored content — curriculum is never auto-projected onto a
+  // meeting the teacher hasn't planned.
   const sessions = {};
 
   sections.forEach((section) => {
+    const meetingMap = sectionMeetingMaps.get(section.id);
+
     teachingDays.forEach((day) => {
+      const courseSessionNumber = meetingMap?.get(day.key) ?? null;
+      if (courseSessionNumber == null) return;
+
       const sessionId = `${section.id}-${day.key}`;
       const summary = getLessonSessionSummary(sessionId);
       const curriculumLesson = summary.curriculumLessonId
@@ -62,11 +139,18 @@ export function getPlanningModel({
           )
         : null;
 
+      const { currentUnit } = getCachedCourseContext(section.courseId);
+
       sessions[sessionId] = {
         id: sessionId,
         sectionId: section.id,
         sectionLabel: section.label,
         dayKey: day.key,
+        schoolDayNumber: day.schoolDayNumber,
+        courseSessionNumber,
+        event: day.event,
+        notes: day.notes,
+        dayType: day.dayType,
         unitId: currentUnit?.UnitID ?? null,
         unitLabel: [currentUnit?.UnitNumber, currentUnit?.UnitTitle]
           .filter(Boolean)
@@ -76,6 +160,9 @@ export function getPlanningModel({
       };
     });
   });
+
+  const selectedCourseContext = getCachedCourseContext(selectedCourseId);
+  const { currentUnit, unitLessons, currentLessonIndex } = selectedCourseContext;
 
   const shelfItems = unitLessons
     .slice(
