@@ -25,16 +25,28 @@ export async function saveDailyProgress(progress) {
 }
 
 export async function addLesson(lesson) {
-  await fetch(API_URL, {
+  const response = await fetch(API_URL, {
     method: "POST",
-    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
     body: JSON.stringify({
       action: "addLesson",
       ...lesson,
     }),
   });
 
-  return { ok: true };
+  if (!response.ok) {
+    throw new Error("Failed to add lesson");
+  }
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    throw new Error(data.error || "Failed to add lesson");
+  }
+
+  return data.lesson;
 }
 
 export async function updateLesson(lesson) {

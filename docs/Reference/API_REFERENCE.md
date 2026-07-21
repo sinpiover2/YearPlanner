@@ -124,11 +124,32 @@ Example payload:
 
 Returns:
 
+The complete created lesson record, so the frontend can reconcile an optimistic temporary lesson with its real identity without a full planner refresh.
+
 ```json
 {
-  "success": true
+  "ok": true,
+  "lessonId": "M8-U3-L5",
+  "lesson": {
+    "LessonID": "M8-U3-L5",
+    "CourseID": "M8",
+    "UnitID": "M8-U3",
+    "LessonNumber": 5,
+    "SortOrder": 5,
+    "LessonTitle": "Solving Proportions",
+    "PlannedDays": 1,
+    "KeyOutcome": "Solve proportions using multiple representations.",
+    "PrimaryLink": "",
+    "Description": "",
+    "TeacherNotes": ""
+  }
 }
 ```
+
+Request/response notes:
+
+- The frontend sends this POST without `mode: "no-cors"`, using the default `Content-Type: text/plain;charset=utf-8` (a CORS-safelisted content type) so the browser does not issue a preflight `OPTIONS` request, which this Apps Script deployment does not implement.
+- The Apps Script web app response (via the `script.googleusercontent.com` echo redirect that all `/exec` requests go through) includes `Access-Control-Allow-Origin: *`, so the JSON response body is readable cross-origin by `fetch()` in normal `cors` mode.
 
 ---
 

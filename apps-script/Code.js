@@ -481,7 +481,7 @@ function addLesson(payload) {
   sheet.appendRow(row);
 
   return ContentService.createTextOutput(
-    JSON.stringify({ ok: true, lessonId }),
+    JSON.stringify({ ok: true, lessonId, lesson: rowObject }),
   ).setMimeType(ContentService.MimeType.JSON);
 }
 

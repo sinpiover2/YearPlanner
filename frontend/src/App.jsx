@@ -302,6 +302,7 @@ function App() {
   });
   const [editingLessonId, setEditingLessonId] = useState(null);
   const [editLessonDraft, setEditLessonDraft] = useState(null);
+  const [deletingLessonId, setDeletingLessonId] = useState(null);
   const [planningReferenceDate, setPlanningReferenceDate] = useState(new Date());
   const [planningSelectedDayKey, setPlanningSelectedDayKey] = useState(null);
   const [activeLessonContext, setActiveLessonContext] = useState(null);
@@ -629,31 +630,71 @@ function App() {
 
     setIsAddingLessonSaving(true);
 
+    const courseId = selectedUnit.CourseID;
+    const unitId = selectedUnit.UnitID;
+    const lessonTitle = newLesson.lessonTitle.trim();
+    const plannedDays = Number(newLesson.plannedDays || 1);
+    const keyOutcome = newLesson.keyOutcomes
+      .map((goal) => goal.trim())
+      .filter(Boolean)
+      .join("|");
+    const primaryLink = "";
+    const provisionalLessonNumber = selectedUnitLessons.length + 1;
+
+    const temporaryLesson = {
+      LessonID: `temp-${Date.now()}`,
+      CourseID: courseId,
+      UnitID: unitId,
+      LessonNumber: provisionalLessonNumber,
+      SortOrder: provisionalLessonNumber,
+      LessonTitle: lessonTitle,
+      PlannedDays: plannedDays,
+      KeyOutcome: keyOutcome,
+      PrimaryLink: primaryLink,
+      TeacherNotes: "",
+    };
+
+    setPlannerData((prev) => ({
+      ...prev,
+      lessons: [...prev.lessons, temporaryLesson],
+    }));
+
+    setNewLesson({
+      lessonTitle: "",
+      plannedDays: 1,
+      keyOutcomes: [""],
+    });
+
+    setIsAddingLesson(false);
+
     try {
-      await addLesson({
-        courseId: selectedUnit.CourseID,
-        unitId: selectedUnit.UnitID,
-        lessonTitle: newLesson.lessonTitle.trim(),
-        plannedDays: Number(newLesson.plannedDays || 1),
-        keyOutcome: newLesson.keyOutcomes
-          .map((goal) => goal.trim())
-          .filter(Boolean)
-          .join("|"),
-        primaryLink: "",
+      const createdLesson = await addLesson({
+        courseId,
+        unitId,
+        lessonTitle,
+        plannedDays,
+        keyOutcome,
+        primaryLink,
       });
 
-      const refreshedData = await fetchPlannerData();
-      setPlannerData(refreshedData);
-
-      setNewLesson({
-        lessonTitle: "",
-        plannedDays: 1,
-        keyOutcomes: [""],
-      });
-
-      setIsAddingLesson(false);
+      setPlannerData((prev) => ({
+        ...prev,
+        lessons: prev.lessons.map((lesson) =>
+          lesson.LessonID === temporaryLesson.LessonID
+            ? createdLesson
+            : lesson,
+        ),
+      }));
     } catch (error) {
       console.error(error);
+
+      setPlannerData((prev) => ({
+        ...prev,
+        lessons: prev.lessons.filter(
+          (lesson) => lesson.LessonID !== temporaryLesson.LessonID,
+        ),
+      }));
+
       alert("Could not add lesson.");
     } finally {
       setIsAddingLessonSaving(false);
@@ -661,23 +702,54 @@ function App() {
   }
 
   async function handleDeleteLesson(lesson) {
+    if (deletingLessonId === lesson.LessonID) return;
+
     const confirmed = window.confirm(`Delete "${lesson.LessonTitle}"?`);
 
     if (!confirmed) return;
 
+    const lessonId = lesson.LessonID;
+
+    setEditingLessonId(null);
+    setEditLessonDraft(null);
+
+    if (lessonId.startsWith("temp-")) {
+      setPlannerData((prev) => ({
+        ...prev,
+        lessons: prev.lessons.filter((entry) => entry.LessonID !== lessonId),
+      }));
+      return;
+    }
+
+    const originalIndex = plannerData.lessons.findIndex(
+      (entry) => entry.LessonID === lessonId,
+    );
+    const deletedLesson = plannerData.lessons[originalIndex];
+
+    setDeletingLessonId(lessonId);
+
+    setPlannerData((prev) => ({
+      ...prev,
+      lessons: prev.lessons.filter((entry) => entry.LessonID !== lessonId),
+    }));
+
     try {
       await deleteLesson({
-        lessonId: lesson.LessonID,
+        lessonId,
       });
-
-      const refreshedData = await fetchPlannerData();
-
-      setPlannerData(refreshedData);
-      setEditingLessonId(null);
-      setEditLessonDraft(null);
     } catch (error) {
       console.error(error);
+
+      setPlannerData((prev) => {
+        const lessons = [...prev.lessons];
+        const insertAt = Math.min(originalIndex, lessons.length);
+        lessons.splice(insertAt, 0, deletedLesson);
+        return { ...prev, lessons };
+      });
+
       alert("Could not delete lesson.");
+    } finally {
+      setDeletingLessonId(null);
     }
   }
 
