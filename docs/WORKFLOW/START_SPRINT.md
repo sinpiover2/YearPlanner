@@ -15,6 +15,14 @@
 
 ---
 
+## 2a. If This Sprint Includes Architecture Work
+
+- [ ] Identify the canonical architecture documents that govern the area being changed (start from `ARCHITECTURE_INDEX.md`)
+- [ ] Perform reconciliation before editing — see the Architecture Reconciliation Workflow in DEVELOPMENT_WORKFLOW.md
+- [ ] Do not make architecture changes before that review is complete
+
+---
+
 ## 3. Verify Repository
 
 - [ ] git status clean
@@ -45,6 +53,22 @@
 ## 6. Begin Work
 
 - [ ] Execute the First-Hour Plan from the handoff
+
+---
+
+## Implementation Status Tracking
+
+Track every unit of work with one of the following statuses:
+
+- **PLANNED** — scoped, not yet started
+- **IMPLEMENTED** — working tree only; not yet verified
+- **BUILT** — production build passes
+- **BROWSER TESTED** — verified in a running browser
+- **DEPLOYED** — deployed to the relevant environment (e.g. Apps Script)
+- **COMMITTED** — committed to git
+- **PUSHED** — pushed to GitHub
+
+IMPLEMENTED means working tree only. It is not considered complete until the appropriate verification steps (BUILT, BROWSER TESTED, DEPLOYED, as applicable) are finished.
 
 ---
 

@@ -26,15 +26,19 @@ Before writing the handoff, answer:
 - [ ] What caused confusion?
 - [ ] What documentation was missing?
 - [ ] What should become permanent workflow?
+- [ ] Did any workflow improvements emerge this sprint (e.g. a better way to sequence architecture review, a reusable prompt pattern)?
 
 For anything that should become permanent, decide where it belongs and make the change now:
 
 - [ ] START_SPRINT.md
 - [ ] DEVELOPMENT_WORKFLOW.md
 - [ ] END_SPRINT.md
+- [ ] LESSONS_LEARNED.md
 - [ ] HANDOFF_PROTOCOL.md
 - [ ] CLASSROOM_READINESS.md
 - [ ] Another permanent document
+
+If a permanent improvement was discovered, update DEVELOPMENT_WORKFLOW.md before completing the sprint — do not leave it recorded only in the handoff.
 
 ## Sprint Handoff
 
@@ -46,9 +50,17 @@ For anything that should become permanent, decide where it belongs and make the 
   - Is it clear what NOT to work on?
 - [ ] Revise until every answer above is satisfactory
 
+## Implementation Status Review
+
+- [ ] Confirm no work is left at IMPLEMENTED (working tree only) without required verification
+- [ ] Confirm BUILT status where a build was required
+- [ ] Confirm BROWSER TESTED status where UI was touched
+- [ ] Confirm DEPLOYED status where deployment was required
+- [ ] Do not mark work COMMITTED or PUSHED until the statuses above are satisfied
+
 ## Git
 
 - [ ] git status
 - [ ] git add
-- [ ] git commit
-- [ ] git push
+- [ ] git commit (status: COMMITTED)
+- [ ] git push (status: PUSHED)

@@ -217,6 +217,26 @@ The goal is continuous simplification.
 
 ---
 
+# Architecture Reconciliation Workflow
+
+Architecture documents (`docs/Architecture/`) are the canonical model of the system. Changing them is a distinct process from implementing code, and the two phases are never collapsed into one step. See `ARCHITECTURE_DOCUMENT_STANDARDS.md` for what makes an architecture document correct.
+
+Use this workflow whenever a sprint changes an architecture document, not just when it changes code that an architecture document describes.
+
+1. **Identify the canonical documents.** Determine which documents in `docs/Architecture/` govern the area being changed. Start from `ARCHITECTURE_INDEX.md`.
+2. **Read without editing.** Read the target document(s) fully before proposing any change.
+3. **Produce a reconciliation analysis only.** Write out what is inconsistent, outdated, or in conflict — without touching the document yet.
+4. **Review every proposed change.** Walk through each proposed change individually rather than approving the analysis as a block.
+5. **Approve or reject each recommendation.**
+6. **Generate one complete implementation prompt.** Following the Prompt Revisions standard below, produce a single, self-contained prompt covering all approved changes.
+7. **Apply the approved changes.**
+8. **Perform a QA review.** Re-read the edited document for internal consistency and terminology drift before moving on.
+9. **Commit only after the document is internally consistent.**
+
+Architectural review and implementation are intentionally separate phases. Do not begin editing an architecture document while still analyzing it — the analysis must be reviewable on its own before any text changes.
+
+---
+
 # Coding Principles
 
 The following principles guide implementation.
@@ -349,6 +369,8 @@ Common sources of recurring friction:
 - unnecessary backtracking
 
 If it will happen again, fix the workflow documents before ending the sprint — not after. Update the document, adopt the improvement immediately, and use it starting next sprint.
+
+For lessons worth preserving beyond the sprint that produced them, record them in LESSONS_LEARNED.md.
 
 ---
 
