@@ -242,6 +242,24 @@ Recommendation
 
 ---
 
+# Protect Existing Work
+
+Before making a scoped code change:
+
+- Run `git status --short`.
+- Inspect the existing diff for the target file.
+- Treat all existing uncommitted changes as protected.
+- Do not modify unrelated code.
+
+After editing, show both:
+
+- the complete file diff
+- the diff for the requested function/section when practical
+
+This prevents a scoped change from silently overwriting or reviewing away work that is already in progress.
+
+---
+
 # Git Standards
 
 Each commit represents one logical feature or improvement.
@@ -267,6 +285,27 @@ Updates
 
 Misc changes
 ```
+
+---
+
+# AI Prompt Standard
+
+Whenever ChatGPT prepares a prompt for Claude Code (CC), Claude Desktop (CD), or Codex/CP, it must always output exactly one Markdown code block.
+
+- The code block must contain the complete prompt.
+- No required instructions may appear outside the code block.
+- The prompt must be immediately copy-and-paste ready.
+- Any explanatory commentary belongs outside the code block and must never be required for successful execution.
+
+---
+
+# Prompt Revisions
+
+Once a prompt has been generated, treat that prompt as disposable.
+
+- If any revision is requested, regenerate the entire prompt as a new complete Markdown code block.
+- Do not issue incremental edits such as "add this paragraph" or "replace this sentence."
+- Every revision should produce one fresh, self-contained prompt that completely replaces the previous version.
 
 ---
 
