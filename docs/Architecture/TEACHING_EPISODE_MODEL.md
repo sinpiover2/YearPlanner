@@ -2,6 +2,7 @@
 
 **Document Status:** Foundational Architecture · Amendment (append-only)
 **Amends:** `LESSON_PLANNER.md`, `LESSON_PLANNER_INFORMATION_MODEL.md`
+**See also:** `ENACTMENT_MODEL.md` — defines the broader enactment architecture (Session Enactment, the Post-Class Debrief, and full Placement Enactment detail). This document is a focused view of the Teaching Episode → Episode Placement → Placement Enactment chain, not a supersession of that document.
 **Purpose:** Establish the **Teaching Episode** as the durable, portable, first-class object of Lesson Planner, and define how episodes are placed in sessions, how enacted truth is recorded, and how episodes move, reuse, split, merge, and skip without corrupting instructional history.
 
 > This amendment is self-contained. It assumes no knowledge of the conversation that produced it.
@@ -34,17 +35,19 @@ This amendment resolves the contradiction by **refining containment into referen
 
 ## 1. The three layers (the core distinction)
 
-Every reader of this document must hold these three layers apart. Most modeling errors in this domain come from collapsing two of them.
+Every reader of this document must hold these three layers apart. Most modeling errors in this domain come from collapsing two of them. This section describes these three layers as they relate to Teaching Episodes; the full enactment architecture — including Session Enactment and the Post-Class Debrief that creates both Session and Placement Enactments — is defined in `ENACTMENT_MODEL.md`.
 
 | Layer | Object | Answers | Portable? | Where enacted truth lives |
 |---|---|---|---|---|
 | **1. Content** | **Teaching Episode** | *What is this piece of teaching?* | **Yes** — travels intact | never here |
 | **2. Placement** | **Episode Placement** | *Where does this episode sit, and how did it get here?* | per session | never here |
-| **3. Status** | **Placement Status** | *What happened to this episode in **this** session?* | never — stays behind | **here, and only here** |
+| **3. Enactment** | **Placement Enactment** | *What happened to this episode in **this** session?* | never — stays behind | **here, and only here** |
 
 Stated as one sentence:
 
-> **A Teaching Episode is durable content. An Episode Placement is a session's ordered reference to that content. A Placement Status is the enacted truth of that one reference. Content travels; status does not.**
+> **A Teaching Episode is durable content. An Episode Placement is a session's ordered reference to that content. A Placement Enactment is the enacted truth of that one reference, recorded through the Post-Class Debrief. Content travels; enacted truth does not.**
+
+*Terminology note: this layer was previously named "Placement Status" in this document. It is renamed to **Placement Enactment** for consistency with `ENACTMENT_MODEL.md` and `LESSON_PLANNER_INFORMATION_MODEL.md`, which use that name for the same object. The status values and behavior below are unchanged.*
 
 ### Layer 1 — Teaching Episode (durable content)
 
@@ -59,7 +62,7 @@ A Teaching Episode owns:
 - **learning-target** references
 - **deliverables** (first-class objects; own lifecycle)
 - **materials**, **misconceptions**, and other summoned supports
-- **episode-level reflection** (travels with the episode — distinct from session reflection; see EM-15, Q-EM-8)
+- **Episode Note** (durable reflection that travels with the episode — distinct from the Session Note; see EM-15, Q-EM-8)
 - **provenance / curriculum attachment** (EM-16)
 - **lineage** links for split/merge (EM-9, EM-10)
 
@@ -75,9 +78,9 @@ A per-session record that points a Lesson Session at one Teaching Episode. It ow
 
 One Teaching Episode may be referenced by **many** placements (across sections, across days). A placement references exactly **one** episode.
 
-### Layer 3 — Placement Status (enacted status of the placement)
+### Layer 3 — Placement Enactment (enacted outcome of the placement)
 
-The enacted truth of a single placement — the only layer that records what happened. One status per placement:
+A Placement Enactment is the enacted truth of a single placement — the only layer that records what happened. It is a distinct record, created and updated only through the Post-Class Debrief (see `ENACTMENT_MODEL.md`, "Canonical Entry Point"), that references the Episode Placement it describes. It is enacted truth, not a mutable field embedded on the Episode Placement itself. One status per placement:
 
 - `planned` — placed, not yet taught
 - `reached` — taught to completion here
@@ -85,7 +88,7 @@ The enacted truth of a single placement — the only layer that records what hap
 - `skipped` — deliberately omitted here (distinct from not-reached; EM-11)
 - `carried-forward` — the bell rang before this was reached and its continuation was placed elsewhere (EM-5)
 
-Status **never** lives on the episode content. Editing an episode's content **never** rewrites the status of any past placement. This is the invariant that keeps history honest (see §12).
+Enacted status never lives on the episode content. Editing an episode's content never rewrites a past placement's Placement Enactment. This is the invariant that keeps history honest (see §12).
 
 ---
 
@@ -97,13 +100,13 @@ Each decision is stated with rationale and a data-provenance tag: **[exists]**, 
 The unit a teacher builds, reads, revises, and reuses is the episode, not the lesson document and not the session. **[new]** for identity; the fields it carries mostly **[exist]** as today's "Instructional Segment."
 
 **EM-2 — A Lesson Session is a dated instructional envelope that references an ordered sequence of Episode Placements.**
-It does not own episodes by containment. It owns its meeting identity and its whole-session reflection (EM-15). **[new]** (reference relationship replaces containment).
+It does not own episodes by containment. It owns its meeting identity and its ordered Episode Placements; the Session Note belongs to the Session Enactment, not the envelope (EM-15; see `ENACTMENT_MODEL.md`). **[new]** (reference relationship replaces containment).
 
 **EM-3 — Episode Placement is the per-session record of an episode's position and origin.**
 Order index plus carry-origin. It is the reconciliation of the ambiguous "LessonSessionItem" (see §6). **[new]**
 
-**EM-4 — Placement Status carries all enacted truth, and lives only on the placement.**
-No enacted status is ever stored on episode content. **[new]**
+**EM-4 — Placement Enactment carries all enacted truth, and is created only through the Post-Class Debrief.**
+No enacted status is ever stored on episode content, and no enacted status is stored as a mutable field on the Episode Placement itself. A Placement Enactment is a distinct enacted-truth record referencing its Episode Placement (see `ENACTMENT_MODEL.md`). **[new]**
 
 **EM-5 — Bumping is a dual write.**
 Moving an unreached (or partial) episode from session S₁ to S₂:
@@ -111,6 +114,8 @@ Moving an unreached (or partial) episode from session S₁ to S₂:
 2. **S₂ receives a new placement** referencing the **same** Teaching Episode, with `carry-origin` = the S₁ placement, status `planned`.
 3. **The episode content is unchanged and shared.** One episode, two placements, two independent statuses.
 This preserves evidence of earlier work rather than making the prior day look as though the episode never existed. **[new]**
+
+*Note: whether `carried-forward` is best represented as its own status value (as used above) or as an outcome plus a separate carry-forward consequence (e.g., `partial` plus a distinct carry-forward relationship) is an open question tracked as Q-EN-3 in `ENACTMENT_MODEL.md`. This document preserves the behavior described above; the representation is not settled by this amendment.*
 
 **EM-6 — Partial completion is a status, optionally with a within-episode waterline.**
 An episode may be `partial`: begun, not finished. The status may carry a pointer to how far the interior got (the "waterline"). Whether partial completion *splits* the episode or merely *marks* a waterline that carries the whole episode forward is open (Q-EM-1). **[new]**
@@ -141,11 +146,11 @@ The sum of an envelope's planned episode durations may exceed the meeting length
 **EM-14 — Estimated duration is authored on the episode; clock time is derived and owned elsewhere.**
 Each episode carries an authored estimated duration. Wall-clock times (start/end per episode) are **derived** from the meeting start (supplied by Today) plus cumulative durations, and belong to Today/Forecast — **never** stored on the episode. Because episodes move and overplanning is expected, stored clock stamps would be fiction. This resolves the standing "does a clock column belong in Lesson Planner" question: no. Duration: **[exists]**. Derived clock time: **[derivable]**.
 
-**EM-15 — Whole-session reflection stays on the Lesson Session envelope; episode reflection stays on the episode.**
+**EM-15 — The Session Note belongs to the Session Enactment; the Episode Note stays on the episode.**
 Two reflection homes, deliberately separate:
-- **Session reflection** — about *this meeting* (this section, this date). Non-portable. Lives on the envelope.
-- **Episode reflection** — about *this piece of teaching*. Portable. Travels with the episode.
-The session envelope also owns the meeting identity handed down by Today (course, section, date, period). The "lesson" is the envelope plus its referenced episodes — the collection claim (EM-2) is true of the lesson's **body**, not its **envelope**. **[exists]** as concepts; **[new]** as an explicit split.
+- **Session Note** — about *this meeting* (this section, this date). Non-portable, historical. It belongs to the Session Enactment, created through the Post-Class Debrief (see `ENACTMENT_MODEL.md`) — not to the Lesson Session envelope itself.
+- **Episode Note** — about *this piece of teaching*. Portable. Travels with the episode.
+The Lesson Session envelope owns the meeting identity handed down by Today (course, section, date, period) and its ordered Episode Placements; it does not itself hold the Session Note. The "lesson" is the envelope plus its referenced episodes — the collection claim (EM-2) is true of the lesson's **body**, not its **envelope**. **[exists]** as concepts; **[new]** as an explicit split.
 
 **EM-16 — Provenance and curriculum attachment live on episode content and travel with it.**
 Learning-target references, deliverable objects, materials, and the Planned-Curriculum-Lesson link are properties of the Teaching Episode. When an episode is bumped or reused, these travel automatically because they are part of the content, not the placement. Split and merge propagate them per EM-9/EM-10. A moving episode never loses its curriculum meaning. **[exists]** for the links; **[new]** for travel-with-content guarantee.
@@ -157,12 +162,14 @@ Learning-target references, deliverable objects, materials, and the Planned-Curr
 ```text
 LessonSession  (envelope — dated, per-section)
   ├── meeting identity        (from Today: course, section, date, period)   [exists]
-  ├── session reflection       (non-portable)                                [exists]
+  ├── → SessionEnactment  (session-level facts and Session Note; created
+  │     via the Post-Class Debrief — see `ENACTMENT_MODEL.md`)               [see ENACTMENT_MODEL.md]
   └── ordered [ EpisodePlacement ]                                           [new]
          ├── order index                                                     [new]
          ├── carry-origin  → EpisodePlacement | null                         [new]
-         ├── PlacementStatus  (planned | reached | partial | skipped |
-         │                     carried-forward  [+ optional waterline])      [new]
+         ├── → PlacementEnactment  (planned | reached | partial | skipped |
+         │     carried-forward  [+ optional waterline]; created via the
+         │     Post-Class Debrief — see `ENACTMENT_MODEL.md`)                [new]
          └── → TeachingEpisode  (durable content, shared)                    [new id]
                  ├── title                                                   [exists]
                  ├── phase / type                                            [exists → split, Q-EM-7]
@@ -171,7 +178,7 @@ LessonSession  (envelope — dated, per-section)
                  ├── learning-target refs                                    [exists]
                  ├── [ Deliverable ]  (first-class)                          [exists → new lifecycle]
                  ├── materials / misconceptions / supports                   [exists]
-                 ├── episode reflection  (portable)                          [derivable]
+                 ├── Episode Note  (portable)                                [derivable]
                  ├── provenance / curriculum link                            [exists]
                  └── lineage  (split/merge parents)                          [new]
 ```
@@ -188,8 +195,8 @@ planned-vs-available gap      =  Σ durations  −  meeting length          [der
 
 These are the safety rails. A violation is a defect regardless of how convenient it looks.
 
-1. **Enacted status never lives on episode content.** It lives only on a placement.
-2. **Editing episode content never alters any past placement's status.** History is immutable through content edits.
+1. **Enacted status never lives on episode content.** It lives only in a Placement Enactment, which references the placement it describes.
+2. **Editing episode content never alters any past Placement Enactment.** History is immutable through content edits.
 3. **Bumping never deletes the origin placement.** The origin is marked, not erased.
 4. **One episode may have many placements; a placement has exactly one episode.**
 5. **A moving episode never loses provenance or curriculum attachment.**
@@ -247,7 +254,7 @@ Namespaced `Q-EM-n`. These block implementation of the affected behavior only.
 - **Q-EM-5 — Split/merge identity.** New IDs for all children with lineage links, or does one child retain the parent ID? Affects EM-9/EM-10 and any external references to episode IDs.
 - **Q-EM-6 — Reuse: shared content vs. clone.** *(Consequential — ties to sibling-section propagation / "compose once, apply to many.")* When one episode is reused across sections, is it one content object referenced by all placements (edits propagate) or a per-placement copy (edits diverge)? Recommendation to test, not yet ratified: **shared content by default** (that is the point of reuse), with per-placement content overrides deferred rather than designed in now. This is the single most important open question in the amendment.
 - **Q-EM-7 — Interior taxonomy & support placement.** Split of `phase` (pedagogical) from `type` (logistics); and whether supports are typed Blocks or separate episode-level attachments. Folds into the existing item-taxonomy item.
-- **Q-EM-8 — Episode reflection under movement.** Does episode-level reflection travel with a bumped episode? If an episode is partially taught across two sessions, where does its reflection attach — to the content (portable) or to each placement (per-occasion)? Affects EM-15.
+- **Q-EM-8 — Episode Note under movement.** Does the Episode Note travel with a bumped episode? If an episode is partially taught across two sessions, where does its reflection attach — to the content (portable, as an Episode Note) or to each placement (per-occasion)? Affects EM-15.
 
 ---
 
