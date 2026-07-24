@@ -636,7 +636,7 @@ Prefer, consistently:
 |---|---|
 | Instructional Segment | Teaching Episode |
 | Lesson Completion | Placement Enactment status (`reached` / `partial` / `skipped`) |
-| Instructional Event | Teaching Episode, or its Placement Enactment, depending on context |
+| Instructional Event | No single replacement — read as whichever fits context: `Teaching Episode` (the reusable planned content), `Episode Placement` (that content scheduled within a Lesson Session), `Session Enactment` (the enacted record for the Lesson Session), or `Placement Enactment` (the enacted result for one Episode Placement) |
 | "LessonSessionItem" | Episode Placement (or Teaching Episode, if it referred to the movable content — see `TEACHING_EPISODE_MODEL.md` §6) |
 
 ---

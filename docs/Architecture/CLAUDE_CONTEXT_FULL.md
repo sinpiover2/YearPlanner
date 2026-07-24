@@ -45,8 +45,8 @@ The suite currently consists of five perspectives.
 | ---------------- | ----------------------------------- | --------------------------------------------------------------- |
 | Forecast         | Where are we?                       | Interpret pacing and the consequences of instructional time.    |
 | Units            | What are we learning?               | Explain the planned curriculum.                                 |
-| Today            | What happened today?                | Record the enacted curriculum.                                  |
-| Lesson Planner   | How will I teach this lesson?       | Prepare and support lesson delivery.                            |
+| Today            | What am I teaching today?           | Orient the teacher to today's instructional flow.                |
+| Lesson Planner   | How will I teach this lesson?       | Prepare instruction and own the enacted instructional record.    |
 | Student Learning | What am I responsible for learning? | Help students understand goals, success criteria, and progress. |
 
 Year Planner is the name of the suite.
@@ -114,24 +114,26 @@ Units communicates intent.
 
 Primary Question:
 
-> What happened today?
+> What am I teaching today?
 
 Responsibilities:
 
-- record instructional events
-- record lesson completion
-- record partial completion
-- capture instructional notes
-- support section-specific instructional adjustments
+- orient the teacher to today's instructional flow
+- surface the next lesson and readiness to teach it
+- consume the Planned Curriculum to show today's context
+- consume the Enacted Curriculum to show current status
+- launch Lesson Planner when instructional recording is needed
 
 Does Not Do:
 
+- own the Enacted Curriculum
+- author instructional history
 - rewrite the planned curriculum for all sections
 - interpret long-term pacing consequences
 - prepare future lessons
 - become a curriculum map
 
-Today records classroom reality.
+Today orients the teacher to the current day. It reads planning and enacted information recorded elsewhere; it does not record classroom reality itself. Recording happens in Lesson Planner, through the Post-Class Debrief, once the teacher has taught from paper.
 
 ---
 
@@ -148,15 +150,17 @@ Responsibilities:
 - organize resources
 - surface instructional strategies
 - support teacher reflection
+- own the Enacted Curriculum, recorded through the Post-Class Debrief
+- serve as the architectural home of Session Enactments and Placement Enactments
+- own the instructional knowledge captured through the Post-Class Debrief
 
 Does Not Do:
 
 - own yearly pacing
 - own the curriculum sequence
-- own official instructional records
 - make instructional decisions for teachers
 
-Lesson Planner prepares instruction.
+Lesson Planner prepares instruction and records what actually happened, through the Post-Class Debrief (see `POST_CLASS_DEBRIEF.md`, `ENACTMENT_MODEL.md`).
 
 Teachers teach.
 
@@ -222,11 +226,11 @@ Teacher Judgment
 
 Units explains the Planned Curriculum.
 
-Today records the Enacted Curriculum.
+Today surfaces the Enacted Curriculum recorded by Lesson Planner and orients the teacher to the current day.
 
 Forecast interprets the relationship between the plan and reality.
 
-Lesson Planner prepares instruction using the plan and relevant context.
+Lesson Planner records the Enacted Curriculum, through the Post-Class Debrief, and prepares instruction using the plan and relevant context.
 
 Student Learning presents learning goals and progress in student-facing form.
 
@@ -347,7 +351,7 @@ They do not share ownership.
 
 ---
 
-# Domain 1 � Planned Curriculum
+# Domain 1 � Planned Curriculum
 
 The Planned Curriculum represents instructional intent.
 
@@ -555,131 +559,146 @@ Consumed By:
 
 ---
 
-# Domain 2 � Enacted Curriculum
+# Domain 2 — Enacted Curriculum
 
 The Enacted Curriculum represents classroom reality.
 
-It is created as instruction occurs.
+It is created when the teacher records what happened, not while instruction is occurring — teaching itself happens from paper, without required software interaction.
 
-The Today subsystem is the canonical owner of the Enacted Curriculum.
+Lesson Planner is the canonical owner of the Enacted Curriculum. The Post-Class Debrief is the architectural entry point through which it is recorded; no other workspace independently authors it (see `POST_CLASS_DEBRIEF.md`, `ENACTMENT_MODEL.md`, "Canonical Entry Point").
+
+Today consumes the Enacted Curriculum to display current status. It is not the canonical owner and does not author it.
 
 ---
 
-## Instructional Event
+## Session Enactment
 
-Represents a single instructional day for a specific section.
+Represents the recorded, after-class account of one Lesson Session for one section on one instructional date — the enacted counterpart to a planned meeting.
 
 Examples:
 
-- Math 8 Period 2
-- September 14
+- Math 8, Period 2, September 14 — debrief complete, minor interruption noted
 
 Canonical Owner:
 
-- Today
+- Lesson Planner
 
 Authored By:
 
-- Teacher
+- Teacher, through the Post-Class Debrief
 
 Changes When:
 
-- Instruction occurs
+- The teacher completes or revises a Post-Class Debrief
 
 Consumed By:
 
 - Today
 - Forecast
+- Lesson Planner
+
+Full field-level detail lives in `ENACTMENT_MODEL.md`; it is not restated here.
 
 ---
 
-## Lesson Completion
+## Placement Enactment
 
-Represents progress through the planned curriculum.
+Represents the recorded outcome of one planned placement of instructional content within a Lesson Session.
 
 Examples:
 
-- completed
-- partially completed
-- not completed
+- reached
+- partial
+- skipped
+- carried-forward
+
+A `skipped` or `carried-forward` outcome may lead to a new placement in a future Lesson Session — the reconciled replacement for what earlier material called a "Section-Specific Instructional Adjustment." That adjustment is a planning consequence of an enacted outcome, not a separate stored object (see `ENACTMENT_MODEL.md`, "Carry-Forward").
 
 Canonical Owner:
 
-- Today
+- Lesson Planner
 
 Authored By:
 
-- Teacher
+- Teacher, through the Post-Class Debrief
 
 Changes When:
 
-- Instruction occurs
+- Instruction occurs and is recorded
 
 Consumed By:
 
 - Today
 - Forecast
 - Units (orientation only)
+- Lesson Planner
+
+Full status definitions live in `ENACTMENT_MODEL.md` and `TEACHING_EPISODE_MODEL.md`; they are not restated here.
 
 ---
 
-## Instructional Notes
+## Session Note
 
-Teacher observations recorded during or after instruction.
+Teacher observations that are primarily true about one class period — this section, this date. Non-portable; stays with the Session Enactment in which it was recorded.
 
 Canonical Owner:
 
-- Today
+- Lesson Planner
 
 Authored By:
 
-- Teacher
+- Teacher, through the Post-Class Debrief
 
 Changes When:
 
-- Teacher edits notes
+- The teacher adds or edits a session-specific observation
 
 Consumed By:
 
-- Today
+- Lesson Planner
+
+See `ENACTMENT_MODEL.md`, "Session Notes," for full detail.
 
 ---
 
-## Section-Specific Instructional Adjustment
+## Episode Note
 
-Represents a temporary modification made for one section.
-
-Examples:
-
-- additional practice day
-- continuation day
-- skipped activity
-- modified pacing for one class
-
-These adjustments modify instruction for a specific section.
-
-They do not modify the planned curriculum.
+Durable teaching knowledge about a piece of instructional content, captured through the Post-Class Debrief. Unlike Session Enactment and Placement Enactment, an Episode Note is not itself an enacted-truth record — it is stored with the reusable Teaching Episode it describes. It appears in this domain only because of when it is authored, not because Teaching Episode is part of the Enacted Curriculum.
 
 Canonical Owner:
 
-- Today
+- Teaching Episode
 
 Authored By:
 
-- Teacher
+- Teacher, through the Post-Class Debrief
 
 Changes When:
 
-- Teacher modifies instruction for one section
+- The teacher records or revises durable teaching knowledge
 
 Consumed By:
 
-- Today
-- Forecast
+- Lesson Planner
+
+See `TEACHING_EPISODE_MODEL.md` and `ENACTMENT_MODEL.md`, "Notes Model," for full detail.
 
 ---
 
-# Domain 3 � Interpretation
+## Deprecated Terminology
+
+Earlier material used different names for the concepts above. These are retained here only as a lookup, not as canonical terms.
+
+| Old term | Read instead as |
+|---|---|
+| Instructional Event | No single replacement — read as whichever fits context: `Teaching Episode` (the reusable planned content), `Episode Placement` (that content scheduled within a Lesson Session), `Session Enactment` (the enacted record for the Lesson Session), or `Placement Enactment` (the enacted result for one Episode Placement) |
+| Lesson Completion | Placement Enactment status (`reached` / `partial` / `skipped`) |
+| Instructional Notes | Session Note (session-specific) or Episode Note (episode-specific), depending on content |
+| Section-Specific Instructional Adjustment | a carry-forward, skip, split, or merge recorded through the Post-Class Debrief |
+
+---
+
+# Domain 3 — Interpretation
 
 Interpretation represents understanding derived from comparing the planned curriculum with the enacted curriculum.
 
@@ -768,7 +787,7 @@ Consumed By:
 
 Curriculum revision is distinct from instructional recording.
 
-Instructional events describe what happened.
+Session Enactments and Placement Enactments describe what happened.
 
 Curriculum revisions intentionally modify the planned curriculum.
 
@@ -793,7 +812,7 @@ Examples include:
 
 Units
 
-- consumes Lesson Completion solely to provide orientation within the planned curriculum.
+- consumes Placement Enactment status solely to provide orientation within the planned curriculum.
 
 Forecast
 
@@ -801,10 +820,16 @@ Forecast
 - consumes the Enacted Curriculum.
 - produces Interpretation.
 
+Today
+
+- consumes the Enacted Curriculum to display current status.
+- does not author it.
+
 Lesson Planner
 
 - consumes the Planned Curriculum.
-- consumes relevant instructional history when appropriate.
+- owns and authors the Enacted Curriculum through the Post-Class Debrief (see `POST_CLASS_DEBRIEF.md`).
+- consumes relevant instructional history when preparing future sessions.
 - does not own curriculum structure.
 
 Ownership never changes because information is shared.
@@ -819,7 +844,7 @@ Information may have many consumers.
 
 Interpretation is never stored when it can be computed.
 
-Subsystems own responsibilities�not data duplication.
+Subsystems own responsibilities�not data duplication.
 
 Whenever uncertainty exists about where a feature belongs, determine:
 
@@ -925,7 +950,7 @@ These actions modify the curriculum itself.
 
 They are not records of classroom instruction.
 
-> Units changes because the teacher intentionally revises the curriculum�not because instruction happened.
+> Units changes because the teacher intentionally revises the curriculum�not because instruction happened.
 
 Curriculum revisions may be initiated from multiple parts of the suite, but every revision ultimately modifies the Planned Curriculum owned by Units.
 
@@ -944,11 +969,11 @@ These include:
 - Lesson Sequence
 - Planned Time
 
-Units may also consume limited information from the **Enacted Curriculum** solely for orientation.
+Units may also consume limited information from the **Enacted Curriculum** — owned by Lesson Planner — solely for orientation.
 
 Examples include:
 
-- current lesson location
+- current lesson location, derived from Placement Enactment status
 
 Units never owns instructional records.
 
@@ -1151,19 +1176,16 @@ Units communicates intent.
 
 Today answers:
 
-> **What happened today?**
+> **What am I teaching today?**
 
-Today represents the Enacted Curriculum.
+Today is the operational workspace for the current instructional day.
 
-It owns:
+It consumes:
 
-- instructional events
-- lesson completion
-- partial completion
-- instructional notes
-- section-specific instructional adjustments
+- the Planned Curriculum, to orient the teacher to today's lesson
+- the Enacted Curriculum, owned by Lesson Planner, to show current status
 
-Today records classroom reality.
+Today launches Lesson Planner when instructional recording is required.
 
 Units represents the instructional plan.
 
@@ -1185,7 +1207,7 @@ It owns:
 - assessments
 - teacher reflection
 
-Lesson Planner prepares instruction.
+Lesson Planner prepares instruction. It is also the canonical owner of the Enacted Curriculum, recorded through the Post-Class Debrief (see `ENACTMENT_MODEL.md`, `POST_CLASS_DEBRIEF.md`) — Units' orientation feature (see "Information Consumed," above) reads from that record rather than maintaining one of its own.
 
 Units explains the curriculum.
 

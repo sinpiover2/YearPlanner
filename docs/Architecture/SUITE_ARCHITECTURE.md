@@ -45,8 +45,8 @@ The suite currently consists of five perspectives.
 | ---------------- | ----------------------------------- | --------------------------------------------------------------- |
 | Forecast         | Where are we?                       | Interpret pacing and the consequences of instructional time.    |
 | Units            | What are we learning?               | Explain the planned curriculum.                                 |
-| Today            | What happened today?                | Record the enacted curriculum.                                  |
-| Lesson Planner   | How will I teach this lesson?       | Prepare and support lesson delivery.                            |
+| Today            | What am I teaching today?           | Orient the teacher to today's instructional flow.                |
+| Lesson Planner   | How will I teach this lesson?       | Prepare instruction and own the enacted instructional record.    |
 | Student Learning | What am I responsible for learning? | Help students understand goals, success criteria, and progress. |
 
 Year Planner is the name of the suite.
@@ -114,24 +114,26 @@ Units communicates intent.
 
 Primary Question:
 
-> What happened today?
+> What am I teaching today?
 
 Responsibilities:
 
-- record instructional events
-- record lesson completion
-- record partial completion
-- capture instructional notes
-- support section-specific instructional adjustments
+- orient the teacher to today's instructional flow
+- surface the next lesson and readiness to teach it
+- consume the Planned Curriculum to show today's context
+- consume the Enacted Curriculum to show current status
+- launch Lesson Planner when instructional recording is needed
 
 Does Not Do:
 
+- own the Enacted Curriculum
+- author instructional history
 - rewrite the planned curriculum for all sections
 - interpret long-term pacing consequences
 - prepare future lessons
 - become a curriculum map
 
-Today records classroom reality.
+Today orients the teacher to the current day. It reads planning and enacted information recorded elsewhere; it does not record classroom reality itself. Recording happens in Lesson Planner, through the Post-Class Debrief, once the teacher has taught from paper.
 
 ---
 
@@ -148,15 +150,17 @@ Responsibilities:
 - organize resources
 - surface instructional strategies
 - support teacher reflection
+- own the Enacted Curriculum, recorded through the Post-Class Debrief
+- serve as the architectural home of Session Enactments and Placement Enactments
+- own the instructional knowledge captured through the Post-Class Debrief
 
 Does Not Do:
 
 - own yearly pacing
 - own the curriculum sequence
-- own official instructional records
 - make instructional decisions for teachers
 
-Lesson Planner prepares instruction.
+Lesson Planner prepares instruction and records what actually happened, through the Post-Class Debrief (see `POST_CLASS_DEBRIEF.md`, `ENACTMENT_MODEL.md`).
 
 Teachers teach.
 
@@ -222,11 +226,11 @@ Teacher Judgment
 
 Units explains the Planned Curriculum.
 
-Today records the Enacted Curriculum.
+Today surfaces the Enacted Curriculum recorded by Lesson Planner and orients the teacher to the current day.
 
 Forecast interprets the relationship between the plan and reality.
 
-Lesson Planner prepares instruction using the plan and relevant context.
+Lesson Planner records the Enacted Curriculum, through the Post-Class Debrief, and prepares instruction using the plan and relevant context.
 
 Student Learning presents learning goals and progress in student-facing form.
 

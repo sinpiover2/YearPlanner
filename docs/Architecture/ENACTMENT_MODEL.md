@@ -2,7 +2,7 @@
 
 # Enactment Model
 
-**Status:** Draft Architecture
+**Status:** Foundational Architecture — core ownership and object model ratified; bounded open questions remain (see "Open Questions")
 
 **Purpose:** Define how Year Planner records, stores, and derives what actually happened during instruction.
 
@@ -18,6 +18,23 @@
 - TODAY_ARCHITECTURE.md
 - UNITS_ARCHITECTURE.md
 - FORECAST_ARCHITECTURE.md
+
+---
+
+# Terminology
+
+Terminology used elsewhere for enacted-instruction concepts maps onto this document's terms as follows. This is a terminology correspondence only; it does not restate or resolve ownership as described in `INFORMATION_MODEL.md`.
+
+**Deprecated — do not use for new material:**
+
+| Old term | Read instead as |
+|---|---|
+| Instructional Event | No single replacement — read as whichever fits context: `Teaching Episode` (the reusable planned content), `Episode Placement` (that content scheduled within a Lesson Session), `Session Enactment` (the enacted record for the Lesson Session), or `Placement Enactment` (the enacted result for one Episode Placement) |
+| Lesson Completion | Placement Enactment status (`reached` / `partial` / `skipped`) |
+| Instructional Notes | Session Note (session-specific) or Episode Note (episode-specific), depending on content |
+| Section-Specific Instructional Adjustment | a carry-forward, skip, split, or merge recorded through the Post-Class Debrief |
+
+These are terminology correspondences, not one-to-one field mappings — some old terms cover ground that this model splits across more than one object.
 
 ---
 
@@ -68,20 +85,20 @@ After teaching, the system contains history.
 
 ```text
 Planned Lesson Session
-        ?
-        ?
+        |
+        v
 Printed Lesson
-        ?
-        ?
+        |
+        v
 Teach from Paper
-        ?
-        ?
+        |
+        v
 Post-Class Debrief
-        ?
-        ?
+        |
+        v
 Recorded Enactment
-        ?
-        ?
+        |
+        v
 Derived Progress
 ```
 
@@ -91,6 +108,8 @@ Enactment does not occur when the lesson is printed.
 
 Enactment occurs when the teacher records what happened after instruction.
 
+This flow corresponds to the Put-In, Rapids, Campfire, and Assimilation phases described in `TEACHING_LIFECYCLE_DIAGRAM.md`.
+
 ---
 
 # Canonical Entry Point
@@ -99,11 +118,11 @@ The Post-Class Debrief is the single entry point for enacted teaching truth.
 
 ```text
 Paper observations
-        ?
-        ?
+        |
+        v
 Post-Class Debrief
-        ?
-        ?
+        |
+        v
 Canonical enacted record
 ```
 
@@ -180,7 +199,7 @@ Planning does not rewrite the history of what already happened.
 
 The Enactment Model depends on the three-layer Teaching Episode Model.
 
-## Layer 1 � Teaching Episode
+## Layer 1 — Teaching Episode
 
 Durable instructional content.
 
@@ -191,9 +210,8 @@ Examples:
 - discussion
 - worked example
 - assessment
-- deliverable
-- materials
-- durable teaching notes
+
+A Teaching Episode may also own or carry deliverables, materials, and durable teaching notes (Episode Notes) as attached information. These describe what the episode carries, not additional examples of the episode itself.
 
 The Teaching Episode answers:
 
@@ -203,7 +221,7 @@ Enacted status never lives on the Teaching Episode.
 
 ---
 
-## Layer 2 � Episode Placement
+## Layer 2 — Episode Placement
 
 A specific use of a Teaching Episode within a Lesson Session.
 
@@ -211,15 +229,16 @@ The Episode Placement answers:
 
 > Where was this episode planned to occur?
 
-Examples of placement information:
+Episode Placement owns:
 
-- lesson session
-- section
-- planned order
-- planned duration
-- planned date
-- source placement
-- carry-forward relationship
+- a reference to exactly one Teaching Episode
+- its order index within that Lesson Session
+- carry-origin — a nullable reference to the placement it continues from (this is what distinguishes a bump from a reuse)
+
+Episode Placement does not own section, instructional date, or planned duration:
+
+- section and instructional date belong to the Lesson Session envelope that holds the placement
+- planned duration is authored on the Teaching Episode and travels with it
 
 A Teaching Episode may have many placements.
 
@@ -227,7 +246,7 @@ Each placement has its own enacted outcome.
 
 ---
 
-## Layer 3 � Placement Enactment
+## Layer 3 — Placement Enactment
 
 The recorded outcome of a specific Episode Placement.
 
@@ -293,14 +312,16 @@ Episode-level outcomes belong to Placement Enactments.
 The Session Enactment and its Placement Enactments together form the complete enacted record.
 
 ```text
-Session Enactment
-        ?
-        ??? Session facts
-        ??? Session note
-        ??? Placement Enactments
-                ??? Placement A outcome
-                ??? Placement B outcome
-                ??? Placement C outcome
+Session Enactment          (owns these fields directly)
+        |
+        +--- Session facts
+        +--- Session note
+
+Placement Enactment        (one per Episode Placement, referencing
+                             this Session Enactment — not owned by it)
+        +--- Placement A outcome
+        +--- Placement B outcome
+        +--- Placement C outcome
 ```
 
 ---
@@ -529,6 +550,8 @@ Episode Notes are:
 
 An Episode Note does not belong only to the session in which the insight was discovered.
 
+Episode Notes are the primary source of what `TEACHING_LIFECYCLE_DIAGRAM.md` calls Instructional Knowledge — the durable teaching knowledge that accumulates across sessions and years.
+
 ---
 
 # Section-Specific Episode Knowledge
@@ -703,8 +726,8 @@ The architecture should move toward:
 Session Enactment
         +
 Placement Enactments
-        ?
-        ?
+        |
+        v
 Derived Progress
 ```
 
@@ -727,10 +750,10 @@ Example:
 
 ```text
 Teacher saves Post-Class Debrief
-        ?
-        ??? Write canonical Session Enactment
-        ??? Write canonical Placement Enactments
-        ??? Update compatibility DailyProgress record
+        |
+        +--- Write canonical Session Enactment
+        +--- Write canonical Placement Enactments
+        +--- Update compatibility DailyProgress record
 ```
 
 The compatibility write must be derived from the canonical enactment record.
@@ -763,129 +786,37 @@ It does not belong in the teacher's debrief interaction.
 
 # Section Independence
 
-Enactment is section-specific.
-
-Two sections using the same Lesson Session plan may have different outcomes.
-
-Example:
-
-```text
-Period 2
-Episode A: reached
-Episode B: reached
-Episode C: partial
-
-Period 3
-Episode A: reached
-Episode B: partial
-Episode C: planned
-```
-
-The shared Teaching Episodes remain the same.
-
-The Episode Placements or their enactments remain section-specific.
-
-One section's progress must never silently change another section's history.
+Enactment is section-specific: each Lesson Session belongs to one section's one meeting, so its Placement Enactments are independent of every other section's (`TEACHING_EPISODE_MODEL.md`, EM-7). One section's progress must never silently change another section's history. See `TEACHING_EPISODE_MODEL.md` §5, "Different sections," for the full walk-through.
 
 ---
 
 # Reuse and Enactment
 
-A Teaching Episode may be reused across:
-
-- sections
-- dates
-- units
-- school years
-
-Each use receives a separate Episode Placement.
-
-Each placement receives a separate Placement Enactment.
-
-Durable episode notes travel with the Teaching Episode.
-
-Session notes and placement outcomes do not.
+A Teaching Episode may be reused across sections, dates, units, and school years; each reuse is a new Episode Placement (`TEACHING_EPISODE_MODEL.md`, EM-8, defines the reuse mechanism itself). Each placement receives its own, independent Placement Enactment. Durable Episode Notes travel with the Teaching Episode; Session Notes and placement outcomes do not.
 
 ---
 
 # Carry-Forward
 
-Carry-forward connects enacted history to future planning.
-
-It requires two truths:
-
-## Historical truth
-
-What happened in the original placement.
-
-Examples:
-
-- partial
-- not reached because time expired
-- interrupted
-
-## Future planning truth
-
-Where the remaining work is planned next.
-
-These truths must be represented separately.
-
-A carry-forward action should:
-
-1. preserve the original Placement Enactment
-2. create or identify a future Episode Placement
-3. retain provenance linking the future placement to the original
-4. avoid duplicating durable episode content
-5. allow future adjustment without rewriting history
+Carry-forward connects enacted history to future planning: it preserves what happened (the original Placement Enactment; see "Partial and Carried-Forward Are Distinct," above) while creating a new Episode Placement for the remaining work. The dual-write mechanics are defined in `TEACHING_EPISODE_MODEL.md`, EM-5 and EM-12. From the enactment side, a carry-forward action must: preserve the original Placement Enactment unchanged, retain provenance linking the new placement to the original, avoid duplicating durable episode content, and allow future adjustment without rewriting history.
 
 ---
 
 # Skip
 
-Skipping is a historical outcome.
-
-A skipped placement should not be deleted.
-
-The record should preserve:
-
-- that the episode was planned
-- that the teacher intentionally skipped it
-- optional reason
-- whether it was replaced
-- whether it should ever be reconsidered
-
-Skipped work does not automatically carry forward.
+See "Skipped," under Status Definitions, above, and `TEACHING_EPISODE_MODEL.md`, EM-11, for the full behavior. A skipped placement is never deleted, and skipping never automatically triggers carry-forward — carrying a skipped episode forward remains a distinct teacher action.
 
 ---
 
 # Split
 
-A partially enacted episode may need to be divided for future planning.
-
-The system must preserve:
-
-- what was already enacted
-- what remains
-- the relationship between the original episode and any newly created content
-- provenance across placements
-
-Splitting content is a planning operation.
-
-Recording the partial outcome is an enactment operation.
-
-They may occur in sequence but must remain conceptually distinct.
+Splitting a partially enacted episode is a planning operation, defined in `TEACHING_EPISODE_MODEL.md`, EM-9. Recording the partial outcome that motivated the split is a separate enactment operation, already covered under "Partial," above. The two may happen in sequence, but they remain conceptually distinct: enactment records what happened before the split; planning decides what the split produces.
 
 ---
 
 # Merge
 
-Multiple unfinished episodes may be combined into a future episode.
-
-The original Placement Enactments remain unchanged.
-
-The new Teaching Episode or Placement should retain provenance to the source material.
-
-Merging is a future planning action, not a rewrite of enacted history.
+Merging is defined in `TEACHING_EPISODE_MODEL.md`, EM-10. From the enactment side, the guarantee is the same as for every other planning action: the original Placement Enactments are never rewritten by a later merge.
 
 ---
 
@@ -911,38 +842,37 @@ Version 1 does not require a full audit log unless implementation or institution
 
 # Data Relationships
 
-Conceptual relationship:
+The authoritative shape of these relationships is defined in `TEACHING_LIFECYCLE_DIAGRAM.md`, "The Planning Chain." It is reproduced here for convenience, not restated independently:
+
+```text
+Teaching Episode        (durable content)
+        |
+        | referenced by
+        v
+Episode Placement       (this session's ordered use of that content)
+        |
+        | held in the ordered sequence owned by
+        v
+Lesson Session           (dated, per-section envelope)
+```
+
+Enacted truth is a separate chain that references, rather than nests inside, the planning chain:
 
 ```text
 Lesson Session
-        ?
-        ??? Episode Placement
-        ?       ??? Teaching Episode
-        ?
-        ??? Session Enactment
-                ??? Session Note
-                ??? Placement Enactment
-                        ??? Episode Placement
-                        ??? Status
-                        ??? Waterline
-                        ??? Optional reason
+        ^
+        | referenced by
+        |
+Session Enactment       (recorded after-class account of that session;
+                          owns the Session Note)
+        |
+        | referenced by
+        v
+Placement Enactment     (recorded outcome of one Episode Placement;
+                          owns status, waterline, reason)
 ```
 
-Alternative relational view:
-
-```text
-Teaching Episode
-        ?
-        ??? Episode Placement
-                ?
-                ??? Placement Enactment
-
-Lesson Session
-        ?
-        ??? Session Enactment
-                ?
-                ??? Placement Enactments
-```
+A Lesson Session owns its ordered collection of Episode Placements by reference, not by containment of the Teaching Episodes those placements point to. A Session Enactment references the Lesson Session it accounts for and owns its own Session Note; it is not contained by the Lesson Session. A Placement Enactment references the Episode Placement it describes and belongs to one Session Enactment; it owns its own status, waterline, and reason. Neither enactment record is a child of the object it references.
 
 ---
 
@@ -1140,9 +1070,13 @@ The preferred direction is to preserve outcome and consequence separately.
 
 What is the smallest useful representation of a partial waterline?
 
+Related: `TEACHING_EPISODE_MODEL.md` Q-EM-3 asks the adjacent question of whether the waterline is per-episode or per-Block. The two should be resolved together.
+
 ## Q-EN-5
 
 When one lesson plan is used by multiple sections, are Episode Placements duplicated by section or shared with section-specific Placement Enactments?
+
+**Resolved by `TEACHING_EPISODE_MODEL.md` EM-7.** Because a Lesson Session is one section's one meeting, each section using a shared lesson plan has its own Lesson Session and therefore its own Episode Placements — Episode Placements are duplicated by section, not shared behind section-specific Placement Enactments. The underlying Teaching Episode each placement references may still be shared (EM-8).
 
 ## Q-EN-6
 
@@ -1155,6 +1089,8 @@ What exact enacted facts are required for Forecast to calculate instructional da
 ## Q-EN-8
 
 Should a completed debrief automatically create future carry-forward placements, or should it propose them for confirmation?
+
+Related: `TEACHING_EPISODE_MODEL.md` Q-EM-4 asks the narrower version of this question for skipped placements specifically. The two should be resolved together.
 
 ## Q-EN-9
 

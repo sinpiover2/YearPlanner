@@ -65,6 +65,8 @@ The Today workspace is responsible for:
 
 - Orienting the teacher to today's schedule.
 - Identifying the next lesson.
+- Consuming the Planned Curriculum to show today's context.
+- Consuming the Enacted Curriculum to show current status.
 - Launching Lesson Planner.
 - Displaying today's instructional flow.
 - Surfacing unfinished work that should not be forgotten.
@@ -79,6 +81,8 @@ The Today workspace is **not** responsible for:
 - Standards.
 - Teacher notes.
 - Assessment planning.
+- Owning or authoring the Enacted Curriculum.
+- Recording what happened during instruction.
 
 Those belong elsewhere.
 
@@ -264,7 +268,7 @@ Lesson Planner
 
 ?
 
-Log Lesson
+Log Lesson (Post-Class Debrief, completed in Lesson Planner)
 
 ?
 
@@ -311,6 +315,8 @@ Today should never become a simplified Lesson Planner.
 
 Lesson Planner should never become another navigation screen.
 
+Lesson Planner is the canonical owner of the Enacted Curriculum. Session Enactments and Placement Enactments are the canonical enacted records, created through the Post-Class Debrief (see `ENACTMENT_MODEL.md`, `POST_CLASS_DEBRIEF.md`). Today may display enacted status as part of orienting the teacher to the current day, but it does not own or author that record.
+
 ---
 
 # Data Requirements
@@ -321,7 +327,7 @@ Today will eventually consume data from:
 - Sections
 - Units
 - Lessons
-- Daily Progress
+- Enacted Curriculum status (Session Enactment / Placement Enactment; see `ENACTMENT_MODEL.md`)
 - School Calendar
 - Schedule Patterns
 

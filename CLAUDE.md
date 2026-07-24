@@ -28,10 +28,10 @@ When reviewing Year Planner, prioritize:
 
 - Applications own perspectives and responsibilities, not features.
 - Data may be shared; responsibilities should not be duplicated.
-- Units represents the planned curriculum.
-- Today represents the enacted curriculum.
-- Forecast interprets pacing and consequences.
-- Lesson Planner supports lesson delivery.
+- Units owns the Planned Curriculum.
+- Lesson Planner owns the Enacted Curriculum.
+- Forecast owns Interpretation.
+- Today is the operational workspace for the current day; it consumes Planned and Enacted Curriculum for orientation and does not own or author either.
 
 ## Development Guidance
 

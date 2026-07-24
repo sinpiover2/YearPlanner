@@ -97,7 +97,7 @@ These actions modify the curriculum itself.
 
 They are not records of classroom instruction.
 
-> Units changes because the teacher intentionally revises the curriculum�not because instruction happened.
+> Units changes because the teacher intentionally revises the curriculum�not because instruction happened.
 
 Curriculum revisions may be initiated from multiple parts of the suite, but every revision ultimately modifies the Planned Curriculum owned by Units.
 
@@ -116,11 +116,11 @@ These include:
 - Lesson Sequence
 - Planned Time
 
-Units may also consume limited information from the **Enacted Curriculum** solely for orientation.
+Units may also consume limited information from the **Enacted Curriculum** — owned by Lesson Planner — solely for orientation.
 
 Examples include:
 
-- current lesson location
+- current lesson location, derived from Placement Enactment status
 
 Units never owns instructional records.
 
@@ -323,19 +323,16 @@ Units communicates intent.
 
 Today answers:
 
-> **What happened today?**
+> **What am I teaching today?**
 
-Today represents the Enacted Curriculum.
+Today is the operational workspace for the current instructional day.
 
-It owns:
+It consumes:
 
-- instructional events
-- lesson completion
-- partial completion
-- instructional notes
-- section-specific instructional adjustments
+- the Planned Curriculum, to orient the teacher to today's lesson
+- the Enacted Curriculum, owned by Lesson Planner, to show current status
 
-Today records classroom reality.
+Today launches Lesson Planner when instructional recording is required.
 
 Units represents the instructional plan.
 
@@ -357,7 +354,7 @@ It owns:
 - assessments
 - teacher reflection
 
-Lesson Planner prepares instruction.
+Lesson Planner prepares instruction. It is also the canonical owner of the Enacted Curriculum, recorded through the Post-Class Debrief (see `ENACTMENT_MODEL.md`, `POST_CLASS_DEBRIEF.md`) — Units' orientation feature (see "Information Consumed," above) reads from that record rather than maintaining one of its own.
 
 Units explains the curriculum.
 
