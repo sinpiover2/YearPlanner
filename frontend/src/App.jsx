@@ -1023,16 +1023,24 @@ function App() {
     onJumpToToday: () => setPlanningReferenceDate(new Date()),
   };
 
-  const curriculumLessons = activeLessonContext?.unitId
-    ? lessons
-        .filter(
-          (lesson) => lesson.UnitID === activeLessonContext.unitId,
-        )
-        .sort(
-          (a, b) =>
-            Number(a.SortOrder || a.LessonNumber || 0) -
-            Number(b.SortOrder || b.LessonNumber || 0),
-        )
+  // Scoped to the whole course, not just activeLessonContext.unitId (the
+  // course's single "current" navigation unit) — a Lesson Session must be
+  // able to attach a lesson from any unit in the course, e.g. Unit 0
+  // Orientation and Unit 1 Main Curriculum running concurrently. Attaching
+  // only sets an episode's curriculumLessonId; it never writes to
+  // dailyProgress, so it cannot advance the course's active curriculum
+  // position.
+  const activeContextUnit = activeLessonContext?.unitId
+    ? units.find((unit) => unit.UnitID === activeLessonContext.unitId)
+    : null;
+
+  const curriculumLessons = activeContextUnit
+    ? sortLessons(
+        lessons.filter(
+          (lesson) => lesson.CourseID === activeContextUnit.CourseID,
+        ),
+        units.filter((unit) => unit.CourseID === activeContextUnit.CourseID),
+      )
     : [];
 
   const lessonSessionCopyTargets = Object.values(

@@ -100,6 +100,28 @@ function buildEpisodeTitleFromLesson(lesson) {
   return providerPart ? `${namePart} (${providerPart})` : namePart;
 }
 
+// curriculumLessons now spans every unit in the course (not just the one
+// currently active), so the picker groups by unit rather than showing a
+// single flat list — keeping a two-unit overlap period easy to scan.
+function groupLessonsByUnit(curriculumLessons) {
+  const groups = [];
+  const groupsByUnitId = new Map();
+
+  curriculumLessons.forEach((lesson) => {
+    let group = groupsByUnitId.get(lesson.UnitID);
+
+    if (!group) {
+      group = { unitId: lesson.UnitID, lessons: [] };
+      groupsByUnitId.set(lesson.UnitID, group);
+      groups.push(group);
+    }
+
+    group.lessons.push(lesson);
+  });
+
+  return groups;
+}
+
 function createBlankEpisode() {
   return {
     id: createId("episode"),
@@ -2200,48 +2222,61 @@ function LessonSessionView({
                             {curriculumChooserEpisodeId === episode.id ? (
                               curriculumLessons.length ? (
                                 <div className="episode-curriculum-options">
-                                  {curriculumLessons.map((lesson) => {
-                                    const isAttached =
-                                      lesson.LessonID ===
-                                      episodeCurriculumLessonId;
-
-                                    return (
-                                      <button
-                                        className={
-                                          isAttached ? "is-selected" : ""
-                                        }
-                                        type="button"
-                                        key={lesson.LessonID}
-                                        onClick={() =>
-                                          chooseLessonForEpisode(
-                                            episode.id,
-                                            lesson,
-                                          )
-                                        }
+                                  {groupLessonsByUnit(curriculumLessons).map(
+                                    (group) => (
+                                      <div
+                                        className="episode-curriculum-unit-group"
+                                        key={group.unitId}
                                       >
-                                        <span
-                                          className="episode-curriculum-option-mark"
-                                          aria-hidden="true"
-                                        >
-                                          {isAttached ? "●" : "○"}
-                                        </span>
+                                        <div className="episode-curriculum-unit-label">
+                                          Unit {group.unitId?.replace(/.*U/, "")}
+                                        </div>
 
-                                        <span>
-                                          <strong>
-                                            Lesson {lesson.LessonNumber}
-                                          </strong>
-                                          <span>
-                                            {lesson.LessonTitle ||
-                                              "Untitled lesson"}
-                                          </span>
-                                        </span>
-                                      </button>
-                                    );
-                                  })}
+                                        {group.lessons.map((lesson) => {
+                                          const isAttached =
+                                            lesson.LessonID ===
+                                            episodeCurriculumLessonId;
+
+                                          return (
+                                            <button
+                                              className={
+                                                isAttached ? "is-selected" : ""
+                                              }
+                                              type="button"
+                                              key={lesson.LessonID}
+                                              onClick={() =>
+                                                chooseLessonForEpisode(
+                                                  episode.id,
+                                                  lesson,
+                                                )
+                                              }
+                                            >
+                                              <span
+                                                className="episode-curriculum-option-mark"
+                                                aria-hidden="true"
+                                              >
+                                                {isAttached ? "●" : "○"}
+                                              </span>
+
+                                              <span>
+                                                <strong>
+                                                  Lesson {lesson.LessonNumber}
+                                                </strong>
+                                                <span>
+                                                  {lesson.LessonTitle ||
+                                                    "Untitled lesson"}
+                                                </span>
+                                              </span>
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    ),
+                                  )}
                                 </div>
                               ) : (
                                 <p className="episode-menu-empty">
-                                  No lessons are available in this unit.
+                                  No lessons are available in this course.
                                 </p>
                               )
                             ) : (
@@ -2795,36 +2830,47 @@ function LessonSessionView({
 
                   {curriculumLessons.length ? (
                     <div className="episode-curriculum-options">
-                      {curriculumLessons.map((lesson) => (
-                        <button
-                          type="button"
-                          key={lesson.LessonID}
-                          onClick={(event) => {
-                            addEpisodeFromCurriculumLesson(lesson);
-                            event.currentTarget
-                              .closest("details")
-                              ?.removeAttribute("open");
-                          }}
+                      {groupLessonsByUnit(curriculumLessons).map((group) => (
+                        <div
+                          className="episode-curriculum-unit-group"
+                          key={group.unitId}
                         >
-                          <span
-                            className="episode-curriculum-option-mark"
-                            aria-hidden="true"
-                          >
-                            ○
-                          </span>
+                          <div className="episode-curriculum-unit-label">
+                            Unit {group.unitId?.replace(/.*U/, "")}
+                          </div>
 
-                          <span>
-                            <strong>Lesson {lesson.LessonNumber}</strong>
-                            <span>
-                              {lesson.LessonTitle || "Untitled lesson"}
-                            </span>
-                          </span>
-                        </button>
+                          {group.lessons.map((lesson) => (
+                            <button
+                              type="button"
+                              key={lesson.LessonID}
+                              onClick={(event) => {
+                                addEpisodeFromCurriculumLesson(lesson);
+                                event.currentTarget
+                                  .closest("details")
+                                  ?.removeAttribute("open");
+                              }}
+                            >
+                              <span
+                                className="episode-curriculum-option-mark"
+                                aria-hidden="true"
+                              >
+                                ○
+                              </span>
+
+                              <span>
+                                <strong>Lesson {lesson.LessonNumber}</strong>
+                                <span>
+                                  {lesson.LessonTitle || "Untitled lesson"}
+                                </span>
+                              </span>
+                            </button>
+                          ))}
+                        </div>
                       ))}
                     </div>
                   ) : (
                     <p className="episode-menu-empty">
-                      No lessons are available in this unit.
+                      No lessons are available in this course.
                     </p>
                   )}
 

@@ -4155,6 +4155,21 @@ body {
   display: grid;
 }
 
+.episode-curriculum-unit-group + .episode-curriculum-unit-group {
+  border-top: 1px solid #e2e8f0;
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+.episode-curriculum-unit-label {
+  padding: 4px 11px;
+  color: #94a3b8;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .episode-curriculum-options button {
   display: grid;
   grid-template-columns: 16px minmax(0, 1fr);
