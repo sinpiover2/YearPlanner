@@ -25,6 +25,16 @@ polish, and classroom validation.
 
 ---
 
+# August 1 Success Criteria
+
+✓ Plan an instructional week.
+
+✓ Teach from printed lesson plans.
+
+✓ Generate weekly communication for students and families without retyping lesson information.
+
+---
+
 # Current Sprint Focus (Sprint 5.5)
 
 Objective:
@@ -44,7 +54,7 @@ Success criteria:
 
 ## School Calendar
 
-- [ ] Import official 2026�2027 school calendar
+- [ ] Import official 2026�2027 school calendar
 - [ ] Verify holidays
 - [ ] Verify breaks
 - [ ] Verify minimum days
@@ -161,6 +171,23 @@ Complete at least one full planning cycle.
 
 Capture every point where the software slows down thinking or creates
 uncertainty.
+
+---
+
+# F. Weekly Communication
+
+Purpose:
+
+Year Planner should allow teachers to generate polished weekly communication for students and families directly from the lesson plans they already created.
+
+Goals:
+
+- [ ] Eliminate duplicate data entry.
+- [ ] Reuse planning information already contained in Year Planner.
+- [ ] Generate concise, parent-friendly communication.
+- [ ] Support existing teacher workflows (Monday Manager via copy/paste).
+- [ ] Teacher always reviews before publishing.
+- [ ] Entire workflow should take less than one minute.
 
 ---
 

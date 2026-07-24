@@ -41,7 +41,8 @@ function UnitsView({
   removeGoal,
   addGoal,
   handleUpdateLesson,
-  handleMoveLesson,
+  handleMoveLessonToPosition,
+  reorderingUnitId,
   handleDeleteLesson,
   isAddingLesson,
   setIsAddingLesson,
@@ -306,7 +307,8 @@ function UnitsView({
             removeGoal={removeGoal}
             addGoal={addGoal}
             handleUpdateLesson={handleUpdateLesson}
-            handleMoveLesson={handleMoveLesson}
+            handleMoveLessonToPosition={handleMoveLessonToPosition}
+            reorderingUnitId={reorderingUnitId}
             handleDeleteLesson={handleDeleteLesson}
             isAddingLesson={isAddingLesson}
             setIsAddingLesson={setIsAddingLesson}

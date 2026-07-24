@@ -23,7 +23,7 @@ import {
   addLesson,
   deleteLesson,
   fetchPlannerData,
-  moveLesson,
+  reorderLessons,
   saveDailyProgress,
   updateLesson,
 } from "./api";
@@ -303,6 +303,7 @@ function App() {
   const [editingLessonId, setEditingLessonId] = useState(null);
   const [editLessonDraft, setEditLessonDraft] = useState(null);
   const [deletingLessonId, setDeletingLessonId] = useState(null);
+  const [reorderingUnitId, setReorderingUnitId] = useState(null);
   const [planningReferenceDate, setPlanningReferenceDate] = useState(new Date());
   const [planningSelectedDayKey, setPlanningSelectedDayKey] = useState(null);
   const [activeLessonContext, setActiveLessonContext] = useState(null);
@@ -506,7 +507,13 @@ function App() {
     : [];
 
   function startEditingLesson(lesson) {
-    console.log("EDITING", lesson.LessonID);
+    const unitLessons = sortLessons(
+      lessons.filter((entry) => entry.UnitID === lesson.UnitID),
+      units,
+    );
+    const currentPosition =
+      unitLessons.findIndex((entry) => entry.LessonID === lesson.LessonID) + 1;
+
     setEditingLessonId(lesson.LessonID);
     setEditLessonDraft({
       lessonTitle: lesson.LessonTitle || "",
@@ -516,6 +523,7 @@ function App() {
         : [""],
       primaryLink: lesson.PrimaryLink || "",
       teacherNotes: lesson.TeacherNotes || "",
+      targetPosition: currentPosition > 0 ? currentPosition : 1,
     });
   }
 
@@ -585,23 +593,39 @@ function App() {
         return;
       }
 
+      const progressDate = new Date().toISOString();
+
+      const newProgressEntries = targetSections.map((section) => ({
+        Date: progressDate,
+        CourseSectionID: section.SectionID,
+        CourseID: lesson.CourseID,
+        UnitID: lesson.UnitID,
+        LessonID: lesson.LessonID,
+        DayFraction: Number(input.dayFraction || 0),
+        Finished: Boolean(input.finished),
+        Notes: input.notes || "",
+      }));
+
       await Promise.all(
-        targetSections.map((section) =>
+        newProgressEntries.map((entry) =>
           saveDailyProgress({
-            date: new Date().toISOString(),
-            courseSectionId: section.SectionID,
-            courseId: lesson.CourseID,
-            unitId: lesson.UnitID,
-            lessonId: lesson.LessonID,
-            dayFraction: Number(input.dayFraction || 0),
-            finished: Boolean(input.finished),
-            notes: input.notes || "",
+            date: entry.Date,
+            courseSectionId: entry.CourseSectionID,
+            courseId: entry.CourseID,
+            unitId: entry.UnitID,
+            lessonId: entry.LessonID,
+            dayFraction: entry.DayFraction,
+            finished: entry.Finished,
+            notes: entry.Notes,
           }),
         ),
       );
 
-      const refreshedData = await fetchPlannerData();
-      setPlannerData(refreshedData);
+      setPlannerData((prev) => ({
+        ...prev,
+        dailyProgress: [...(prev?.dailyProgress || []), ...newProgressEntries],
+      }));
+
       setActiveProgressLessonId(null);
 
       setProgressInputs((prev) => ({
@@ -713,10 +737,28 @@ function App() {
     setEditingLessonId(null);
     setEditLessonDraft(null);
 
+    const unitLessons = sortLessons(
+      lessons.filter((entry) => entry.UnitID === lesson.UnitID),
+      units,
+    );
+
+    const remainingUnitLessons = unitLessons.filter(
+      (entry) => entry.LessonID !== lessonId,
+    );
+
+    const renumberedById = new Map(
+      remainingUnitLessons.map((entry, index) => [
+        entry.LessonID,
+        { ...entry, SortOrder: index + 1, LessonNumber: index + 1 },
+      ]),
+    );
+
     if (lessonId.startsWith("temp-")) {
       setPlannerData((prev) => ({
         ...prev,
-        lessons: prev.lessons.filter((entry) => entry.LessonID !== lessonId),
+        lessons: prev.lessons
+          .filter((entry) => entry.LessonID !== lessonId)
+          .map((entry) => renumberedById.get(entry.LessonID) ?? entry),
       }));
       return;
     }
@@ -730,7 +772,9 @@ function App() {
 
     setPlannerData((prev) => ({
       ...prev,
-      lessons: prev.lessons.filter((entry) => entry.LessonID !== lessonId),
+      lessons: prev.lessons
+        .filter((entry) => entry.LessonID !== lessonId)
+        .map((entry) => renumberedById.get(entry.LessonID) ?? entry),
     }));
 
     try {
@@ -740,8 +784,14 @@ function App() {
     } catch (error) {
       console.error(error);
 
+      const originalById = new Map(
+        unitLessons.map((entry) => [entry.LessonID, entry]),
+      );
+
       setPlannerData((prev) => {
-        const lessons = [...prev.lessons];
+        const lessons = prev.lessons.map(
+          (entry) => originalById.get(entry.LessonID) ?? entry,
+        );
         const insertAt = Math.min(originalIndex, lessons.length);
         lessons.splice(insertAt, 0, deletedLesson);
         return { ...prev, lessons };
@@ -753,19 +803,81 @@ function App() {
     }
   }
 
-  async function handleMoveLesson(lesson, direction) {
-    try {
-      await moveLesson({
-        lessonId: lesson.LessonID,
-        unitId: lesson.UnitID,
-        direction,
-      });
+  async function handleMoveLessonToPosition(lesson, targetPosition) {
+    if (lesson.LessonID.startsWith("temp-")) {
+      alert("Could not move lesson.");
+      return;
+    }
 
-      const refreshedData = await fetchPlannerData();
-      setPlannerData(refreshedData);
+    if (reorderingUnitId === lesson.UnitID) return;
+
+    const unitLessons = sortLessons(
+      lessons.filter((entry) => entry.UnitID === lesson.UnitID),
+      units,
+    );
+
+    const targetPositionNumber = Number(targetPosition);
+
+    if (
+      !Number.isInteger(targetPositionNumber) ||
+      targetPositionNumber < 1 ||
+      targetPositionNumber > unitLessons.length
+    ) {
+      alert("Could not move lesson.");
+      return;
+    }
+
+    const currentIndex = unitLessons.findIndex(
+      (entry) => entry.LessonID === lesson.LessonID,
+    );
+
+    if (currentIndex === -1 || currentIndex === targetPositionNumber - 1) return;
+
+    const previousUnitLessons = unitLessons;
+
+    const reordered = unitLessons.filter(
+      (entry) => entry.LessonID !== lesson.LessonID,
+    );
+    reordered.splice(targetPositionNumber - 1, 0, lesson);
+
+    const renumberedById = new Map(
+      reordered.map((entry, index) => [
+        entry.LessonID,
+        { ...entry, SortOrder: index + 1, LessonNumber: index + 1 },
+      ]),
+    );
+
+    setPlannerData((prev) => ({
+      ...prev,
+      lessons: prev.lessons.map(
+        (entry) => renumberedById.get(entry.LessonID) ?? entry,
+      ),
+    }));
+
+    setReorderingUnitId(lesson.UnitID);
+
+    try {
+      await reorderLessons({
+        unitId: lesson.UnitID,
+        orderedLessonIds: reordered.map((entry) => entry.LessonID),
+      });
     } catch (error) {
       console.error(error);
+
+      const previousById = new Map(
+        previousUnitLessons.map((entry) => [entry.LessonID, entry]),
+      );
+
+      setPlannerData((prev) => ({
+        ...prev,
+        lessons: prev.lessons.map(
+          (entry) => previousById.get(entry.LessonID) ?? entry,
+        ),
+      }));
+
       alert("Could not move lesson.");
+    } finally {
+      setReorderingUnitId(null);
     }
   }
 
@@ -775,25 +887,53 @@ function App() {
       return;
     }
 
+    const lessonTitle = editLessonDraft.lessonTitle.trim();
+    const plannedDays = Number(editLessonDraft.plannedDays || 1);
+    const keyOutcome = editLessonDraft.goals
+      .map((goal) => goal.trim())
+      .filter(Boolean)
+      .join("|");
+    const primaryLink = editLessonDraft.primaryLink || "";
+    const teacherNotes = editLessonDraft.teacherNotes || "";
+
+    const originalLesson = { ...lesson };
+
+    setPlannerData((prev) => ({
+      ...prev,
+      lessons: prev.lessons.map((entry) =>
+        entry.LessonID === lesson.LessonID
+          ? {
+              ...entry,
+              LessonTitle: lessonTitle,
+              PlannedDays: plannedDays,
+              KeyOutcome: keyOutcome,
+              PrimaryLink: primaryLink,
+              TeacherNotes: teacherNotes,
+            }
+          : entry,
+      ),
+    }));
+
+    setEditingLessonId(null);
+    setEditLessonDraft(null);
+
     try {
       await updateLesson({
         lessonId: lesson.LessonID,
-        lessonTitle: editLessonDraft.lessonTitle.trim(),
-        plannedDays: Number(editLessonDraft.plannedDays || 1),
-        keyOutcome: editLessonDraft.goals
-          .map((goal) => goal.trim())
-          .filter(Boolean)
-          .join("|"),
-        primaryLink: editLessonDraft.primaryLink || "",
-        teacherNotes: editLessonDraft.teacherNotes || "",
+        lessonTitle,
+        plannedDays,
+        keyOutcome,
+        primaryLink,
+        teacherNotes,
       });
-
-      const refreshedData = await fetchPlannerData();
-      setPlannerData(refreshedData);
-      setEditingLessonId(null);
-      setEditLessonDraft(null);
     } catch (error) {
       console.error(error);
+      setPlannerData((prev) => ({
+        ...prev,
+        lessons: prev.lessons.map((entry) =>
+          entry.LessonID === originalLesson.LessonID ? originalLesson : entry,
+        ),
+      }));
       alert("Could not update lesson.");
     }
   }
@@ -849,7 +989,8 @@ function App() {
     removeGoal,
     addGoal,
     handleUpdateLesson,
-    handleMoveLesson,
+    handleMoveLessonToPosition,
+    reorderingUnitId,
     handleDeleteLesson,
     isAddingLesson,
     setIsAddingLesson,
@@ -883,9 +1024,15 @@ function App() {
   };
 
   const curriculumLessons = activeLessonContext?.unitId
-    ? lessons.filter(
-        (lesson) => lesson.UnitID === activeLessonContext.unitId,
-      )
+    ? lessons
+        .filter(
+          (lesson) => lesson.UnitID === activeLessonContext.unitId,
+        )
+        .sort(
+          (a, b) =>
+            Number(a.SortOrder || a.LessonNumber || 0) -
+            Number(b.SortOrder || b.LessonNumber || 0),
+        )
     : [];
 
   const lessonSessionCopyTargets = Object.values(

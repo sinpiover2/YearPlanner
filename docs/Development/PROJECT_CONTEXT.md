@@ -1,5 +1,5 @@
 # PROJECT_CONTEXT.md
-**Year Planner Ñ Permanent Project Context**
+**Year Planner ï¿½ Permanent Project Context**
 
 > This document contains the long-lived context for the Year Planner project.
 >
@@ -13,7 +13,7 @@
 
 Build software that allows an ordinary classroom teacher to prepare excellent lessons with less stress, less cognitive load, and better instructional decisions.
 
-The software should reduce planning frictionÑnot create more software to manage.
+The software should reduce planning frictionï¿½not create more software to manage.
 
 The product exists to help teachers think.
 
@@ -475,6 +475,25 @@ Continuous improvement
 without requiring teachers to maintain duplicate information.
 
 Everything should become progressively easier to use as more authentic teaching work is captured.
+
+---
+
+# Plan Once, Reuse Everywhere
+
+Year Planner is becoming the single source of truth for instructional planning.
+
+Information entered once during planning should be reusable for:
+
+- classroom instruction
+- printed lesson plans
+- forecasting
+- weekly communication
+- parent updates
+- future LMS integrations
+
+Teachers should not have to rewrite information that already exists in the planner.
+
+This is a guiding product philosophy, not an implementation detail.
 
 ---
 

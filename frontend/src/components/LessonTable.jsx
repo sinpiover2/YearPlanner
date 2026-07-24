@@ -16,7 +16,8 @@ function LessonTable({
   removeGoal,
   addGoal,
   handleUpdateLesson,
-  handleMoveLesson,
+  handleMoveLessonToPosition,
+  reorderingUnitId,
   handleDeleteLesson,
   isAddingLesson,
   setIsAddingLesson,
@@ -55,6 +56,9 @@ function LessonTable({
 
         const variance = actualDays - Number(lesson.PlannedDays || 0);
         const outcomes = getOutcomeList(lesson.KeyOutcome);
+        const isTemporaryLesson = lesson.LessonID.startsWith("temp-");
+        const isReorderDisabled =
+          isTemporaryLesson || reorderingUnitId === lesson.UnitID;
 
         return (
           <div
@@ -190,9 +194,21 @@ function LessonTable({
 
             {editingLessonId === lesson.LessonID && editLessonDraft && (
               <div className="lesson-edit-form">
-                <div className="days-row">
-                  <div className="days-box" />
+                <div className="lesson-title-edit">
+                  <label>Lesson title</label>
+                  <input
+                    type="text"
+                    value={editLessonDraft.lessonTitle}
+                    onChange={(e) =>
+                      setEditLessonDraft((prev) => ({
+                        ...prev,
+                        lessonTitle: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
 
+                <div className="days-row">
                   <label>Days</label>
 
                   <input
@@ -260,21 +276,45 @@ function LessonTable({
                     Cancel
                   </button>
 
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => handleMoveLesson(lesson, "up")}
-                  >
-                    Move up
-                  </button>
+                  <div className="move-to-position">
+                    <label>Move to position</label>
 
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => handleMoveLesson(lesson, "down")}
-                  >
-                    Move down
-                  </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max={lessonList.length}
+                      value={editLessonDraft.targetPosition}
+                      disabled={isReorderDisabled}
+                      onChange={(e) =>
+                        setEditLessonDraft((prev) => ({
+                          ...prev,
+                          targetPosition: e.target.value,
+                        }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key !== "Enter" || isReorderDisabled) return;
+                        e.preventDefault();
+                        handleMoveLessonToPosition(
+                          lesson,
+                          editLessonDraft.targetPosition,
+                        );
+                      }}
+                    />
+
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      disabled={isReorderDisabled}
+                      onClick={() =>
+                        handleMoveLessonToPosition(
+                          lesson,
+                          editLessonDraft.targetPosition,
+                        )
+                      }
+                    >
+                      Move
+                    </button>
+                  </div>
 
                   <button
                     className="delete-button"

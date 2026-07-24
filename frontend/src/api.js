@@ -75,15 +75,28 @@ export async function deleteLesson(payload) {
   return { ok: true };
 }
 
-export async function moveLesson(payload) {
-  await fetch(API_URL, {
+export async function reorderLessons({ unitId, orderedLessonIds }) {
+  const response = await fetch(API_URL, {
     method: "POST",
-    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
     body: JSON.stringify({
-      action: "moveLesson",
-      ...payload,
+      action: "reorderLessons",
+      unitId,
+      orderedLessonIds,
     }),
   });
 
-  return { ok: true };
+  if (!response.ok) {
+    throw new Error("Failed to reorder lessons");
+  }
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    throw new Error(data.error || "Failed to reorder lessons");
+  }
+
+  return data;
 }

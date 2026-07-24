@@ -11,6 +11,7 @@
 
 - [ ] Review DEVELOPMENT_WORKFLOW.md for any process changes since last sprint
 - [ ] Review CLASSROOM_READINESS.md — the current execution document — for the active priority
+- [ ] Review PROJECT_MILESTONES.md for the current long-term target
 - [ ] Review the workflow improvements recorded in the previous sprint's retrospective
 
 ---

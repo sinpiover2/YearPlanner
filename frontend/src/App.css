@@ -615,14 +615,6 @@ button {
   border-bottom: 1px solid #e5e7eb;
 }
 
-.days-box {
-  width: 34px;
-  height: 34px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: white;
-}
-
 .days-input {
   width: 120px;
 }
@@ -699,6 +691,23 @@ button {
   border-color: #dc2626 !important;
   background: #dc2626 !important;
   color: white !important;
+}
+
+.move-to-position {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.move-to-position label {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.move-to-position input {
+  width: 56px;
 }
 
 /* ---------- Add Lesson ---------- */

@@ -203,7 +203,7 @@ Current limitations:
 
 Purpose:
 
-Reorder lessons.
+Reorder lessons by one adjacent position.
 
 Responsibilities:
 
@@ -218,6 +218,83 @@ Returns:
   "success": true
 }
 ```
+
+Status:
+
+Retained on the backend for compatibility. The frontend no longer calls this
+action — it uses `reorderLessons()` instead.
+
+---
+
+## reorderLessons()
+
+Purpose:
+
+Move a lesson directly to any position within its unit in one action,
+replacing the repeated adjacent Move up / Move down workflow.
+
+Responsibilities:
+
+- Persist the complete final lesson ordering for a unit in a single request.
+- Renumber every lesson in the unit so `SortOrder` and `LessonNumber` stay in
+  sync with the new order.
+- Validate the supplied ordering before writing anything.
+
+Example payload:
+
+```json
+{
+  "action": "reorderLessons",
+  "unitId": "M8-U3",
+  "orderedLessonIds": [
+    "M8-U3-L1",
+    "M8-U3-L4",
+    "M8-U3-L2",
+    "M8-U3-L3"
+  ]
+}
+```
+
+Returns:
+
+```json
+{
+  "ok": true
+}
+```
+
+On validation or persistence failure:
+
+```json
+{
+  "ok": false,
+  "error": "orderedLessonIds does not match the current lessons in this unit."
+}
+```
+
+Validation performed:
+
+- `unitId` must be present.
+- `orderedLessonIds` must be an array with no duplicate IDs.
+- The supplied IDs must exactly match the current set of lessons in that
+  unit — no missing IDs, no IDs from another unit.
+
+Renumbering behavior:
+
+For every lesson in the unit, `SortOrder` and `LessonNumber` are both set to
+`(array index + 1)` of that lesson's ID within `orderedLessonIds`. All other
+lesson fields are preserved. The rewrite happens in one Sheets write.
+
+Request/response notes:
+
+- The frontend sends this POST without `mode: "no-cors"`, using
+  `Content-Type: text/plain;charset=utf-8` (a CORS-safelisted content type)
+  so the browser does not issue a preflight `OPTIONS` request, which this
+  Apps Script deployment does not implement.
+- The Apps Script response is readable JSON (`ok: true` or `ok: false` with
+  a readable `error` message), returned with
+  `Access-Control-Allow-Origin: *` so `fetch()` in normal `cors` mode can
+  read the body.
 
 ---
 

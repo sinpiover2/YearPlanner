@@ -396,6 +396,10 @@ function doPost(e) {
     return moveLesson(payload);
   }
 
+  if (payload.action === "reorderLessons") {
+    return reorderLessons(payload);
+  }
+
   return ContentService.createTextOutput(
     JSON.stringify({ ok: false, error: "Unknown action" }),
   ).setMimeType(ContentService.MimeType.JSON);
@@ -529,16 +533,77 @@ function deleteLesson(payload) {
   const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName("Lessons");
 
+  if (!sheet) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ ok: false, error: "Lessons sheet not found." }),
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
   const values = sheet.getDataRange().getValues();
   const headers = values[0];
 
-  const lessonIdColumn = headers.indexOf("LessonID");
+  const lessonIdIndex = headers.indexOf("LessonID");
+  const unitIdIndex = headers.indexOf("UnitID");
+  const sortOrderIndex = headers.indexOf("SortOrder");
+  const lessonNumberIndex = headers.indexOf("LessonNumber");
 
-  for (let row = values.length - 1; row >= 1; row--) {
-    if (values[row][lessonIdColumn] === payload.lessonId) {
-      sheet.deleteRow(row + 1);
-      break;
+  const missingRequiredHeaders = [
+    ["LessonID", lessonIdIndex],
+    ["UnitID", unitIdIndex],
+    ["SortOrder", sortOrderIndex],
+  ]
+    .filter(([, index]) => index === -1)
+    .map(([name]) => name);
+
+  if (missingRequiredHeaders.length > 0) {
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        ok: false,
+        error: `Lessons sheet is missing required column(s): ${missingRequiredHeaders.join(", ")}.`,
+      }),
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const rowIndex = values.findIndex(
+    (row, index) => index > 0 && row[lessonIdIndex] === payload.lessonId,
+  );
+
+  if (rowIndex === -1) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ ok: false, error: "Lesson not found" }),
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const unitId = values[rowIndex][unitIdIndex];
+
+  sheet.deleteRow(rowIndex + 1);
+
+  const remainingRows = sheet.getDataRange().getValues().slice(1);
+
+  const unitRowsInOrder = remainingRows
+    .filter((row) => row[unitIdIndex] === unitId)
+    .sort((a, b) => Number(a[sortOrderIndex]) - Number(b[sortOrderIndex]));
+
+  const positionByLessonId = new Map(
+    unitRowsInOrder.map((row, index) => [row[lessonIdIndex], index + 1]),
+  );
+
+  const updatedRows = remainingRows.map((row) => {
+    if (row[unitIdIndex] !== unitId) return row;
+
+    const newPosition = positionByLessonId.get(row[lessonIdIndex]);
+    const updatedRow = row.slice();
+    updatedRow[sortOrderIndex] = newPosition;
+
+    if (lessonNumberIndex !== -1) {
+      updatedRow[lessonNumberIndex] = newPosition;
     }
+
+    return updatedRow;
+  });
+
+  if (updatedRows.length > 0) {
+    sheet.getRange(2, 1, updatedRows.length, headers.length).setValues(updatedRows);
   }
 
   return ContentService.createTextOutput(
@@ -612,6 +677,103 @@ function moveLesson(payload) {
       .getRange(target.sheetRow, lessonNumberIndex + 1)
       .setValue(currentLessonNumber);
   }
+
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: true }),
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function reorderErrorResponse(message) {
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: false, error: message }),
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function reorderLessons(payload) {
+  const unitId = payload.unitId;
+  const orderedLessonIds = payload.orderedLessonIds;
+
+  if (!unitId || typeof unitId !== "string") {
+    return reorderErrorResponse("unitId is required.");
+  }
+
+  if (!Array.isArray(orderedLessonIds)) {
+    return reorderErrorResponse("orderedLessonIds must be an array.");
+  }
+
+  if (new Set(orderedLessonIds).size !== orderedLessonIds.length) {
+    return reorderErrorResponse("orderedLessonIds contains duplicate lesson IDs.");
+  }
+
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName("Lessons");
+
+  if (!sheet) {
+    return reorderErrorResponse("Lessons sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0];
+
+  const lessonIdIndex = headers.indexOf("LessonID");
+  const unitIdIndex = headers.indexOf("UnitID");
+  const sortOrderIndex = headers.indexOf("SortOrder");
+  const lessonNumberIndex = headers.indexOf("LessonNumber");
+
+  const missingRequiredHeaders = [
+    ["LessonID", lessonIdIndex],
+    ["UnitID", unitIdIndex],
+    ["SortOrder", sortOrderIndex],
+  ]
+    .filter(([, index]) => index === -1)
+    .map(([name]) => name);
+
+  if (missingRequiredHeaders.length > 0) {
+    return reorderErrorResponse(
+      `Lessons sheet is missing required column(s): ${missingRequiredHeaders.join(", ")}.`,
+    );
+  }
+
+  const unitLessonIds = new Set(
+    values
+      .slice(1)
+      .filter((row) => row[unitIdIndex] === unitId)
+      .map((row) => row[lessonIdIndex]),
+  );
+
+  if (unitLessonIds.size !== orderedLessonIds.length) {
+    return reorderErrorResponse(
+      "orderedLessonIds does not match the current lessons in this unit.",
+    );
+  }
+
+  const invalidId = orderedLessonIds.find((id) => !unitLessonIds.has(id));
+
+  if (invalidId) {
+    return reorderErrorResponse(
+      `Lesson ${invalidId} does not belong to unit ${unitId}.`,
+    );
+  }
+
+  const positionByLessonId = new Map(
+    orderedLessonIds.map((lessonId, index) => [lessonId, index + 1]),
+  );
+
+  const updatedRows = values.slice(1).map((row) => {
+    if (row[unitIdIndex] !== unitId) return row;
+
+    const newPosition = positionByLessonId.get(row[lessonIdIndex]);
+    const updatedRow = row.slice();
+    updatedRow[sortOrderIndex] = newPosition;
+
+    if (lessonNumberIndex !== -1) {
+      updatedRow[lessonNumberIndex] = newPosition;
+    }
+
+    return updatedRow;
+  });
+
+  sheet.getRange(2, 1, updatedRows.length, headers.length).setValues(updatedRows);
 
   return ContentService.createTextOutput(
     JSON.stringify({ ok: true }),
