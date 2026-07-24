@@ -1,5 +1,15 @@
 # Start Sprint
 
+## Sprint 5.8 Objective
+
+**Primary objective:** Weekly Communication.
+
+Planning is now the canonical planning workflow and is classroom-ready.
+Weekly Communication should consume Planning data rather than introducing
+duplicate planning information.
+
+---
+
 ## 1. Read the Handoff (under 60 seconds)
 
 - [ ] Read the latest sprint handoff — Layer 1 (60-Second Startup) only

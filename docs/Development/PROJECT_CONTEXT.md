@@ -497,6 +497,34 @@ This is a guiding product philosophy, not an implementation detail.
 
 ---
 
+# Current Project Snapshot
+
+Planning is now considered classroom-ready. The Forecast → Units → Planning →
+Lesson Session → Print → Teach workflow has been exercised with real
+planning, not just theoretical use: the first week of school was planned,
+including creation of the U0 – Class Orientation unit.
+
+Planning is now considered the authoritative source of instructional
+planning. Other workspaces should consume Planning data rather than
+duplicating it.
+
+## Next Major Milestone
+
+Weekly Communication — generating polished weekly updates for students and
+families directly from lesson plans already created in Planning, without
+retyping lesson information.
+
+## Backlog (Post-Classroom-Readiness)
+
+The following planning enhancements are intentionally deferred until after
+classroom readiness is established:
+
+- Copy Unit
+- Shared curriculum (future investigation only)
+- Richer Teaching Episode content model
+
+---
+
 # Non-Negotiables
 
 Never sacrifice clarity for cleverness.

@@ -14,14 +14,30 @@
 
 # Current Status
 
-**Overall Readiness:** ?? Nearly Ready
+**Overall Readiness:** 🟡 Planning Complete — Weekly Communication Next
 
-The core workflow is now complete:
+The Planning milestone has been successfully completed. The core classroom
+workflow has now been exercised successfully, end to end:
 
-Forecast ? Units ? Planning ? Lesson Session ? Print ? Teach
+Forecast → Units → Planning → Lesson Session → Print → Teach
+
+Planning has been validated through actual teacher use by planning the first
+week of school, including creation of the U0 – Class Orientation unit. This
+confirms the workflow supports real classroom preparation, not just
+theoretical use.
+
+Optimistic UI is complete across Planning:
+
+- Optimistic lesson creation is complete
+- Optimistic lesson editing is complete
+- Optimistic progress logging is complete
+- Optimistic lesson deletion is complete
+- Optimistic lesson reordering is complete
 
 The remaining work is primarily real-data migration, performance, workflow
-polish, and classroom validation.
+polish, and further classroom validation.
+
+**Next Classroom-Readiness Priority:** Weekly Communication (see Section F).
 
 ---
 
@@ -35,18 +51,13 @@ polish, and classroom validation.
 
 ---
 
-# Current Sprint Focus (Sprint 5.5)
+# Sprint 5.7 Summary
 
-Objective:
-Make planning feel immediate and trustworthy.
-
-Success criteria:
-
-- [ ] No user wonders whether a click worked.
-- [ ] Duplicate lesson creation prevented.
-- [ ] Lesson creation feels immediate.
-- [ ] UI clearly communicates work in progress.
-- [ ] Largest planning delays identified and reduced.
+Planning responsiveness work is complete. Lesson creation, editing, progress
+logging, deletion, and reordering are all optimistic, so the teacher never
+wonders whether a click worked. The workflow was validated by planning the
+first week of school, including the U0 – Class Orientation unit. Planning is
+now considered classroom-ready.
 
 ---
 
