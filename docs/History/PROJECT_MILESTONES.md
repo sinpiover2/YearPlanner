@@ -53,16 +53,18 @@ Development focus now returns to implementing classroom functionality on top of 
 
 ## Upcoming Milestone
 
-### Classroom Communication MVP
+### Weekly Communication MVP (Sprint 5.8)
 
 A teacher can:
 
-- finish planning a week
-- generate AI-assisted weekly communication
-- review and edit the generated draft
-- copy the finished communication into the school's existing Monday Manager
+- finish planning a week in Planning
+- generate a deterministic, template-based weekly communication draft
+- review the generated draft
+- manually copy the finished communication into the school's existing Monday Manager
 
-No duplicate lesson entry required.
+No duplicate lesson entry required. Nothing is sent or published automatically.
+
+AI-assisted drafting was the originally imagined long-term shape of this milestone. It is explicitly deferred as a possible future enhancement — not required for Sprint 5.8 and not currently scheduled. See `docs/Development/CLASSROOM_READINESS.md`, Section F, and `docs/Architecture/PLANNING_WORKSPACE.md`, Section 15.
 
 This is a future milestone, not a completed one.
 

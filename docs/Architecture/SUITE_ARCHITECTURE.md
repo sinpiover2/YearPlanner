@@ -254,6 +254,14 @@ Clear ownership is more valuable than convenient placement.
 
 ---
 
+# Weekly Communication (Cross-Reference)
+
+Sprint 5.8 adds Weekly Communication: a thin output utility that drafts parent/student-facing text from an already-planned instructional week. It is not a sixth professional perspective and does not appear in the table above. It is owned by the Planning workspace and fully specified in `PLANNING_WORKSPACE.md`, Section 15.
+
+This document does not yet name "Planning" as a perspective — see the pre-existing "Planning" vs "Lesson Planner" naming note in `PLANNING_WORKSPACE.md`, Section 14. That gap predates and is not resolved by the Weekly Communication decision; Weekly Communication only establishes that whichever workspace owns weekly authoring generates drafts, never publications.
+
+---
+
 # Progressive Disclosure
 
 The suite should reveal information only when it becomes useful.

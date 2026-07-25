@@ -189,16 +189,30 @@ uncertainty.
 
 Purpose:
 
-Year Planner should allow teachers to generate polished weekly communication for students and families directly from the lesson plans they already created.
+Planning should let teachers generate a plain-language draft of the week's instructional communication — for students and families — directly from Lesson Sessions already authored in Planning, without retyping lesson information.
 
-Goals:
+Ownership:
+
+Weekly Communication is not a new workspace. It is a thin output utility owned by the Planning workspace, derived entirely from the instructional week Planning already displays. It does not become a publishing platform: it produces a draft; the teacher publishes it elsewhere. Full specification: `docs/Architecture/PLANNING_WORKSPACE.md`, Section 15.
+
+Sprint 5.8 MVP Goals:
 
 - [ ] Eliminate duplicate data entry.
 - [ ] Reuse planning information already contained in Year Planner.
-- [ ] Generate concise, parent-friendly communication.
+- [ ] Generate a concise, parent-friendly draft using deterministic, template-based text generation only.
 - [ ] Support existing teacher workflows (Monday Manager via copy/paste).
-- [ ] Teacher always reviews before publishing.
+- [ ] Teacher reviews the generated draft before manually copying it into Monday Manager or another communication system.
 - [ ] Entire workflow should take less than one minute.
+
+Non-Goals (Sprint 5.8):
+
+- [ ] Not a new suite workspace or navigation destination beyond Planning.
+- [ ] Not a publishing or sending mechanism — nothing is transmitted automatically.
+- [ ] Not AI-assisted drafting — deferred as a possible future enhancement (see `docs/History/PROJECT_MILESTONES.md`).
+
+Known Limitation:
+
+Lesson Session content (episode titles, deliverables) is currently read from the same-browser localStorage implementation Planning already uses. The MVP may read this data as-is. This is a same-device limitation, not durable cross-device persistence, and is documented here as a known gap rather than solved by this sprint.
 
 ---
 

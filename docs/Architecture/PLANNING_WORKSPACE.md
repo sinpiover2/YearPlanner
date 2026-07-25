@@ -34,6 +34,8 @@ The suite has four top-level workspaces. This is settled and must not change.
 
 **Lesson Session is not a workspace.** It is a domain object (one real class meeting) that opens from Today (via Start Lesson) or from Planning (by opening a session card). See `LESSON_SESSION_COMPOSER.md`.
 
+**Weekly Communication is also not a workspace.** It is a thin output utility owned by Planning, generated from the instructional week Planning already displays. See Section 15.
+
 Governing suite principles that constrain this spec:
 
 - **Awareness, not advice.** Planning reveals reality and consequences; it never recommends.
@@ -286,7 +288,7 @@ Drops onto days whose resolved minutes are shorter than the session's composed m
 - Any pacing interpretation, warnings, or recommendations (Forecast's job).
 - Curriculum browsing or revision (Units' job).
 - Enacted/teaching-time behavior — marking complete, logging, reflection (daily mode; see companion spec's boundary note).
-- Monday Manager or any publication surface.
+- Monday Manager itself, or any automated publishing/sending mechanism. Planning generates a reviewable Weekly Communication draft (Section 15); the teacher copies it into Monday Manager or another system manually. Planning does not become a publishing platform.
 
 ---
 
@@ -310,6 +312,44 @@ Implementation of this workspace must not begin until these are decided and reco
 - **D5 — Calendar/schedule resolution owner.** Meeting times, shortened days, no-class days, shoulder-day identity, and "next meeting of this section" all come from schedule resolution, which the suite has identified as load-bearing and currently unowned. Planning must consume it, never reimplement it.
 
 A sixth, softer flag: the suite already carries a naming collision ("Year Planner" as suite vs application). "Planning" as a workspace name alongside "Lesson Planner" as a suite document term is a cousin of that collision. Not blocking, but worth resolving in the same pass.
+
+---
+
+# 15. Weekly Communication (Sprint 5.8)
+
+**Status:** Sprint 5.8 MVP. Deterministic, template-based generation only. AI-assisted drafting is a deferred possible future enhancement, not required for Sprint 5.8 (see `docs/History/PROJECT_MILESTONES.md`).
+
+## 15.1 Purpose and Ownership
+
+Weekly Communication answers a narrow, derived question: *what should students and families know about this already-planned week?* It is not a new suite workspace and does not appear in the fixed workspace table (Section 2). It is a thin output utility owned by Planning, generated entirely from the instructional week Planning already displays for one section. It does not become a publishing platform (Section 12).
+
+## 15.2 Input Data
+
+- The current week's LessonSessions for one section, as already resolved by Planning (Section 5).
+- Each session's authored title and deliverables, read via the existing Lesson Session content model (see 15.5 for its current storage limitation).
+- No new data model, no new backend endpoint, and no student roster or contact data.
+
+## 15.3 Output Behavior
+
+- Produces a plain-text, parent-readable draft covering the week's sessions that have authored content.
+- Sessions or days with no authored content are omitted, not rendered as blank entries.
+- Output is deterministic, template-based text. No AI-generated content in Sprint 5.8.
+- The draft is copyable (e.g., copy-to-clipboard). Planning does not send, email, or otherwise transmit it.
+
+## 15.4 Teacher Review Requirement
+
+The teacher must review the generated draft before manually copying it into Monday Manager or another communication system. Planning never publishes or transmits communication on the teacher's behalf. Nothing is sent or published automatically.
+
+## 15.5 Known Limitation — localStorage
+
+Lesson Session content is currently authored and stored client-side, per browser (the same prototype storage used elsewhere in Planning and the composer). Weekly Communication may read this data as-is for Sprint 5.8. This is a same-device limitation, not durable or cross-device persistence, and is recorded here as a known gap — not a problem this sprint solves.
+
+## 15.6 Non-Goals
+
+- Not a new workspace or navigation destination.
+- Not a publishing platform: Planning does not become Monday Manager and does not automate delivery.
+- Not AI-assisted drafting (deferred; see Status above).
+- Not a durable, cross-device communication record.
 
 ---
 
