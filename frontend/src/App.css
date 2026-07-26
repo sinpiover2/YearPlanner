@@ -2881,7 +2881,7 @@ button {
   display: flex;
   min-height: calc(100vh - 150px);
   flex-direction: column;
-  background: #fdfcfa;
+  background: #ffffff;
   text-align: left;
 }
 
