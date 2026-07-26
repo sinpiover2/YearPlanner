@@ -14,6 +14,28 @@ It is not a changelog of features. Each entry should describe a lesson that gene
 - **Sequential, narrowly-scoped polish passes catch different problems than the implementation pass.** The first visual pass fixed palette and card language; a second pass (prompted by an explicit information-hierarchy spec) found tier mismatches invisible during implementation; a third, time-boxed "designer's pass" found consistency and spacing issues neither prior pass surfaced. One "make it good" pass is not equivalent to several short, differently-focused review passes.
 - **If a referenced visual attachment doesn't actually arrive, say so before comparing against it.** When asked to compare an implementation against "the attached screenshot" and no image was present in that turn, the right move was to state that plainly and fall back to the last screenshot actually provided — not to silently proceed as though nothing were missing.
 
+### Identify the Owning Surface
+
+When correcting visual appearance, identify the single component or surface that actually owns the visible color before modifying multiple child components. Prefer one authoritative change over compensating adjustments across many selectors.
+
+### Verify the Live UI
+
+Always compare against the live running application rather than relying solely on screenshots. Screenshots can become stale and lead to unnecessary implementation work.
+
+### Commit Complete Vertical Slices
+
+Commits should represent complete, working features. Avoid committing isolated CSS or JSX changes that temporarily leave the application in an inconsistent state.
+
+### Classroom Readiness Changes the Acceptance Test
+
+As the project approaches deployment, the primary acceptance criterion is no longer "the feature works."
+
+It is:
+
+"The feature enables successful preparation and teaching of a real instructional week."
+
+Future design decisions should prioritize classroom workflow over adding new functionality.
+
 ---
 
 ## Sprint 5.6

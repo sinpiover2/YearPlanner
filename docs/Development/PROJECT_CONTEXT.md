@@ -497,6 +497,26 @@ This is a guiding product philosophy, not an implementation detail.
 
 ---
 
+# Current Development Phase
+
+Year Planner has transitioned from feature construction to classroom
+deployment. The core teacher workflows (Forecast, Units, Planning, Lesson
+Session, Print, Weekly Communication) are built and have been exercised with
+real planning use.
+
+The current priority order is:
+
+1. Real classroom data
+2. Classroom workflow
+3. Performance
+4. Visual refinement
+
+Future work should be driven by authentic classroom use rather than
+speculative features. New functionality is no longer the default next step;
+loading the real school and using the application to teach is.
+
+---
+
 # Current Project Snapshot
 
 Planning is now considered classroom-ready. The Forecast → Units → Planning →

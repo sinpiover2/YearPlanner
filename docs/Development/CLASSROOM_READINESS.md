@@ -14,10 +14,19 @@
 
 # Current Status
 
-**Overall Readiness:** 🟢 Weekly Communication Complete — Real Data Next
+**Overall Readiness:** 🟢 Core Workflow Complete — Real School Data Next
 
-The Planning milestone has been successfully completed. The core classroom
-workflow has now been exercised successfully, end to end:
+The following capabilities are now complete:
+
+- Planning workflow
+- Lesson Planner workflow
+- Units workflow
+- Forecast workflow
+- Weekly Communication generation
+- Planning workspace visual refinement
+- Print workflow
+
+The core classroom workflow has now been exercised successfully, end to end:
 
 Forecast → Units → Planning → Lesson Session → Print → Teach
 
@@ -40,11 +49,24 @@ utility, closing the last of the three August 1 Success Criteria below.
 The remaining work is primarily real-data migration, performance, workflow
 polish, and further classroom validation.
 
+## Next Classroom Milestone: Load the Real School
+
 **Next Classroom-Readiness Priority:** Real Data (see Section A) — the school
 calendar, curriculum, and rosters currently powering Planning and Weekly
 Communication are working data, not yet the verified official import. This
 is the largest remaining gap between "the workflow works" and "the workflow
 is trustworthy for daily use."
+
+Loading the real school means importing and verifying:
+
+- actual student rosters
+- actual course sections
+- actual school calendar
+- actual curriculum
+
+After loading real data, Year Planner should be used to prepare the opening
+weeks of instruction, and future improvements should come from actual
+classroom experience rather than speculative features.
 
 ---
 

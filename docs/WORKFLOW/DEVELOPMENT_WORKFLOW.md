@@ -201,6 +201,18 @@ The visual experience is as important as the technical implementation.
 
 ---
 
+# Visual UI Validation
+
+Visual changes follow this process:
+
+- Verify the live application.
+- Compare against the intended design.
+- Identify the owning component responsible for the visible appearance.
+- Prefer one authoritative visual change rather than multiple compensating tweaks.
+- Validate across all major application views before accepting the change.
+
+---
+
 # Architecture Review
 
 Every sprint ends with reviewing the design of the system.
