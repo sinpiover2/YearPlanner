@@ -14,7 +14,7 @@
 
 # Current Status
 
-**Overall Readiness:** 🟡 Planning Complete — Weekly Communication Next
+**Overall Readiness:** 🟢 Weekly Communication Complete — Real Data Next
 
 The Planning milestone has been successfully completed. The core classroom
 workflow has now been exercised successfully, end to end:
@@ -34,10 +34,17 @@ Optimistic UI is complete across Planning:
 - Optimistic lesson deletion is complete
 - Optimistic lesson reordering is complete
 
+Weekly Communication (Section F) is now complete as a Planning-owned output
+utility, closing the last of the three August 1 Success Criteria below.
+
 The remaining work is primarily real-data migration, performance, workflow
 polish, and further classroom validation.
 
-**Next Classroom-Readiness Priority:** Weekly Communication (see Section F).
+**Next Classroom-Readiness Priority:** Real Data (see Section A) — the school
+calendar, curriculum, and rosters currently powering Planning and Weekly
+Communication are working data, not yet the verified official import. This
+is the largest remaining gap between "the workflow works" and "the workflow
+is trustworthy for daily use."
 
 ---
 
@@ -48,6 +55,8 @@ polish, and further classroom validation.
 ✓ Teach from printed lesson plans.
 
 ✓ Generate weekly communication for students and families without retyping lesson information.
+
+All three success criteria defined for Version 1 are now met.
 
 ---
 
@@ -197,18 +206,18 @@ Weekly Communication is not a new workspace. It is a thin output utility owned b
 
 Sprint 5.8 MVP Goals:
 
-- [ ] Eliminate duplicate data entry.
-- [ ] Reuse planning information already contained in Year Planner.
-- [ ] Generate a concise, parent-friendly draft using deterministic, template-based text generation only.
-- [ ] Support existing teacher workflows (Monday Manager via copy/paste).
-- [ ] Teacher reviews the generated draft before manually copying it into Monday Manager or another communication system.
-- [ ] Entire workflow should take less than one minute.
+- [x] Eliminate duplicate data entry.
+- [x] Reuse planning information already contained in Year Planner.
+- [x] Generate a concise, parent-friendly draft using deterministic, template-based text generation only.
+- [x] Support existing teacher workflows (Monday Manager via copy/paste).
+- [x] Teacher reviews the generated draft before manually copying it into Monday Manager or another communication system.
+- [ ] Entire workflow should take less than one minute. *(Not yet timed with a real week of authored lessons — confirm during Section E classroom validation.)*
 
 Non-Goals (Sprint 5.8):
 
-- [ ] Not a new suite workspace or navigation destination beyond Planning.
-- [ ] Not a publishing or sending mechanism — nothing is transmitted automatically.
-- [ ] Not AI-assisted drafting — deferred as a possible future enhancement (see `docs/History/PROJECT_MILESTONES.md`).
+- [x] Not a new suite workspace or navigation destination beyond Planning.
+- [x] Not a publishing or sending mechanism — nothing is transmitted automatically.
+- [x] Not AI-assisted drafting — deferred as a possible future enhancement (see `docs/History/PROJECT_MILESTONES.md`).
 
 Known Limitation:
 

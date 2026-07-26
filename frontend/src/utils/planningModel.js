@@ -105,6 +105,15 @@ export function getPlanningModel({
   const planningWeek = getPlanningWeek({ referenceDate, calendarIndex });
   const { weekDays, teachingDays } = planningWeek;
 
+  // Bounds for direct date navigation: calendarIndex is already sorted
+  // chronologically (buildCalendarIndex), so its first/last keys are the
+  // school year's date range as maintained in SchoolCalendar.
+  const calendarDateKeys = [...calendarIndex.keys()];
+  const dateBounds = {
+    min: calendarDateKeys[0] ?? null,
+    max: calendarDateKeys[calendarDateKeys.length - 1] ?? null,
+  };
+
   const sections = insertPeriodFourPlaceholder(
     planningSections.map((section) => ({
       id: section.SectionID,
@@ -179,6 +188,7 @@ export function getPlanningModel({
     schoolDaysLabel: planningWeek.schoolDaysLabel,
     previousWeekDate: planningWeek.previousWeekDate,
     nextWeekDate: planningWeek.nextWeekDate,
+    dateBounds,
     weekDays,
     sections,
     sessions,

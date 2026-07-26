@@ -51,22 +51,23 @@ Development focus now returns to implementing classroom functionality on top of 
 
 ---
 
-## Upcoming Milestone
+## 2026-07-25 — Weekly Communication MVP Complete
 
-### Weekly Communication MVP (Sprint 5.8)
+**Commit:** _to be filled in when this work is committed_
 
-A teacher can:
+Weekly Communication shipped as a thin output utility owned by Planning, exactly as scoped in `docs/Architecture/PLANNING_WORKSPACE.md`, Section 15, and `docs/Development/CLASSROOM_READINESS.md`, Section F.
 
-- finish planning a week in Planning
-- generate a deterministic, template-based weekly communication draft
-- review the generated draft
-- manually copy the finished communication into the school's existing Monday Manager
+### Major Outcomes
 
-No duplicate lesson entry required. Nothing is sent or published automatically.
+- A teacher can finish planning a week in Planning, generate a deterministic, template-based weekly communication draft, review it, and manually copy it into the school's existing Monday Manager — with no duplicate lesson entry and nothing sent or published automatically.
+- The draft generator reuses Planning's existing session/episode data and the same content filter `buildLessonPrintPayload` already used for "Print lesson," rather than introducing a parallel data path — so a day only appears in the draft if it has real authored content, and only titles/deliverables are read (teacher notes and block detail are never surfaced).
+- All three of the "August 1 Success Criteria" recorded in `CLASSROOM_READINESS.md` are now met: plan an instructional week, teach from printed lesson plans, and generate weekly communication without retyping lesson information.
+- Alongside the MVP, Planning received a visual refinement toward a calmer, warm-neutral, typography-first "paper planner" language, plus a bounded date picker for direct week navigation built on Planning's existing calendar model.
+- AI-assisted drafting remains explicitly deferred, per the original scoping — not built, not scheduled.
 
-AI-assisted drafting was the originally imagined long-term shape of this milestone. It is explicitly deferred as a possible future enhancement — not required for Sprint 5.8 and not currently scheduled. See `docs/Development/CLASSROOM_READINESS.md`, Section F, and `docs/Architecture/PLANNING_WORKSPACE.md`, Section 15.
+### Significance
 
-This is a future milestone, not a completed one.
+This closes the last of the three August 1 success criteria defined for Version 1. The classroom-readiness focus now shifts from "can the core workflow do this at all" to hardening what exists — real data import and end-to-end classroom validation are the natural next gates (see `docs/Development/CLASSROOM_READINESS.md`, Sections A and E).
 
 ---
 

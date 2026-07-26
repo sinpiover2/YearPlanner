@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PlanningGrid from "./PlanningGrid";
 import PlanningHeader from "./PlanningHeader";
+import WeeklyCommunicationPanel from "./WeeklyCommunicationPanel";
 import { getLessonSessionState } from "../../utils/lessonSessionStorage";
 import { buildLessonPrintPayload } from "../../utils/lessonPrintPayload";
 import { printLessonSessions } from "../../utils/combinedPrint";
@@ -19,13 +20,17 @@ function PlanningView({
   onPreviousWeek,
   onNextWeek,
   onJumpToToday,
+  onJumpToDate,
   curriculumLessons,
   courseLabel,
   selectedDayKey,
   onSelectDay,
 }) {
-  const { title, schoolDaysLabel, weekDays, sections, sessions } =
+  const { title, schoolDaysLabel, weekDays, sections, sessions, dateBounds } =
     planningModel;
+
+  const [isWeeklyCommunicationOpen, setWeeklyCommunicationOpen] =
+    useState(false);
 
   const sessionList = useMemo(() => Object.values(sessions), [sessions]);
 
@@ -118,6 +123,8 @@ function PlanningView({
           onSelectDay(getLocalDayKey());
           onJumpToToday();
         }}
+        onJumpToDate={onJumpToDate}
+        dateBounds={dateBounds}
         onPrintDay={handlePrintDay}
         canPrintDay={printableDaySessions.length > 0}
         printDayLabel={
@@ -127,6 +134,7 @@ function PlanningView({
               )
             : "Day"
         }
+        onOpenWeeklyCommunication={() => setWeeklyCommunicationOpen(true)}
       />
 
       <div className="planning-board">
@@ -140,6 +148,17 @@ function PlanningView({
           onSelectSession={handleSelectSession}
         />
       </div>
+
+      <WeeklyCommunicationPanel
+        open={isWeeklyCommunicationOpen}
+        onClose={() => setWeeklyCommunicationOpen(false)}
+        sections={sections}
+        weekTitle={title}
+        weekDays={weekDays}
+        sessions={sessions}
+        courseLabel={courseLabel}
+        curriculumLessons={curriculumLessons}
+      />
     </section>
   );
 }

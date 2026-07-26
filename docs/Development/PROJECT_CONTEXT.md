@@ -508,11 +508,18 @@ Planning is now considered the authoritative source of instructional
 planning. Other workspaces should consume Planning data rather than
 duplicating it.
 
+Weekly Communication (Sprint 5.8) is complete: a teacher can generate a
+deterministic weekly draft directly from Planning's authored lesson sessions
+and copy it into Monday Manager, with no duplicate entry and nothing sent
+automatically. All three of the August 1 Success Criteria in
+`docs/Development/CLASSROOM_READINESS.md` are now met.
+
 ## Next Major Milestone
 
-Weekly Communication — generating polished weekly updates for students and
-families directly from lesson plans already created in Planning, without
-retyping lesson information.
+Real Data — importing and verifying the official 2026–2027 school calendar,
+full curriculum, and (when available) student rosters, so Planning and
+Forecast are reasoning about the actual school year rather than working
+data. See `docs/Development/CLASSROOM_READINESS.md`, Section A.
 
 ## Backlog (Post-Classroom-Readiness)
 

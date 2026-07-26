@@ -1,12 +1,15 @@
 # Start Sprint
 
-## Sprint 5.8 Objective
+## Sprint 5.9 Objective
 
-**Primary objective:** Weekly Communication.
+**Primary objective:** Real Data (`docs/Development/CLASSROOM_READINESS.md`, Section A).
 
-Planning is now the canonical planning workflow and is classroom-ready.
-Weekly Communication should consume Planning data rather than introducing
-duplicate planning information.
+Weekly Communication shipped in Sprint 5.8 and all three August 1 Success
+Criteria are now met. Planning and Weekly Communication are currently
+reasoning about working data, not the verified official 2026–2027 school
+calendar, curriculum, and rosters. Import and verify the real data before
+adding further workflow features — see `docs/History/SPRINT_HANDOFF_5.8.md`
+for the full first-hour plan.
 
 ---
 

@@ -8,6 +8,14 @@ It is not a changelog of features. Each entry should describe a lesson that gene
 
 ---
 
+## Sprint 5.8
+
+- **A written design principle should win over a literal mockup when the two conflict.** Several choices this sprint (a short blue tick instead of the mockup's full border, uppercase eyebrow casing matching the app's existing convention instead of the mockup's lowercase) came from following the brief's stated intent rather than copying pixels. Treat visual references as direction, not specification, whenever the brief says so explicitly.
+- **Sequential, narrowly-scoped polish passes catch different problems than the implementation pass.** The first visual pass fixed palette and card language; a second pass (prompted by an explicit information-hierarchy spec) found tier mismatches invisible during implementation; a third, time-boxed "designer's pass" found consistency and spacing issues neither prior pass surfaced. One "make it good" pass is not equivalent to several short, differently-focused review passes.
+- **If a referenced visual attachment doesn't actually arrive, say so before comparing against it.** When asked to compare an implementation against "the attached screenshot" and no image was present in that turn, the right move was to state that plainly and fall back to the last screenshot actually provided — not to silently proceed as though nothing were missing.
+
+---
+
 ## Sprint 5.6
 
 - **Separate architectural analysis from implementation.** Reconciling an architecture document and editing it are different activities. Producing the analysis first — before any text changes — made the proposed changes reviewable on their own and easier to approve or reject individually. This became the Architecture Reconciliation Workflow in DEVELOPMENT_WORKFLOW.md.

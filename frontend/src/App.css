@@ -2881,52 +2881,175 @@ button {
   display: flex;
   min-height: calc(100vh - 150px);
   flex-direction: column;
+  background: #fdfcfa;
   text-align: left;
 }
 
 .planning-header {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 24px 8px;
+  background: transparent;
+}
+
+.planning-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 24px;
-  padding: 18px 28px 16px;
-  border-bottom: 1px solid #e5e7eb;
+}
+
+.planning-header-row-secondary {
+  align-items: center;
 }
 
 .planning-title-group h2 {
   margin: 0;
-  color: #0f172a;
-  font-size: 1.65rem;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  color: #26221c;
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 .planning-title-group .eyebrow {
   margin: 0 0 4px;
+  color: #8a8172;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
 }
 
-.planning-controls {
+.planning-nav-controls {
   display: flex;
-  justify-content: center;
-  gap: 8px;
+  align-items: center;
+  gap: 14px;
 }
 
-.planning-controls button {
-  min-width: 38px;
-  border: 1px solid #d7dde6;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #334155;
-  padding: 6px 12px;
-  font-weight: 750;
+.planning-date-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  border: 1px solid #d8d2c6;
+  border-radius: 10px;
+  background: #fefdfb;
+  padding: 0 11px;
+  color: #26221c;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.planning-date-picker:hover {
+  background: #f6f3ee;
+}
+
+.planning-date-picker:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.planning-date-picker-icon {
+  display: flex;
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  color: #6f675b;
+}
+
+.planning-date-picker-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.planning-date-picker-chevron {
+  color: #8a8172;
+  font-size: 0.7rem;
+}
+
+.planning-date-picker input[type="date"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.planning-week-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.planning-week-nav button {
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.planning-week-nav button:hover,
+.planning-week-nav button:focus-visible {
+  background: #f6f3ee;
+  color: #26221c;
+}
+
+.planning-week-nav button[aria-label="Previous week"],
+.planning-week-nav button[aria-label="Next week"] {
+  min-width: 30px;
+  padding: 4px 6px;
+  color: #8a8172;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.planning-week-nav button:not([aria-label]) {
+  padding: 5px 10px;
+  color: #6f675b;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.planning-secondary-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.planning-secondary-action {
+  border: 0;
+  background: transparent;
+  color: #6f675b;
+  padding: 2px 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.planning-secondary-action:hover,
+.planning-secondary-action:focus-visible {
+  color: #2b2621;
+}
+
+.planning-secondary-action:disabled {
+  color: #b3a996;
+  cursor: default;
 }
 
 .planning-school-days {
-  justify-self: end;
   margin: 0;
-  color: #64748b;
-  font-size: 0.85rem;
-  font-weight: 650;
+  color: #8a8172;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .planning-board {
@@ -2934,48 +3057,34 @@ button {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  padding: 22px 30px 18px;
+  padding: 0 24px 20px;
 }
 
 .planning-week-grid {
   position: relative;
   display: grid;
-  grid-template-columns: 52px 30px repeat(5, minmax(160px, 1fr)) 30px;
-  column-gap: 18px;
-  row-gap: 10px;
-  align-items: stretch;
+  grid-template-columns: 64px repeat(5, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 0;
+  align-items: start;
   width: 100%;
 }
 
-.planning-week-grid > * {
-  position: relative;
-  z-index: 1;
-}
-
-.planning-week-grid > .planning-selected-day-column {
-  z-index: 0;
-  min-width: 0;
-  margin-inline: -8px;
-  border-radius: 16px;
-  background: #edf2f7;
-  pointer-events: none;
-}
-
 .planning-day-heading {
-  min-height: 30px;
+  min-height: 26px;
   border: 0;
-  border-radius: 9px;
-  padding: 2px 0 10px;
+  border-radius: 0;
+  padding: 10px 0 10px 12px;
   background: transparent;
-  color: #475569;
+  color: #6f675b;
   font: inherit;
-  text-align: center;
-  font-size: 0.82rem;
-  font-weight: 750;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .planning-day-heading.active {
-  color: #0f172a;
+  color: #26221c;
 }
 
 button.planning-day-heading {
@@ -2985,7 +3094,7 @@ button.planning-day-heading {
 button.planning-day-heading:hover,
 button.planning-day-heading:focus-visible {
   outline: 0;
-  background: #f6f8fb;
+  color: #26221c;
 }
 
 .planning-day-heading.selected,
@@ -2993,40 +3102,8 @@ button.planning-day-heading.selected:hover,
 button.planning-day-heading.selected:focus-visible {
   background: transparent;
   box-shadow: none;
-  color: #0f172a;
-  font-weight: 800;
-}
-
-.planning-day-heading.shoulder {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  opacity: 0.55;
-}
-
-.planning-shoulder-date {
-  color: #64748b;
-  font-size: 0.7rem;
-  font-weight: 750;
-  line-height: 1.05;
-  text-align: center;
-  white-space: pre-line;
-}
-
-.planning-cell.shoulder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 138px;
-  opacity: 1;
-}
-
-.planning-shoulder-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #9ca3af;
-  opacity: 0.65;
+  color: #26221c;
+  font-weight: 700;
 }
 
 .planning-day-alert {
@@ -3036,49 +3113,73 @@ button.planning-day-heading.selected:focus-visible {
 
 .planning-section-label {
   display: flex;
-  align-items: center;
+  align-self: stretch;
+  flex-direction: column;
   justify-content: center;
-  color: #64748b;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  padding: 8px 0;
-  text-align: center;
-  text-transform: uppercase;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  gap: 1px;
+  padding: 0 10px 0 0;
+  text-align: left;
+  border-top: 1px solid #e7e2d8;
+}
+
+.planning-section-course {
+  color: #26221c;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.planning-section-period {
+  color: #8a8172;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .planning-cell {
-  min-height: 138px;
+  display: flex;
+  align-items: stretch;
+  min-height: 60px;
+  border-top: 1px solid #e7e2d8;
 }
 
 .planning-session-card {
+  position: relative;
   display: flex;
   width: 100%;
-  min-height: 94px;
   flex-direction: column;
-  gap: 4px;
-  border: 1px solid #d7dde6;
-  border-radius: 14px;
-  background: #ffffff;
-  color: #0f172a;
-  padding: 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #26221c;
+  padding: 14px;
   text-align: left;
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: background-color .15s ease, border-color .15s ease;
+  box-sizing: border-box;
 }
 
-.planning-session-card:hover:not(.empty) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(15,23,42,.08);
+.planning-session-card.planned:hover,
+.planning-session-card.planned:focus-visible {
+  background: #f6f3ee;
+}
+
+.planning-session-card.planned.selected,
+.planning-session-card.planned.selected:hover,
+.planning-session-card.planned.selected:focus-visible {
+  border: 1px solid #2563eb;
+  border-radius: 12px;
+  background: #ffffff;
 }
 
 .planning-session-card.empty {
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  border-style: dashed;
-  background: #fbfdff;
-  color: #64748b;
+  border: 0;
+  background: transparent;
+  color: #b8b0a2;
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .session-card-title {
@@ -3086,101 +3187,92 @@ button.planning-day-heading.selected:focus-visible {
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  color: #111827;
-  font-size: 0.96rem;
-  font-weight: 800;
-  line-height: 1.2;
+  color: #26221c;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
 .session-card-curriculum {
+  display: -webkit-box;
   overflow: hidden;
-  color: #64748b;
-  font-size: 0.76rem;
-  font-weight: 600;
+  margin-top: 8px;
+  color: #6f675b;
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1.3;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .session-card-identity {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
 }
 
-.session-status-dot {
+.session-card-duration {
   flex: 0 0 auto;
-  width: 8px;
-  height: 8px;
-  border: 2px solid #0f172a;
-  border-radius: 999px;
-  background: #0f172a;
+  color: #8a8172;
+  font-size: 11px;
+  font-weight: 500;
 }
 
-.session-status-dot.state-draft,
-.session-status-dot.state-planned {
-  border-width: 1px;
-  border-color: #64748b;
-  background: transparent;
+.session-selected-tick {
+  display: block;
+  width: 22px;
+  height: 2px;
+  margin: 7px 0 7px;
+  border-radius: 2px;
+  background: #2563eb;
 }
 
-.session-status-dot.state-completed {
-  border-color: #94a3b8;
-  background: #94a3b8;
-}
-
-.session-episode-preview {
-  display: grid;
+.session-deliverable-group {
+  display: flex;
+  flex-direction: column;
   gap: 2px;
-  margin-top: 2px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #eee9df;
 }
 
-.session-episode-preview-line {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 8px;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  color: #64748b;
-  font-size: 0.7rem;
-  line-height: 1.25;
+.session-deliverable-label {
+  color: #8a8172;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.session-episode-preview-line > span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.session-episode-preview-line.is-overflow {
-  color: #8793a2;
-  font-size: 0.68rem;
-  font-weight: 650;
-}
-
-.session-episode-deliverable {
-  box-sizing: border-box;
-  width: 7px;
-  height: 7px;
-  justify-self: end;
-  border: 1px solid #94a3b8;
-  border-radius: 1.5px;
-  background: transparent;
+.session-deliverable-name {
+  color: #26221c;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .planning-session-card.unplanned {
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  border-style: dashed;
-  color: #64748b;
+  border: 1px dashed transparent;
+  border-radius: 10px;
+  color: #8a8172;
+}
+
+.planning-session-card.unplanned:hover,
+.planning-session-card.unplanned:focus-visible {
+  border-color: #d8d2c6;
+  background: #f6f3ee;
+  color: #6f675b;
 }
 
 .session-card-create {
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .session-chip-row {
@@ -3190,20 +3282,150 @@ button.planning-day-heading.selected:focus-visible {
 }
 
 .session-chip {
-  border: 1px solid #d7dde6;
+  border: 1px solid #e5ddd0;
   border-radius: 6px;
-  background: #f8fafc;
-  color: #334155;
+  background: #f6f1e6;
+  color: #57503f;
   padding: 2px 6px;
   font-size: 0.72rem;
 }
 
-.planning-session-card.selected {
-  border-color: #94a3b8;
-  box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.06),
-    inset 3px 0 0 #64748b;
-  transform: translateY(-1px);
+.weekly-communication-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(38, 34, 28, 0.32);
+  padding: 24px;
+}
+
+.weekly-communication-panel {
+  display: flex;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  border: 1px solid #eee9df;
+  border-radius: 16px;
+  background: #fffefc;
+  padding: 24px;
+  text-align: left;
+}
+
+.weekly-communication-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.weekly-communication-header h2 {
+  margin: 0;
+  color: #26221c;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.weekly-communication-header button {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #8a8172;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 4px 8px;
+}
+
+.weekly-communication-header button:hover,
+.weekly-communication-header button:focus-visible {
+  background: #f2ece0;
+  color: #4b453b;
+}
+
+.weekly-communication-subtitle {
+  margin: 0;
+  color: #8a8172;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.weekly-communication-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: #6f675b;
+}
+
+.weekly-communication-field select {
+  border: 1px solid #eee9df;
+  border-radius: 8px;
+  background: #fffefc;
+  color: #26221c;
+  padding: 7px 10px;
+  font: inherit;
+}
+
+.weekly-communication-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.weekly-communication-actions button {
+  border: 1px solid #eee9df;
+  border-radius: 999px;
+  background: #fffefc;
+  color: #6f675b;
+  padding: 8px 14px;
+  font-weight: 750;
+}
+
+.weekly-communication-actions button:first-child {
+  border-color: #26221c;
+  background: #26221c;
+  color: #fffefc;
+}
+
+.weekly-communication-actions button:disabled {
+  opacity: 0.5;
+}
+
+.weekly-communication-status {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.weekly-communication-status.error {
+  color: #b45309;
+}
+
+.weekly-communication-draft {
+  min-height: 220px;
+  resize: vertical;
+  border: 1px solid #eee9df;
+  border-radius: 10px;
+  background: #faf7ef;
+  color: #26221c;
+  padding: 14px;
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.weekly-communication-empty {
+  margin: 0;
+  border: 1px dashed #eee9df;
+  border-radius: 10px;
+  padding: 16px;
+  color: #8a8172;
+  font-size: 0.85rem;
 }
 
 .lesson-session-workspace {

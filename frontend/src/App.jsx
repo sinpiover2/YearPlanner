@@ -1021,6 +1021,11 @@ function App() {
     onPreviousWeek: () => setPlanningReferenceDate(planningModel.previousWeekDate),
     onNextWeek: () => setPlanningReferenceDate(planningModel.nextWeekDate),
     onJumpToToday: () => setPlanningReferenceDate(new Date()),
+    // dateKey is a "YYYY-MM-DD" string (native <input type="date"> value).
+    // Parsed with an explicit local-midnight time, matching the timezone-
+    // safe convention already used for day keys elsewhere in Planning.
+    onJumpToDate: (dateKey) =>
+      setPlanningReferenceDate(new Date(`${dateKey}T00:00:00`)),
   };
 
   // Scoped to the whole course, not just activeLessonContext.unitId (the
