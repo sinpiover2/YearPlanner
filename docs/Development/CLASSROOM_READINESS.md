@@ -138,7 +138,11 @@ now considered classroom-ready.
 (When district data becomes available.)
 
 - [ ] Import sections
-- [ ] Import students
+- [ ] Import students — guarded tooling now exists
+      (`apps-script-roster/RosterImport.js`, `setupRosterImportSheetV1()` /
+      `importRosterFromStaging()`); this item is about running it against the
+      real class lists, not building it. See `apps-script-roster/README.md`.
+      Deactivating a dropped student's enrollment is not yet implemented.
 - [ ] Verify roster printing
 - [ ] Verify section assignments
 

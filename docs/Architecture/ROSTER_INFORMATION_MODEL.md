@@ -64,6 +64,22 @@ Column5Label
 SortMode supports `LastName` and `FirstName`, defaulting to `LastName`. All five
 paper-marking labels may remain blank.
 
+### RosterImport
+
+Columns, in exact order:
+
+```text
+SectionID
+LegalFirstName
+LegalLastName
+PreferredName
+Status
+```
+
+A teacher-facing staging sheet, not a canonical roster sheet. `Status` is
+written by the importer as output; it is never read as input. See "Roster
+Import," below.
+
 ## Access boundary
 
 The deployed Year Planner web app permits anonymous reads of non-student
@@ -116,3 +132,28 @@ transaction across sheets, so a failed setup attempts to delete sheets it
 created and restore pre-existing target sheets to their validated empty or
 header-only state. An incomplete rollback is reported as an error and requires
 manual workbook review.
+
+## Roster Import
+
+`RosterImport.js`, in the same authenticated `apps-script-roster/` project,
+adds the real-roster counterpart to `setupRosterSheetsV1()`'s fictional
+seeding: `setupRosterImportSheetV1()` creates or validates the `RosterImport`
+staging sheet, and `importRosterFromStaging()` turns its rows into `Students`
+and `SectionEnrollments` records. Both are guarded the same way
+(script-locked, fully validated before the first write, rollback scoped to
+exactly the rows the attempt appended). Full behavior — validation order,
+duplicate handling, and the name-matching policy below — is documented inline
+in `RosterImport.js` and operationally in `apps-script-roster/README.md`.
+
+No district student identifier is assumed to exist, so student identity is
+matched only by normalized `LegalFirstName`/`LegalLastName`: an exact match
+against exactly one existing active student reuses that `StudentID`; no match
+mints a new one; two or more existing active students sharing a name is
+unresolvable and rejects the row rather than guessing. A row's `(StudentID,
+SectionID)` pair that already has an active enrollment — in canonical data or
+earlier in the same staging batch — is skipped, never duplicated. Any
+rejected or ambiguous row blocks the entire import batch before any roster
+mutation; nothing is partially imported.
+
+Deactivating an enrollment (a drop) is intentionally out of scope for this
+capability — see `docs/Development/CLASSROOM_READINESS.md` for that gap.

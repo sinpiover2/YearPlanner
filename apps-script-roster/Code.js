@@ -35,6 +35,15 @@ const ROSTER_SCHEMAS = {
     "Column4Label",
     "Column5Label",
   ],
+  // Teacher-facing staging sheet for RosterImport.js. Not a canonical roster
+  // sheet — Status is written by the importer, never read as input.
+  RosterImport: [
+    "SectionID",
+    "LegalFirstName",
+    "LegalLastName",
+    "PreferredName",
+    "Status",
+  ],
 };
 
 function doGet(e) {
