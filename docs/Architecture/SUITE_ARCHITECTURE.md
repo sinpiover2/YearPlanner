@@ -262,6 +262,14 @@ This document does not yet name "Planning" as a perspective — see the pre-exis
 
 ---
 
+# Schedule Resolution (Cross-Reference)
+
+Schedule Resolution is shared infrastructure beneath the suite's workspaces: the single source of truth for which days are instructional, which periods meet on a given day, and how the recurring weekly schedule is affected by calendar overrides. It is not a workspace and does not appear in the perspective table above. It is not an information domain in `INFORMATION_MODEL.md` either — it is infrastructure the three information domains are placed onto, not instructional information itself.
+
+Every workspace that needs schedule facts consumes the same canonical resolution logic rather than deriving it independently. Resolution follows a fixed precedence: the recurring weekly schedule applies by default, and an explicit calendar override takes precedence over it when one exists for a given day. See `PLANNING_WORKSPACE.md`, Section 14 (D5), for the decision this resolves.
+
+---
+
 # Progressive Disclosure
 
 The suite should reveal information only when it becomes useful.

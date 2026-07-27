@@ -1,6 +1,6 @@
 # Planning Workspace Specification
 
-**Document Status:** Approved design target — pending four blocking decisions (Section 14)
+**Document Status:** Approved design target — pending four blocking decisions (Section 14: D1–D4; D5 resolved)
 **Phase:** Planning workspace implementation
 **Audience:** Implementation partner. This document is self-contained; no prior conversation context is required.
 **Companion document:** `LESSON_SESSION_COMPOSER.md` (the editing surface that opens from this workspace)
@@ -309,7 +309,7 @@ Implementation of this workspace must not begin until these are decided and reco
 - **D2 — SessionFrame provenance and ownership.** Template-stamp (copies at session creation; edits don't propagate) vs live reference (edits propagate; per-session overrides create the `⟳` state). Frames are teacher-owned, so the curriculum linked-not-copied ruling does not automatically transfer. Also decide where frames are authored (composer? a section settings surface?). The frame-silence rule (Section 8) is settled either way.
 - **D3 — Duration becomes load-bearing.** The composition bar requires `estimatedMinutes` on every block. Decide: type-level defaults (proposal: Welcome 3, Homework review 7, Exit routine 5, Discussion 10, curriculum core inherits an estimate from Units or defaults to the period's remaining minutes) plus a defined degraded rendering for genuinely unsized blocks. Whatever is decided must match the composer spec exactly.
 - **D4 — Shared pacing engine.** The shelf's `N left · M open days` must come from the same computation Forecast uses, or the two surfaces will eventually disagree on core facts — a trust failure. Name the engine, its owner, and its API before wiring the shelf meta. If undecided at build time, ship the shelf without the meta rather than computing it locally.
-- **D5 — Calendar/schedule resolution owner.** Meeting times, shortened days, no-class days, shoulder-day identity, and "next meeting of this section" all come from schedule resolution, which the suite has identified as load-bearing and currently unowned. Planning must consume it, never reimplement it.
+- **D5 — Calendar/schedule resolution owner.** Meeting times, shortened days, no-class days, shoulder-day identity, and "next meeting of this section" all come from schedule resolution. This is shared suite infrastructure, not owned by any single workspace — see `SUITE_ARCHITECTURE.md`, "Schedule Resolution (Cross-Reference)." Resolution follows a fixed precedence: (1) the recurring weekly schedule, then (2) explicit calendar overrides, which take precedence when one exists for a given day. Planning must consume this resolution, never reimplement it.
 
 A sixth, softer flag: the suite already carries a naming collision ("Year Planner" as suite vs application). "Planning" as a workspace name alongside "Lesson Planner" as a suite document term is a cousin of that collision. Not blocking, but worth resolving in the same pass.
 

@@ -8,6 +8,10 @@ It is not a changelog of features. Each entry should describe a lesson that gene
 
 ---
 
+## Sprint 5.9
+
+- **Reserve new architecture documents for substantial subsystems with their own responsibilities and boundaries; document cross-cutting infrastructure through a suite-level cross-reference instead.** Resolving D5 (calendar/schedule resolution ownership) initially proposed a standalone architecture document modeled on the suite's per-perspective documents. On reconciliation, a short cross-reference in `SUITE_ARCHITECTURE.md` — the same treatment already used for Weekly Communication — was sufficient: the concern was shared infrastructure beneath the existing workspaces, not a new perspective or information domain. A new document is warranted only when a concept carries enough independent responsibility, boundaries, and design decisions to need one; otherwise a cross-reference keeps architecture documentation from growing faster than the system it describes.
+
 ## Sprint 5.8
 
 - **A written design principle should win over a literal mockup when the two conflict.** Several choices this sprint (a short blue tick instead of the mockup's full border, uppercase eyebrow casing matching the app's existing convention instead of the mockup's lowercase) came from following the brief's stated intent rather than copying pixels. Treat visual references as direction, not specification, whenever the brief says so explicitly.

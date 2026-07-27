@@ -96,13 +96,20 @@ now considered classroom-ready.
 
 ## School Calendar
 
+### District Instructional Calendar
+
 - [ ] Import official 2026�2027 school calendar
 - [ ] Verify holidays
 - [ ] Verify breaks
-- [ ] Verify minimum days
-- [ ] Verify bell schedule patterns
+- [ ] Verify recurring weekly bell schedule patterns
 - [ ] Verify session numbering
 - [ ] Verify forecasting against the real calendar
+
+### Site-Specific Schedule Overrides
+
+- [ ] Verify site-specific days that override the recurring weekly schedule
+- [ ] Verify minimum-day schedules
+- [ ] Verify session numbering and forecasting remain correct on override days
 
 ---
 

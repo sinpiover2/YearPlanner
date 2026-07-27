@@ -1,6 +1,6 @@
 # Lesson Session Composer Specification
 
-**Document Status:** Approved design target — pending four blocking decisions (Section 15)
+**Document Status:** Approved design target — pending four blocking decisions (Section 15: D1–D4; D5 resolved)
 **Phase:** Lesson Session editing surface implementation
 **Audience:** Implementation partner. This document is self-contained; no prior conversation context is required.
 **Companion document:** `PLANNING_WORKSPACE.md` (the board this surface opens from; shared vocabulary is defined in both)
@@ -261,7 +261,7 @@ Shared with `PLANNING_WORKSPACE.md` — the two surfaces must resolve these iden
 - **D1 — Curriculum ↔ session cardinality.** The composer's split and bump verbs *manufacture* the many-to-many case (one curriculum lesson across two sessions) as a first-class operation. Resolve cardinality and link identity first.
 - **D2 — SessionFrame provenance and ownership.** Stamp vs live reference; where frames are authored; the one-sentence frame-modification rule (7.3). The composer renders frames either way, but bump's "append before the closing frame cap" and the routines palette both depend on the answer.
 - **D3 — Duration model.** Type-default minutes table and the unsized-block degraded state (6.6). Must match the Planning spec's composition bar exactly — same numbers, same source.
-- **D5 — Calendar/schedule resolution owner.** Meeting times, the ruler, shortened-day rescaling, and the Tomorrow zone's "next meeting of this section" all consume schedule resolution. The composer must never compute schedule facts locally.
+- **D5 — Calendar/schedule resolution owner (resolved).** Meeting times, the ruler, shortened-day rescaling, and the Tomorrow zone's "next meeting of this section" all consume schedule resolution, which is shared suite infrastructure, not owned by the composer or any single workspace — see `SUITE_ARCHITECTURE.md`, "Schedule Resolution (Cross-Reference)," and `PLANNING_WORKSPACE.md`, Section 14 (D5). The composer must never compute schedule facts locally.
 
 (D4, the shared pacing engine, does not bind the composer directly — the palette shows queue order, not pacing counts — but the Unit tab's unplaced queue must be the same data structure the Unit Shelf reads, or the two will drift.)
 
