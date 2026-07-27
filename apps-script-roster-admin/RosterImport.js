@@ -5,7 +5,7 @@
 // is never reachable through doGet/doPost or the anonymous planning API.
 // Entry points are run directly from the Apps Script editor (matching how
 // setupRosterSheetsV1() already works in the main project) or from the
-// "Year Planner Roster" spreadsheet menu installed by installRosterMenuTrigger_().
+// "Year Planner Roster Admin" spreadsheet menu installed by installRosterMenuTrigger_().
 //
 // Shares SHEET_ID, ROSTER_SCHEMAS, readRosterSheet_, isActiveRosterValue_,
 // and describeRosterSchemaMismatch_ with Code.js — Apps Script projects
@@ -573,7 +573,7 @@ function buildImportResult_(plan, overrides) {
 // same way setupRosterSheetsV1() already is.
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu("Year Planner Roster")
+    .createMenu("Year Planner Roster Admin")
     .addItem("Set Up Roster Import Sheet", "runSetupRosterImportSheetFromMenu_")
     .addItem("Import Roster from Staging", "runImportRosterFromStagingFromMenu_")
     .addToUi();

@@ -5,6 +5,6 @@ dist/
 .claude/
 
 # Local Google Apps Script clasp configuration
-apps-script/.clasp.json
+apps-script-planning/.clasp.json
 
-apps-script-roster/.clasp.json
+apps-script-roster-admin/.clasp.json

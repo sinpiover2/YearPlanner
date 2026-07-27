@@ -1,6 +1,6 @@
 // Authenticated roster Apps Script web app. It owns the combined print
 // document (lesson + roster) so student data never has to reach this
-// frontend; see apps-script-roster/ and docs/Architecture/ROSTER_INFORMATION_MODEL.md.
+// frontend; see apps-script-roster-admin/ and docs/Architecture/ROSTER_INFORMATION_MODEL.md.
 export const COMBINED_PRINT_URL =
   "https://script.google.com/a/macros/scottsvalleyusd.org/s/AKfycbz3pelDrU-DTrDmIp4KDt3LAYIOv263Z7ijAgCBAEX2CykwmCDLFzV2EZkX4rftq4TU/exec";
 

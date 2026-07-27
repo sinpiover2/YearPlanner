@@ -90,7 +90,7 @@ not request or render roster data.
 `getSectionRoster(sectionId)` remains an internal assembly helper in the
 anonymous project during Phase 1. It is not called by `doGet` or `doPost`, so it
 is inaccessible through the deployed anonymous web app. An isolated local copy
-now lives in `apps-script-roster/` for the approved authenticated HTML Service
+now lives in `apps-script-roster-admin/` for the approved authenticated HTML Service
 application. The backend continues to own filtering, display-name fallback,
 sorting, and column labels.
 
@@ -135,7 +135,7 @@ manual workbook review.
 
 ## Roster Import
 
-`RosterImport.js`, in the same authenticated `apps-script-roster/` project,
+`RosterImport.js`, in the same authenticated `apps-script-roster-admin/` project,
 adds the real-roster counterpart to `setupRosterSheetsV1()`'s fictional
 seeding: `setupRosterImportSheetV1()` creates or validates the `RosterImport`
 staging sheet, and `importRosterFromStaging()` turns its rows into `Students`
@@ -143,7 +143,7 @@ and `SectionEnrollments` records. Both are guarded the same way
 (script-locked, fully validated before the first write, rollback scoped to
 exactly the rows the attempt appended). Full behavior — validation order,
 duplicate handling, and the name-matching policy below — is documented inline
-in `RosterImport.js` and operationally in `apps-script-roster/README.md`.
+in `RosterImport.js` and operationally in `apps-script-roster-admin/README.md`.
 
 No district student identifier is assumed to exist, so student identity is
 matched only by normalized `LegalFirstName`/`LegalLastName`: an exact match

@@ -139,9 +139,9 @@ now considered classroom-ready.
 
 - [ ] Import sections
 - [ ] Import students — guarded tooling now exists
-      (`apps-script-roster/RosterImport.js`, `setupRosterImportSheetV1()` /
+      (`apps-script-roster-admin/RosterImport.js`, `setupRosterImportSheetV1()` /
       `importRosterFromStaging()`); this item is about running it against the
-      real class lists, not building it. See `apps-script-roster/README.md`.
+      real class lists, not building it. See `apps-script-roster-admin/README.md`.
       Deactivating a dropped student's enrollment is not yet implemented.
 - [ ] Verify roster printing
 - [ ] Verify section assignments

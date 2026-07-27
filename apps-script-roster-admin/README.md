@@ -24,7 +24,7 @@ manifest change to add write capability. An earlier version of this note
 described a read-only, not-yet-deployed Phase 1; that has since progressed.
 
 The guarded `setupRosterSheetsV1()` fictional-data seeder still lives only in
-`apps-script/Code.js` and has not been copied here — it seeds four hardcoded
+`apps-script-planning/Code.js` and has not been copied here — it seeds four hardcoded
 approved sections with made-up names for local development and was never
 meant for real rosters. `RosterImport.js` in this project is the real-roster
 equivalent for actual classroom use; it does not reuse or depend on the
@@ -47,7 +47,7 @@ any file upload or new web UI.
    a sheet that already has the correct headers, and refuses (with a clear
    error) to touch an incompatible non-empty sheet.
 3. Optionally run `installRosterMenuTrigger_` once so a **Year Planner
-   Roster** menu (Set Up Roster Import Sheet / Import Roster from Staging)
+   Roster Admin** menu (Set Up Roster Import Sheet / Import Roster from Staging)
    appears automatically when the spreadsheet is opened. This project is
    standalone, not bound to the spreadsheet, so the menu only appears after
    this one-time installable-trigger setup — every function remains directly
