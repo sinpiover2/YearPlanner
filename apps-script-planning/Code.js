@@ -373,8 +373,21 @@ function setupRosterSheetsV1Locked() {
   return { ok: true, students: studentRows.length, sections: approvedSections };
 }
 
+// doGet remains fully anonymous (ANYONE_ANONYMOUS in appsscript.json) — the
+// deployment's access level is one setting for the whole web app, so reads
+// cannot be made anonymous while writes require auth at the deployment
+// level. Write authorization is therefore enforced here, in application
+// code, via a shared token every write action must present. See
+// docs/Architecture/WRITE_PATH_INVENTORY.md and
+// docs/Architecture/SPRINT_6_0_ARCHITECTURE.md, "Security."
 function doPost(e) {
   const payload = JSON.parse(e.postData.contents);
+
+  if (!isAuthorizedWrite_(payload)) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ ok: false, error: "Unauthorized" }),
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
 
   if (payload.action === "saveDailyProgress") {
     return saveDailyProgress(payload);
@@ -392,10 +405,6 @@ function doPost(e) {
     return deleteLesson(payload);
   }
 
-  if (payload.action === "moveLesson") {
-    return moveLesson(payload);
-  }
-
   if (payload.action === "reorderLessons") {
     return reorderLessons(payload);
   }
@@ -403,6 +412,24 @@ function doPost(e) {
   return ContentService.createTextOutput(
     JSON.stringify({ ok: false, error: "Unknown action" }),
   ).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Every write action must present the shared token configured in this
+// project's Script Properties (Apps Script editor -> Project Settings ->
+// Script Properties -> key "WRITE_TOKEN"). An unconfigured token fails
+// closed rather than falling back to open access. This is a shared-secret
+// mitigation, not per-user authentication — see WRITE_PATH_INVENTORY.md's
+// "Remaining risks" note for what it does and doesn't guarantee.
+function isAuthorizedWrite_(payload) {
+  const expectedToken = PropertiesService.getScriptProperties().getProperty(
+    "WRITE_TOKEN",
+  );
+
+  if (!expectedToken) {
+    return false;
+  }
+
+  return typeof payload.token === "string" && payload.token === expectedToken;
 }
 
 function getSheetData(sheetName) {
@@ -604,78 +631,6 @@ function deleteLesson(payload) {
 
   if (updatedRows.length > 0) {
     sheet.getRange(2, 1, updatedRows.length, headers.length).setValues(updatedRows);
-  }
-
-  return ContentService.createTextOutput(
-    JSON.stringify({ ok: true }),
-  ).setMimeType(ContentService.MimeType.JSON);
-}
-
-function moveLesson(payload) {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
-  const sheet = ss.getSheetByName("Lessons");
-
-  const values = sheet.getDataRange().getValues();
-  const headers = values[0];
-
-  const lessonIdIndex = headers.indexOf("LessonID");
-  const unitIdIndex = headers.indexOf("UnitID");
-  const sortOrderIndex = headers.indexOf("SortOrder");
-  const lessonNumberIndex = headers.indexOf("LessonNumber");
-
-  const unitRows = values
-    .map((row, index) => ({ row, sheetRow: index + 1 }))
-    .filter((item, index) => {
-      return index > 0 && item.row[unitIdIndex] === payload.unitId;
-    })
-    .sort((a, b) => {
-      return Number(a.row[sortOrderIndex]) - Number(b.row[sortOrderIndex]);
-    });
-
-  const currentIndex = unitRows.findIndex((item) => {
-    return item.row[lessonIdIndex] === payload.lessonId;
-  });
-
-  if (currentIndex === -1) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ ok: false, error: "Lesson not found" }),
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  const targetIndex =
-    payload.direction === "up" ? currentIndex - 1 : currentIndex + 1;
-
-  if (targetIndex < 0 || targetIndex >= unitRows.length) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ ok: true, skipped: true }),
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  const current = unitRows[currentIndex];
-  const target = unitRows[targetIndex];
-
-  const currentSortOrder = current.row[sortOrderIndex];
-  const targetSortOrder = target.row[sortOrderIndex];
-
-  sheet
-    .getRange(current.sheetRow, sortOrderIndex + 1)
-    .setValue(targetSortOrder);
-
-  sheet
-    .getRange(target.sheetRow, sortOrderIndex + 1)
-    .setValue(currentSortOrder);
-
-  if (lessonNumberIndex !== -1) {
-    const currentLessonNumber = current.row[lessonNumberIndex];
-    const targetLessonNumber = target.row[lessonNumberIndex];
-
-    sheet
-      .getRange(current.sheetRow, lessonNumberIndex + 1)
-      .setValue(targetLessonNumber);
-
-    sheet
-      .getRange(target.sheetRow, lessonNumberIndex + 1)
-      .setValue(currentLessonNumber);
   }
 
   return ContentService.createTextOutput(

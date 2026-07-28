@@ -53,6 +53,49 @@ These collections are loaded during application startup.
 
 All mutations occur through POST requests.
 
+## Write authorization
+
+Every POST action requires an authorization `token` field, checked against
+the `WRITE_TOKEN` Script Property configured on the `apps-script-planning`
+project. GET reads are unaffected and remain anonymous — only writes are
+gated. See `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md`, "Apps Script Deployment:
+Planning Write Authorization," for how the token is configured and deployed.
+
+If `token` is missing, incorrect, or the `WRITE_TOKEN` Script Property is
+unset, the request is rejected before any action runs, and no sheet is
+touched:
+
+```json
+{
+  "ok": false,
+  "error": "Unauthorized"
+}
+```
+
+An unset `WRITE_TOKEN` Script Property fails closed — it rejects every
+write rather than falling back to open access.
+
+## Transport contract (all write actions)
+
+Every write action shares the same request/response contract:
+
+- The frontend sends a real `fetch()` — never `mode: "no-cors"` — with
+  `Content-Type: text/plain;charset=utf-8`. That content type is
+  CORS-safelisted, so the browser never issues a preflight `OPTIONS`
+  request, which this Apps Script deployment does not implement.
+- The Apps Script response is returned through the
+  `script.googleusercontent.com` redirect every `/exec` request follows,
+  with `Access-Control-Allow-Origin: *`, so the JSON response body —
+  success or `{ "ok": false, "error": "..." }` — is always readable
+  cross-origin by `fetch()` in normal `cors` mode.
+- Every response uses the `{ "ok": true | false, ... }` shape, never
+  `{ "success": true }`.
+
+Every write payload therefore has the shape `{ "action": "...", "token":
+"...", ...action-specific fields }`; the examples below omit `action` and
+`token` from the field list for brevity but include them in the full payload
+sample.
+
 ---
 
 ## saveDailyProgress()
@@ -73,14 +116,15 @@ Example payload:
 ```json
 {
   "action": "saveDailyProgress",
-  "Date": "2026-09-14",
-  "CourseSectionID": "M8-P2",
-  "CourseID": "M8",
-  "UnitID": "M8-U3",
-  "LessonID": "M8-U3-L5",
-  "DayFraction": 1,
-  "Finished": true,
-  "Notes": ""
+  "token": "<WRITE_TOKEN value>",
+  "date": "2026-09-14",
+  "courseSectionId": "M8-P2",
+  "courseId": "M8",
+  "unitId": "M8-U3",
+  "lessonId": "M8-U3-L5",
+  "dayFraction": 1,
+  "finished": true,
+  "notes": ""
 }
 ```
 
@@ -92,7 +136,7 @@ Returns:
 
 ```json
 {
-  "success": true
+  "ok": true
 }
 ```
 
@@ -114,11 +158,12 @@ Example payload:
 ```json
 {
   "action": "addLesson",
-  "CourseID": "M8",
-  "UnitID": "M8-U3",
-  "LessonTitle": "Solving Proportions",
-  "PlannedDays": 1,
-  "KeyOutcome": "Solve proportions using multiple representations."
+  "token": "<WRITE_TOKEN value>",
+  "courseId": "M8",
+  "unitId": "M8-U3",
+  "lessonTitle": "Solving Proportions",
+  "plannedDays": 1,
+  "keyOutcome": "Solve proportions using multiple representations."
 }
 ```
 
@@ -146,11 +191,6 @@ The complete created lesson record, so the frontend can reconcile an optimistic 
 }
 ```
 
-Request/response notes:
-
-- The frontend sends this POST without `mode: "no-cors"`, using the default `Content-Type: text/plain;charset=utf-8` (a CORS-safelisted content type) so the browser does not issue a preflight `OPTIONS` request, which this Apps Script deployment does not implement.
-- The Apps Script web app response (via the `script.googleusercontent.com` echo redirect that all `/exec` requests go through) includes `Access-Control-Allow-Origin: *`, so the JSON response body is readable cross-origin by `fetch()` in normal `cors` mode.
-
 ---
 
 ## updateLesson()
@@ -164,11 +204,35 @@ Responsibilities:
 - Update lesson metadata.
 - Preserve lesson identity.
 
+Example payload:
+
+```json
+{
+  "action": "updateLesson",
+  "token": "<WRITE_TOKEN value>",
+  "lessonId": "M8-U3-L5",
+  "lessonTitle": "Solving Proportions",
+  "plannedDays": 1,
+  "keyOutcome": "Solve proportions using multiple representations.",
+  "primaryLink": "",
+  "teacherNotes": ""
+}
+```
+
 Returns:
 
 ```json
 {
-  "success": true
+  "ok": true
+}
+```
+
+On failure (e.g. the lesson no longer exists):
+
+```json
+{
+  "ok": false,
+  "error": "Lesson not found"
 }
 ```
 
@@ -183,46 +247,39 @@ Remove a lesson.
 Responsibilities:
 
 - Delete a lesson from the Lessons sheet.
+- Renumber the remaining lessons in that unit so `SortOrder` and
+  `LessonNumber` stay contiguous.
+
+Example payload:
+
+```json
+{
+  "action": "deleteLesson",
+  "token": "<WRITE_TOKEN value>",
+  "lessonId": "M8-U3-L5"
+}
+```
 
 Returns:
 
 ```json
 {
-  "success": true
+  "ok": true
+}
+```
+
+On failure (e.g. the lesson no longer exists):
+
+```json
+{
+  "ok": false,
+  "error": "Lesson not found"
 }
 ```
 
 Current limitations:
 
-- No confirmation dialog.
 - No undo.
-
----
-
-## moveLesson()
-
-Purpose:
-
-Reorder lessons by one adjacent position.
-
-Responsibilities:
-
-- Move lessons up.
-- Move lessons down.
-- Maintain SortOrder.
-
-Returns:
-
-```json
-{
-  "success": true
-}
-```
-
-Status:
-
-Retained on the backend for compatibility. The frontend no longer calls this
-action — it uses `reorderLessons()` instead.
 
 ---
 
@@ -245,6 +302,7 @@ Example payload:
 ```json
 {
   "action": "reorderLessons",
+  "token": "<WRITE_TOKEN value>",
   "unitId": "M8-U3",
   "orderedLessonIds": [
     "M8-U3-L1",
@@ -285,16 +343,8 @@ For every lesson in the unit, `SortOrder` and `LessonNumber` are both set to
 `(array index + 1)` of that lesson's ID within `orderedLessonIds`. All other
 lesson fields are preserved. The rewrite happens in one Sheets write.
 
-Request/response notes:
-
-- The frontend sends this POST without `mode: "no-cors"`, using
-  `Content-Type: text/plain;charset=utf-8` (a CORS-safelisted content type)
-  so the browser does not issue a preflight `OPTIONS` request, which this
-  Apps Script deployment does not implement.
-- The Apps Script response is readable JSON (`ok: true` or `ok: false` with
-  a readable `error` message), returned with
-  `Access-Control-Allow-Origin: *` so `fetch()` in normal `cors` mode can
-  read the body.
+See "Transport contract (all write actions)," above, for the shared
+request/response behavior every write action — including this one — follows.
 
 ---
 

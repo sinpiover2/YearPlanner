@@ -171,6 +171,66 @@ Stating these up front prevents mid-task confusion about where work is happening
 
 ---
 
+# Apps Script Deployment: Planning Write Authorization
+
+`apps-script-planning` writes (`saveDailyProgress`, `addLesson`,
+`updateLesson`, `deleteLesson`, `reorderLessons`) require a `token` field
+matching the `WRITE_TOKEN` Script Property (see
+`docs/Reference/API_REFERENCE.md`, "Write authorization"). This rollout
+touches two independently-deployed systems — the Apps Script backend and the
+frontend build — that must agree on the same secret. Use this procedure
+whenever the token needs to be set for the first time, rotated, or the
+authorization check itself changes.
+
+## Procedure
+
+1. **Generate a token**, e.g. `openssl rand -hex 32`. Treat it as a secret —
+   never commit it.
+2. **Set the `WRITE_TOKEN` Script Property** on the `apps-script-planning`
+   project: Apps Script editor → Project Settings → Script Properties → add
+   `WRITE_TOKEN` with the generated value. This has no effect yet — the
+   currently-deployed backend doesn't read it until step 5.
+3. **Configure the frontend token.** Copy `frontend/.env.example` to
+   `frontend/.env` (or `.env.local`) and set `VITE_PLANNING_WRITE_TOKEN` to
+   the same value generated in step 1.
+4. **Build and deploy the frontend** (`npm run build` from `frontend/`, then
+   publish `dist/`). Do this *before* the backend enforces the token — the
+   currently-live backend ignores the extra `token` field on every request,
+   so deploying the new frontend early is harmless and writes keep
+   succeeding normally in the meantime.
+5. **Push the updated Apps Script code** (`clasp push` from
+   `apps-script-planning/`), **create a new version, and update the
+   existing web app deployment to that version** — a new version alone does
+   not move a `USER_DEPLOYING`/`MYSELF` deployment's execution to it (see
+   `LESSONS_LEARNED.md`, Sprint 5.9). This is the step where token
+   enforcement actually goes live.
+6. **Reload any already-open browser tabs.** A tab that loaded the frontend
+   before step 4 has no token and will see every write rejected with
+   `Unauthorized` until it's refreshed.
+7. **Verify one Planning write succeeds** — e.g. log a Daily Progress entry
+   or edit a lesson title — and confirm it still shows the change after a
+   page reload, to confirm the actual Sheets write, not just an optimistic
+   UI update.
+
+## Why this order matters
+
+Steps 2–4 are safe to do in advance because the *currently-deployed*
+backend does not check the token yet — nothing is enforced until step 5.
+Doing them first means step 5 is the only moment enforcement turns on, and
+the frontend already satisfies it at that moment, so there is no outage
+window for anyone loading the app fresh.
+
+Reversing the order — deploying the new `Code.js` before the Script
+Property is set, or before the frontend has a matching token — makes every
+Planning write fail closed for every user until the rest of the rollout
+catches up. This is a safe failure (an unconfigured or mismatched token
+always rejects rather than falling back to open access), but it is a real,
+entirely avoidable outage. The only unavoidable disruption is step 6: a tab
+already open before the frontend was redeployed will need a reload no
+matter what order the other steps happen in.
+
+---
+
 # Definition of Done
 
 A sprint is complete only when all of the following are true.

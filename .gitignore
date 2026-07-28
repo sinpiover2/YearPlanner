@@ -4,6 +4,11 @@ node_modules/
 dist/
 .claude/
 
+# Planning write-authorization token (never committed; see frontend/.env.example)
+.env
+.env.local
+.env.*.local
+
 # Local Google Apps Script clasp configuration
 apps-script-planning/.clasp.json
 
