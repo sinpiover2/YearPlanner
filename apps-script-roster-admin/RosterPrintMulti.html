@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      :root {
+        color: #111111;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #f3f5f8;
+      }
+
+      .toolbar {
+        display: flex;
+        justify-content: flex-end;
+        width: min(100% - 32px, 900px);
+        margin: 20px auto 10px;
+      }
+
+      button {
+        min-height: 36px;
+        padding: 7px 16px;
+        border: 1px solid #cbd3df;
+        border-radius: 18px;
+        background: #ffffff;
+        color: inherit;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #f8fafc;
+      }
+
+      .print-sheet {
+        width: min(100% - 32px, 900px);
+        margin: 0 auto 32px;
+        padding: 36px;
+        background: #ffffff;
+        box-shadow: 0 8px 30px rgba(23, 32, 51, 0.1);
+      }
+
+      .print-page + .print-page {
+        margin-top: 24px;
+      }
+
+      .error-banner {
+        padding: 24px;
+        border: 1px solid #d7263d;
+        background: #fdeeef;
+        color: #7a1424;
+        border-radius: 8px;
+      }
+
+      .error-banner h1 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+
+      .error-banner p {
+        margin: 0;
+        font-size: 13px;
+      }
+
+      <?!= include_('RosterStyles'); ?>
+
+      @media print {
+        @page {
+          size: letter portrait;
+          margin: 0.4in 0.55in 0.55in;
+        }
+
+        body {
+          background: #ffffff;
+        }
+
+        .toolbar {
+          display: none;
+        }
+
+        .print-sheet {
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          box-shadow: none;
+        }
+
+        .print-page + .print-page {
+          margin-top: 0;
+        }
+
+        .print-page-break {
+          break-before: page;
+          page-break-before: always;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <? if (entries.some(function (entry) { return !entry.errorMessage; })) { ?>
+        <button type="button" onclick="window.print()">Print</button>
+      <? } ?>
+    </div>
+
+    <div class="print-sheet">
+      <? entries.forEach(function (entry, entryIndex) { ?>
+        <? var breakClass = entryIndex > 0 ? " print-page-break" : ""; ?>
+        <? if (entry.errorMessage) { ?>
+          <section class="error-banner<?= breakClass ?>">
+            <h1>This roster could not be printed</h1>
+            <p><?= entry.errorMessage ?></p>
+          </section>
+        <? } else { ?>
+          <section class="print-page<?= breakClass ?>">
+            <?!= include_('RosterSection', {
+              roster: entry.roster,
+              sessionDate: entry.sessionDate,
+              formattedSessionDate: entry.formattedSessionDate,
+            }); ?>
+          </section>
+        <? } ?>
+      <? }); ?>
+    </div>
+  </body>
+</html>

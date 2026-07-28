@@ -11,6 +11,7 @@ It is not a changelog of features. Each entry should describe a lesson that gene
 ## Sprint 5.9
 
 - **Reserve new architecture documents for substantial subsystems with their own responsibilities and boundaries; document cross-cutting infrastructure through a suite-level cross-reference instead.** Resolving D5 (calendar/schedule resolution ownership) initially proposed a standalone architecture document modeled on the suite's per-perspective documents. On reconciliation, a short cross-reference in `SUITE_ARCHITECTURE.md` — the same treatment already used for Weekly Communication — was sufficient: the concern was shared infrastructure beneath the existing workspaces, not a new perspective or information domain. A new document is warranted only when a concept carries enough independent responsibility, boundaries, and design decisions to need one; otherwise a cross-reference keeps architecture documentation from growing faster than the system it describes.
+- **When Apps Script code changes are intended for production, verify that the production deployment serving the frontend has been updated — not merely that a new Apps Script version exists.** Apps Script versions and deployments are distinct: creating a new version does not move a `USER_DEPLOYING`/`MYSELF` web app deployment's execution to that version by itself. Confirming the frontend's deployment URL is actually running the intended version belongs in the same verification step as the build check, not assumed from `clasp push`/`clasp version` succeeding.
 
 ## Sprint 5.8
 

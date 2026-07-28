@@ -27,6 +27,7 @@ import {
   saveDailyProgress,
   updateLesson,
 } from "./api";
+import { loadRosterSortBy, saveRosterSortBy } from "./utils/rosterSortPreference";
 
 function getProjectedUnits(courseUnits, schoolCalendar) {
   const schoolDays = schoolCalendar.filter((day) =>
@@ -307,6 +308,12 @@ function App() {
   const [planningReferenceDate, setPlanningReferenceDate] = useState(new Date());
   const [planningSelectedDayKey, setPlanningSelectedDayKey] = useState(null);
   const [activeLessonContext, setActiveLessonContext] = useState(null);
+  const [rosterSortBy, setRosterSortBy] = useState(() => loadRosterSortBy());
+
+  function handleRosterSortByChange(sortBy) {
+    setRosterSortBy(sortBy);
+    saveRosterSortBy(sortBy);
+  }
 
   useEffect(() => {
     fetchPlannerData()
@@ -1026,6 +1033,8 @@ function App() {
     // safe convention already used for day keys elsewhere in Planning.
     onJumpToDate: (dateKey) =>
       setPlanningReferenceDate(new Date(`${dateKey}T00:00:00`)),
+    rosterSortBy,
+    onRosterSortByChange: handleRosterSortByChange,
   };
 
   // Scoped to the whole course, not just activeLessonContext.unitId (the
@@ -1079,6 +1088,8 @@ function App() {
     getOutcomeList,
     courseLabel: getCourseLabel(selectedCourseId),
     unitLabel: activeSession?.unitLabel ?? "",
+    rosterSortBy,
+    onRosterSortByChange: handleRosterSortByChange,
   };
 
   return (

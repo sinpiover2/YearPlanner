@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { LESSON_SESSION_STORAGE_KEY } from "../utils/lessonSessionStorage";
 import { buildLessonPrintPayload } from "../utils/lessonPrintPayload";
 import { printLessonSession } from "../utils/combinedPrint";
+import RosterSortToggle from "./Planning/RosterSortToggle";
 
 const STORAGE_KEY = LESSON_SESSION_STORAGE_KEY;
 const LEGACY_STORAGE_KEY = "year-planner.lesson-session-items.prototype.v1";
@@ -412,6 +413,8 @@ function LessonSessionView({
   getOutcomeList,
   courseLabel,
   unitLabel,
+  rosterSortBy,
+  onRosterSortByChange,
 }) {
   const {
     state: plannerState,
@@ -486,6 +489,7 @@ function LessonSessionView({
       sectionId: activeLessonContext.sectionId,
       sessionDate: activeLessonContext.date,
       lessonPayload,
+      sortBy: rosterSortBy,
     });
   }
 
@@ -1870,6 +1874,12 @@ function LessonSessionView({
               >
                 Print lesson
               </button>
+
+              <RosterSortToggle
+                name="print-lesson-sort"
+                sortBy={rosterSortBy}
+                onChange={onRosterSortByChange}
+              />
 
               {copyTargets?.length ? (
                 <details className="lesson-session-copy-menu">

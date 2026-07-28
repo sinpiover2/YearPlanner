@@ -506,14 +506,17 @@ real planning use.
 
 The current priority order is:
 
-1. Real classroom data
-2. Classroom workflow
-3. Performance
-4. Visual refinement
+1. Protect teacher work
+2. Remaining real classroom data (calendar, curriculum)
+3. Classroom workflow
+4. Performance
+5. Visual refinement
 
 Future work should be driven by authentic classroom use rather than
-speculative features. New functionality is no longer the default next step;
-loading the real school and using the application to teach is.
+speculative features. New functionality is no longer the default next step.
+Adding more classroom features is also no longer the default next step now
+that the core workflow (including classroom roster management) is built:
+protecting the teacher work already flowing through that workflow is.
 
 ---
 
@@ -534,12 +537,26 @@ and copy it into Monday Manager, with no duplicate entry and nothing sent
 automatically. All three of the August 1 Success Criteria in
 `docs/Development/CLASSROOM_READINESS.md` are now met.
 
+Classroom roster management (Sprint 5.9) is complete: guarded production
+roster import and audit/cleanup tooling, lesson + roster printing, standalone
+single- and multi-section roster printing, and configurable print sorting all
+share one canonical roster renderer. See
+`docs/Architecture/ROSTER_INFORMATION_MODEL.md`.
+
 ## Next Major Milestone
 
-Real Data — importing and verifying the official 2026–2027 school calendar,
-full curriculum, and (when available) student rosters, so Planning and
-Forecast are reasoning about the actual school year rather than working
-data. See `docs/Development/CLASSROOM_READINESS.md`, Section A.
+Protect Teacher Work — with the core classroom workflow now built,
+teacher-authored lesson plans and instructional decisions are the highest-value
+data in the system (see `docs/LESSONS_LEARNED.md`, Product Lessons) and the
+most important thing left to build for. This means safe write behavior,
+confirmations before destructive actions, backups, recovery, and data
+integrity, rather than further classroom features by default.
+
+Real Data — importing and verifying the official 2026–2027 school calendar
+and full curriculum, so Planning and Forecast are reasoning about the actual
+school year rather than working data — remains open and important, but is no
+longer the primary driver of what gets built next. See
+`docs/Development/CLASSROOM_READINESS.md`, Section A.
 
 ## Backlog (Post-Classroom-Readiness)
 

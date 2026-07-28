@@ -46,13 +46,16 @@ any file upload or new web UI.
    place if it already does. Safe to run again later — it will not overwrite
    a sheet that already has the correct headers, and refuses (with a clear
    error) to touch an incompatible non-empty sheet.
-3. Optionally run `installRosterMenuTrigger_` once so a **Year Planner
+3. Optionally run `installRosterMenuTriggerV1` once so a **Year Planner
    Roster Admin** menu (Set Up Roster Import Sheet / Import Roster from Staging)
    appears automatically when the spreadsheet is opened. This project is
    standalone, not bound to the spreadsheet, so the menu only appears after
    this one-time installable-trigger setup — every function remains directly
    runnable from the Apps Script editor either way, exactly like
-   `setupRosterSheetsV1()` already is.
+   `setupRosterSheetsV1()` already is. (`installRosterMenuTriggerV1` is a
+   thin public wrapper around `installRosterMenuTrigger_`, needed because
+   Apps Script hides trailing-underscore functions from the editor's
+   run dropdown.)
 
 **Each import:**
 
@@ -108,14 +111,28 @@ outside the repository.
 - `sectionId`: required to resolve a roster; validated server-side.
 - `sessionDate`: optional ISO date (`YYYY-MM-DD`) used only in the print heading.
 
-`doPost` (combined lesson + roster print, `CombinedPrint.html`) is what the
-frontend's "Print lesson" action submits as a hidden form POST. It accepts
-the same `sectionId` and `sessionDate`, plus `lessonPayload`: a JSON string of
-the lesson plan (section/course/unit labels, connected curriculum lesson
-labels, printable episodes and blocks). It never carries roster or student
-data — that's loaded here, from the spreadsheet, same as `doGet`. A POST form
-is used instead of a query string because the lesson payload can exceed URL
-length limits and must not appear in request logs as a query string.
+`doPost` has two branches, both hidden-form POSTs from the frontend rather
+than fetch calls, so lesson payloads never have to fit in a URL and no CORS
+exception is needed:
+
+- **`sectionIds` present** (standalone "Print Rosters", `RosterPrintMulti.html`):
+  a JSON array of section IDs, printed in the order posted, plus optional
+  `sessionDate` and `sortBy`. No lesson content is accepted on this branch —
+  it can only ever produce blank rosters.
+- **Otherwise** (combined lesson + roster print, `CombinedPrint.html`): the
+  frontend's "Print lesson" and "Print Day" actions. "Print lesson" sends
+  `sectionId`, `sessionDate`, `lessonPayload` (a JSON string of the lesson
+  plan — section/course/unit labels, connected curriculum lesson labels,
+  printable episodes and blocks), and optional `sortBy`. "Print Day" sends
+  `payloads`, a JSON array of that same per-entry shape, one entry per
+  Lesson Session meeting that day. Neither branch carries roster or student
+  data — that's loaded here, from the spreadsheet, same as `doGet`.
+
+`sortBy` (`"last"` or `"first"`) selects sort order for that print request
+only; it is never persisted server-side, and an omitted or unrecognized
+value falls back to today's last-name-first behavior. All three routes share
+one `getSectionRoster_` and the same roster partials, so standalone,
+multi-section, and combined printing render identical roster pages.
 
 Missing sheets, invalid section references, sections without active
 enrollments, and unparseable lesson payloads all produce a calm, explicit

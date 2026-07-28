@@ -75,6 +75,15 @@ function doGet(e) {
 // partial or misleadingly blank roster.
 function doPost(e) {
   const params = (e && e.parameter) || {};
+
+  // Roster-only multi-section print used by "Print Rosters" in the
+  // frontend Planning toolbar. Kept as a separate branch (rather than
+  // folded into the lesson+roster shape below) so a standalone roster
+  // request can never accidentally carry or require lesson content.
+  if (params.sectionIds) {
+    return buildRosterOnlyPrint_(params);
+  }
+
   const template = HtmlService.createTemplateFromFile("CombinedPrint");
 
   const requests = params.payloads
@@ -84,6 +93,7 @@ function doPost(e) {
           sectionId: params.sectionId,
           sessionDate: params.sessionDate,
           lessonPayload: params.lessonPayload,
+          sortBy: params.sortBy,
         },
       ];
 
@@ -156,7 +166,7 @@ function buildPrintEntry_(request) {
 
   if (sectionId) {
     try {
-      roster = getSectionRoster_(sectionId);
+      roster = getSectionRoster_(sectionId, request && request.sortBy);
     } catch (error) {
       errors.push("The roster could not be loaded for this section.");
     }
@@ -166,6 +176,77 @@ function buildPrintEntry_(request) {
     sessionDate: sessionDate,
     formattedSessionDate: formatSessionDate_(sessionDate),
     lesson: lesson,
+    roster: roster,
+    errorMessage: errors.join(" "),
+  };
+}
+
+// Renders one or more blank student rosters with no lesson content, in the
+// order the sectionIds were posted. Shares getSectionRoster_ and the
+// RosterSection/RosterStyles partials with the lesson+roster print above so
+// the two documents render identical roster pages from one canonical
+// renderer.
+function buildRosterOnlyPrint_(params) {
+  const sectionIds = parseSectionIds_(params.sectionIds);
+  const sessionDate = normalizeSessionDate_(params.sessionDate);
+  const formattedSessionDate = formatSessionDate_(sessionDate);
+  const sortBy = params.sortBy;
+  const template = HtmlService.createTemplateFromFile("RosterPrintMulti");
+
+  template.entries = sectionIds.map((sectionId) =>
+    buildRosterOnlyEntry_(sectionId, sessionDate, formattedSessionDate, sortBy),
+  );
+
+  return template
+    .evaluate()
+    .setTitle("Student Rosters")
+    .addMetaTag("viewport", "width=device-width, initial-scale=1");
+}
+
+// Parses the "sectionIds" field: a JSON array of section ID strings, one per
+// requested roster. A malformed or empty array yields a single error entry
+// rather than throwing, matching parsePrintRequests_'s failure handling.
+function parseSectionIds_(rawSectionIds) {
+  try {
+    const parsed = JSON.parse(rawSectionIds);
+    return Array.isArray(parsed) && parsed.length ? parsed : [null];
+  } catch (error) {
+    return [null];
+  }
+}
+
+// Builds one printable roster entry. Never throws: any failure is captured
+// as an entry-level errorMessage so one bad section cannot break the rest of
+// the document. A section with zero active students is not an error here —
+// RosterSection.html already renders an explicit "No roster is available"
+// state for it rather than a blank page.
+function buildRosterOnlyEntry_(rawSectionId, sessionDate, formattedSessionDate, sortBy) {
+  const errors = [];
+  let sectionId = "";
+
+  try {
+    sectionId = normalizeSectionId_(rawSectionId);
+  } catch (error) {
+    errors.push("This print request has an invalid section.");
+  }
+
+  if (!sectionId) {
+    errors.push("This print request is missing a section.");
+  }
+
+  let roster = emptyRoster_(sectionId);
+
+  if (sectionId) {
+    try {
+      roster = getSectionRoster_(sectionId, sortBy);
+    } catch (error) {
+      errors.push("The roster could not be loaded for this section.");
+    }
+  }
+
+  return {
+    sessionDate: sessionDate,
+    formattedSessionDate: formattedSessionDate,
     roster: roster,
     errorMessage: errors.join(" "),
   };
@@ -293,7 +374,16 @@ function compareRosterText_(left, right) {
     );
 }
 
-function getSectionRoster_(sectionId) {
+// Canonical roster sort order, shared by every print path (standalone
+// Print Rosters, Print lesson, Print Day). "last"/"first" is a per-print
+// request choice from the frontend, not a spreadsheet setting — an
+// unrecognized or missing value always falls back to "last" so existing
+// callers that don't send sortBy keep today's behavior.
+function normalizeRosterSortBy_(value) {
+  return String(value || "").trim().toLowerCase() === "first" ? "first" : "last";
+}
+
+function getSectionRoster_(sectionId, sortBy) {
   const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
   const sections = readRosterSheet_(spreadsheet, "Sections");
   const courses = readRosterSheet_(spreadsheet, "Courses");
@@ -307,10 +397,7 @@ function getSectionRoster_(sectionId) {
 
   const course = courses.find((item) => item.CourseID === section.CourseID);
   const settings = settingsRows.find((item) => item.SectionID === sectionId);
-  const requestedSortMode = String(
-    (settings && settings.SortMode) || "",
-  ).trim();
-  const sortMode = requestedSortMode === "FirstName" ? "FirstName" : "LastName";
+  const sortMode = normalizeRosterSortBy_(sortBy) === "first" ? "FirstName" : "LastName";
   const columns = [1, 2, 3, 4, 5].map((number) =>
     String((settings && settings[`Column${number}Label`]) || "").trim(),
   );

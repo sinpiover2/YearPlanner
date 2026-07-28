@@ -16,6 +16,7 @@ Add an entry whenever something is learned the hard way. Correct or remove an en
 - Curriculum is not the lesson — Teaching Episodes are the lesson. Curriculum provides source material; imported content must always be additive and must never overwrite teacher-authored work.
 - The software should disappear during teaching. Planning happens before class, teaching happens from paper, reflection happens after. The printed lesson — not the screen — is the classroom interface.
 - Build for the actual primary user's real classroom practice first (Math 8, Integrated Math 1). Reality comes before generalization.
+- Teacher-created work is the highest-value data in the system. Generated content can be regenerated, imported content can be re-imported, and derived information can be recalculated — but teacher-authored lesson plans, notes, and instructional decisions cannot. Future design decisions should favor protecting teacher-created work over convenience.
 
 ---
 

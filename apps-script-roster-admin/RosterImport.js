@@ -655,3 +655,9 @@ function installRosterMenuTrigger_() {
 
   return { ok: true, alreadyInstalled: false };
 }
+
+// Public editor-runnable wrapper. Apps Script hides functions ending in "_"
+// from the function dropdown.
+function installRosterMenuTriggerV1() {
+  return installRosterMenuTrigger_();
+}

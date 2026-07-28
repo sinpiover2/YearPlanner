@@ -55,7 +55,7 @@ If a permanent improvement was discovered, update DEVELOPMENT_WORKFLOW.md before
 - [ ] Confirm no work is left at IMPLEMENTED (working tree only) without required verification
 - [ ] Confirm BUILT status where a build was required
 - [ ] Confirm BROWSER TESTED status where UI was touched
-- [ ] Confirm DEPLOYED status where deployment was required
+- [ ] Confirm DEPLOYED status where deployment was required — verify the production deployment serving the frontend actually runs the new version, not just that a new Apps Script version exists
 - [ ] Do not mark work COMMITTED or PUSHED until the statuses above are satisfied
 
 ## Git

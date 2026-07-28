@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PrintRostersMenu from "./PrintRostersMenu";
 
 function PlanningHeader({
   title,
@@ -12,6 +13,10 @@ function PlanningHeader({
   canPrintDay,
   printDayLabel,
   onOpenWeeklyCommunication,
+  sections,
+  onPrintRosters,
+  rosterSortBy,
+  onRosterSortByChange,
 }) {
   const [datePickerValue, setDatePickerValue] = useState("");
 
@@ -99,6 +104,12 @@ function PlanningHeader({
           >
             Print {printDayLabel}
           </button>
+          <PrintRostersMenu
+            sections={sections}
+            onPrint={onPrintRosters}
+            sortBy={rosterSortBy}
+            onSortByChange={onRosterSortByChange}
+          />
         </div>
 
         <p className="planning-school-days">{schoolDaysLabel}</p>

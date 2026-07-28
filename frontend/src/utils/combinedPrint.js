@@ -30,11 +30,17 @@ function submitCombinedPrintForm(fields) {
 }
 
 // Prints a single Lesson Session (used by "Print lesson").
-export function printLessonSession({ sectionId, sessionDate, lessonPayload }) {
+export function printLessonSession({
+  sectionId,
+  sessionDate,
+  lessonPayload,
+  sortBy,
+}) {
   submitCombinedPrintForm({
     sectionId,
     sessionDate,
     lessonPayload: JSON.stringify(lessonPayload),
+    sortBy,
   });
 }
 
@@ -44,5 +50,18 @@ export function printLessonSession({ sectionId, sessionDate, lessonPayload }) {
 export function printLessonSessions(entries) {
   submitCombinedPrintForm({
     payloads: JSON.stringify(entries),
+  });
+}
+
+// Prints one or more blank student rosters with no lesson content (used by
+// "Print Rosters"). Reuses the same authenticated roster Apps Script and
+// hidden-form POST as printLessonSession/printLessonSessions, so the roster
+// pages come from the same canonical renderer and student data still never
+// reaches this frontend.
+export function printRosters({ sectionIds, sessionDate, sortBy }) {
+  submitCombinedPrintForm({
+    sectionIds: JSON.stringify(sectionIds),
+    sessionDate,
+    sortBy,
   });
 }

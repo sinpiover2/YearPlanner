@@ -4,7 +4,7 @@ import PlanningHeader from "./PlanningHeader";
 import WeeklyCommunicationPanel from "./WeeklyCommunicationPanel";
 import { getLessonSessionState } from "../../utils/lessonSessionStorage";
 import { buildLessonPrintPayload } from "../../utils/lessonPrintPayload";
-import { printLessonSessions } from "../../utils/combinedPrint";
+import { printLessonSessions, printRosters } from "../../utils/combinedPrint";
 
 function getLocalDayKey(date = new Date()) {
   const year = date.getFullYear();
@@ -25,6 +25,8 @@ function PlanningView({
   courseLabel,
   selectedDayKey,
   onSelectDay,
+  rosterSortBy,
+  onRosterSortByChange,
 }) {
   const { title, schoolDaysLabel, weekDays, sections, sessions, dateBounds } =
     planningModel;
@@ -86,9 +88,21 @@ function PlanningView({
         episodes: state.episodes,
         curriculumLessons,
       }),
+      sortBy: rosterSortBy,
     }));
 
     printLessonSessions(entries);
+  }
+
+  // Posts a roster-only print request (no lesson content) for the sections
+  // chosen in "Print Rosters". sectionIds already arrive in period order
+  // (PrintRostersMenu preserves the order of planningModel.sections). Same
+  // Apps Script endpoint and hidden-form POST as handlePrintDay, so the
+  // browser again opens exactly one printable document.
+  function handlePrintRosters(sectionIds, sortBy) {
+    if (!sectionIds.length) return;
+
+    printRosters({ sectionIds, sessionDate: getLocalDayKey(), sortBy });
   }
 
   function handleSelectSession(session) {
@@ -135,6 +149,10 @@ function PlanningView({
             : "Day"
         }
         onOpenWeeklyCommunication={() => setWeeklyCommunicationOpen(true)}
+        sections={sections}
+        onPrintRosters={handlePrintRosters}
+        rosterSortBy={rosterSortBy}
+        onRosterSortByChange={onRosterSortByChange}
       />
 
       <div className="planning-board">

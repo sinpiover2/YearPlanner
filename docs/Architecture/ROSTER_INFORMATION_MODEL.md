@@ -120,6 +120,19 @@ for internal use; its roster table markup and styles are shared with the
 combined page via Apps Script HTML Service template includes
 (`RosterSection.html`, `RosterStyles.html`) rather than duplicated.
 
+A second standalone route, `doPost` with a `sectionIds` field (`RosterPrintMulti.html`,
+used by Planning's "Print Rosters"), prints one or more blank rosters with no
+lesson content, in the order the sections were posted. It shares the same
+`getSectionRoster_` and roster partials, so standalone, multi-section, and
+combined printing all render roster pages from the one canonical renderer.
+
+Sort order (last name vs. first name) is a `sortBy` field on the print
+request, not a spreadsheet setting: `normalizeRosterSortBy_` resolves it per
+request, and any caller that omits it keeps the existing last-name-first
+behavior. The frontend remembers the teacher's last choice for the browser
+session only (`sessionStorage`, via `rosterSortPreference.js`) so it carries
+across print actions without becoming a persistent server-side setting.
+
 Roster data must not be stored in localStorage or in the Lesson Session data
 model.
 

@@ -25,6 +25,7 @@ The following capabilities are now complete:
 - Weekly Communication generation
 - Planning workspace visual refinement
 - Print workflow
+- Classroom roster management (import, validation, and printing)
 
 The core classroom workflow has now been exercised successfully, end to end:
 
@@ -46,16 +47,27 @@ Optimistic UI is complete across Planning:
 Weekly Communication (Section F) is now complete as a Planning-owned output
 utility, closing the last of the three August 1 Success Criteria below.
 
+Classroom roster management is now operational: production roster import
+(from a staging sheet, with read-only audit and guarded cleanup tooling),
+lesson + roster printing, standalone roster printing (single section or
+multiple sections at once), and configurable print sorting (last name or
+first name, remembered for the browser session) are all in place. See
+Section A below for what's left before real class lists are loaded.
+
 The remaining work is primarily real-data migration, performance, workflow
 polish, and further classroom validation.
 
 ## Next Classroom Milestone: Load the Real School
 
 **Next Classroom-Readiness Priority:** Real Data (see Section A) — the school
-calendar, curriculum, and rosters currently powering Planning and Weekly
-Communication are working data, not yet the verified official import. This
-is the largest remaining gap between "the workflow works" and "the workflow
-is trustworthy for daily use."
+calendar and curriculum currently powering Planning and Weekly Communication
+are working data, not yet the verified official import; roster import,
+audit, cleanup, and printing tooling now exists, but real class lists have
+not yet been loaded through it. This is the largest remaining gap between
+"the workflow works" and "the workflow is trustworthy for daily use." Note
+that `docs/Development/PROJECT_CONTEXT.md` now lists Protect Teacher Work
+ahead of Real Data in overall project priority; this checklist tracks
+classroom-readiness gaps specifically and remains accurate on its own terms.
 
 Loading the real school means importing and verifying:
 
@@ -143,7 +155,15 @@ now considered classroom-ready.
       `importRosterFromStaging()`); this item is about running it against the
       real class lists, not building it. See `apps-script-roster-admin/README.md`.
       Deactivating a dropped student's enrollment is not yet implemented.
-- [ ] Verify roster printing
+      Read-only audit (`ProductionDataAudit.js`) and guarded cleanup
+      (`ProductionDataCleanup.js`) tooling now exists to find and remove
+      seeded/test data from the production spreadsheet before real rosters
+      are trusted to be clean.
+- [ ] Verify roster printing — printing itself is complete and shares one
+      canonical renderer across standalone (single or multiple sections) and
+      combined lesson + roster printing, with configurable last-name/first-name
+      sorting; this item is about confirming it against real class lists once
+      loaded, not building it. See `docs/Architecture/ROSTER_INFORMATION_MODEL.md`.
 - [ ] Verify section assignments
 
 ---
