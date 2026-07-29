@@ -74,6 +74,20 @@ export class FakeSheet {
     this.values.push(rowArray.slice());
   }
 
+  // Mirrors the real Sheet.insertColumnsAfter(afterPosition, howMany)
+  // contract used by LessonsSchemaMigration.js: inserts `howMany` blank
+  // columns immediately after the 1-indexed `afterPosition`, shifting every
+  // existing cell in every row (including the header row) right by that
+  // amount — never rewriting or reordering any existing cell's value.
+  insertColumnsAfter(afterPosition, howMany) {
+    const count = howMany ?? 1;
+    this.values = this.values.map((row) => {
+      const newRow = row.slice();
+      newRow.splice(afterPosition, 0, ...new Array(count).fill(""));
+      return newRow;
+    });
+  }
+
   clone() {
     return new FakeSheet(this.name, this.values);
   }
@@ -126,6 +140,18 @@ function objectsToValues(headers, rowObjects) {
 
 export function createFakeSheet(headers, rowObjects) {
   return new FakeSheet("sheet", objectsToValues(headers, rowObjects));
+}
+
+// sheetsByNameAndRows = { SheetName: [[headerRow...], [dataRow...], ...] }
+// Raw-array constructor (as opposed to createFakeSpreadsheetFromFixture's
+// object-row constructor) — used by schema-migration tests, which reason
+// about headers/rawRows directly, never field-keyed objects.
+export function createFakeSpreadsheetFromRawSheets(sheetsByNameAndRows) {
+  const sheetsByName = {};
+  Object.keys(sheetsByNameAndRows).forEach((name) => {
+    sheetsByName[name] = new FakeSheet(name, sheetsByNameAndRows[name]);
+  });
+  return new FakeSpreadsheet(sheetsByName);
 }
 
 // destination = { units: [...rowObjects], lessons: [...rowObjects] }

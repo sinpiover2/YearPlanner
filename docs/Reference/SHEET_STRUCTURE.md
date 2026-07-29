@@ -140,7 +140,8 @@ Purpose:
 
 Lesson definitions.
 
-Fields:
+**Current production fields (as of the Sprint 5 read-only audit; no
+migration has run):**
 
 - LessonID
 - UnitID
@@ -154,6 +155,35 @@ Fields:
 - PrimaryLink
 - TeacherNotes
 - IsOptional
+
+**Intended fields after the approved, not-yet-executed `Type`/`PlacementRule`
+migration** (`apps-script-planning/LessonsSchemaMigration.js` — see
+`AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md`'s Sprint 6.2A/6.2B sections and
+`apps-script-planning/LESSONS_SCHEMA_MIGRATION_README.md`; **this migration
+has been implemented and locally simulated only — it has not been run
+against production**):
+
+- LessonID
+- UnitID
+- CourseID
+- LessonNumber
+- LessonTitle
+- PlannedDays
+- SortOrder
+- **Type** *(new)*
+- **PlacementRule** *(new)*
+- KeyOutcome
+- Description
+- PrimaryLink
+- TeacherNotes
+- IsOptional
+
+`Type` and `PlacementRule` are inserted immediately after `SortOrder` —
+with the other structural/sequencing fields, ahead of the content fields
+(`KeyOutcome` onward). Every existing Apps Script reader/writer resolves
+Lessons columns by header name at call time (`headers.indexOf(...)`), never
+by a fixed numeric position, so this insertion point does not require any
+other code change.
 
 Lessons represent the planned curriculum.
 
