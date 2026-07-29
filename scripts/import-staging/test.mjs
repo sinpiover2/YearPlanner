@@ -215,6 +215,9 @@ test("plan: exact-match destination row classifies as no-op", () => {
   const destination = readFixture("representative-destination.json");
   const plan = buildImportPlan(artifact, destination);
   const unit1 = plan.units.find((u) => u.unitId === "AMP-IM1-U1");
+  // AMP-IM1-U1's UnitTitle and UnitNumber both match the artifact exactly —
+  // the unit itself must be a no-op, not just its items (Sprint 6.1).
+  assert.equal(unit1.classification, "no-op");
   const meetGreet = unit1.items.find((i) => i.itemId === "AMP-IM1-U1-I01");
   assert.equal(meetGreet.classification, "no-op");
 });
@@ -275,7 +278,56 @@ test("plan: unit-level title mismatch classifies as source-update and never prop
   const unit3 = plan.units.find((u) => u.unitId === "AMP-IM1-U3");
   assert.equal(unit3.classification, "source-update");
   assert.ok(unit3.reasons.includes("title-mismatch-warning"));
+  // AMP-IM1-U3's UnitNumber matches the artifact — only UnitTitle differs.
+  assert.deepEqual(
+    unit3.publisherFieldDiffs.map((d) => d.field),
+    ["UnitTitle"],
+  );
   assert.ok(!unit3.publisherFieldDiffs.some((d) => d.field === "RequiredDays" || d.field === "OptionalDays"));
+});
+
+test("plan: unit-level UnitNumber-only mismatch classifies as source-update without a title-mismatch warning (Sprint 6.1)", () => {
+  const artifact = buildArtifact();
+  const destination = readFixture("representative-destination.json");
+  const plan = buildImportPlan(artifact, destination);
+  const unit4 = plan.units.find((u) => u.unitId === "AMP-IM1-U4");
+  assert.equal(unit4.classification, "source-update");
+  assert.ok(!unit4.reasons.includes("title-mismatch-warning"));
+  assert.deepEqual(
+    unit4.publisherFieldDiffs.map((d) => d.field),
+    ["UnitNumber"],
+  );
+  assert.equal(unit4.publisherFieldDiffs[0].proposed, 4);
+});
+
+test("plan: unit-level UnitTitle and UnitNumber both mismatched classifies as source-update with both diffs (Sprint 6.1)", () => {
+  const artifact = buildArtifact();
+  const destination = readFixture("representative-destination.json");
+  const plan = buildImportPlan(artifact, destination);
+  const unit5 = plan.units.find((u) => u.unitId === "AMP-IM1-U5");
+  assert.equal(unit5.classification, "source-update");
+  assert.ok(unit5.reasons.includes("title-mismatch-warning"));
+  assert.deepEqual(
+    unit5.publisherFieldDiffs.map((d) => d.field).sort(),
+    ["UnitNumber", "UnitTitle"],
+  );
+});
+
+test("plan: an unrelated real IM1-* placeholder unit/lesson is never referenced, and its teacher-owned day budgets and notes are untouched (Sprint 6.1)", () => {
+  const artifact = buildArtifact();
+  const destination = readFixture("representative-destination.json");
+  const plan = buildImportPlan(artifact, destination);
+  // Stable, distinct ID namespaces (AMP-IM1-U{n} vs IM1-U{n}) mean the
+  // artifact's units can never look up and match this row via
+  // destinationUnitsById.get(artifactUnit.unitId) — confirmed here by exact
+  // lookup, not substring search (a substring check would be misleading:
+  // "AMP-IM1-U1" itself contains "IM1-U1" as a substring).
+  assert.equal(
+    plan.units.find((u) => u.unitId === "IM1-U1"),
+    undefined,
+  );
+  const allItemIds = plan.units.flatMap((u) => u.items.map((i) => i.itemId));
+  assert.ok(!allItemIds.includes("IM1-U1-L1"));
 });
 
 test("plan: legacy Math 8 rows are never referenced by the plan at all", () => {
@@ -290,7 +342,7 @@ test("plan: legacy Math 8 rows are never referenced by the plan at all", () => {
 test("plan: a destination row missing the Type field entirely is treated as differing from any literal Type, not a crash", () => {
   const artifact = { ...buildArtifact() };
   const destination = {
-    units: [{ UnitID: artifact.units[0].unitId, CourseID: "IM1", UnitName: artifact.units[0].title }],
+    units: [{ UnitID: artifact.units[0].unitId, CourseID: "IM1", UnitNumber: artifact.units[0].unitNumber, UnitTitle: artifact.units[0].title }],
     lessons: [
       {
         LessonID: artifact.units[0].items[0].itemId,

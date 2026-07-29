@@ -119,8 +119,11 @@ an importer-phase decision, not made by this sprint.
 
 ## Field ownership (enforced by `build-import-plan.mjs`)
 
-Publisher-owned (safe to propose updating): `UnitName`, item `Title`,
-`Type`, `Description`/summary, `SortOrder`, `PlacementRule`, `IsOptional`.
+Publisher-owned (safe to propose updating): `UnitTitle`, `UnitNumber`
+(corrected per Sprint 6.1 — the real production column is `UnitTitle`, not
+`UnitName`, and `UnitNumber` is a real, populated production column, not
+merely encoded in `UnitID`), item `Title`, `Type`, `Description`/summary,
+`SortOrder`, `PlacementRule`, `IsOptional`.
 
 Teacher-owned (never written, never overwritten): Unit `RequiredDays` /
 `OptionalDays` (once a Unit row exists — see D-2/D-5), Lesson `PlannedDays`,

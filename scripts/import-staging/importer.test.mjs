@@ -240,7 +240,7 @@ test("schema: Type/PlacementRule missing from current production-shaped Lessons 
 
 test("verification: passes against a correctly-written destination", () => {
   const payload = minimalPayload();
-  const units = [{ UnitID: "TEST-U1", CourseID: "IM1", UnitName: "Test Unit" }];
+  const units = [{ UnitID: "TEST-U1", CourseID: "IM1", UnitNumber: 1, UnitTitle: "Test Unit" }];
   const lessons = [
     { LessonID: "TEST-U1-I01", UnitID: "TEST-U1", CourseID: "IM1", LessonTitle: "A Lesson", Type: "Lesson", SortOrder: 1, PlacementRule: "", IsOptional: false, Description: "Summary one." },
     { LessonID: "TEST-U1-F1", UnitID: "TEST-U1", CourseID: "IM1", LessonTitle: "An Investigation", Type: "Investigate", SortOrder: "", PlacementRule: "anytime after Lesson 1", IsOptional: true, Description: "Summary two." },
@@ -255,7 +255,7 @@ test("verification: passes against a correctly-written destination", () => {
 
 test("verification: catches missing rows, duplicate IDs, and writes that did not take effect", () => {
   const payload = minimalPayload();
-  const units = [{ UnitID: "TEST-U1", CourseID: "IM1", UnitName: "Test Unit" }];
+  const units = [{ UnitID: "TEST-U1", CourseID: "IM1", UnitNumber: 1, UnitTitle: "Test Unit" }];
   const lessons = [
     // Wrong Type, no teacher fields populated -> classifies "source-update"
     // (the intended write did not take effect) rather than "no-op".
@@ -272,7 +272,7 @@ test("verification: catches missing rows, duplicate IDs, and writes that did not
 
 test("verification: a row blocked to protect teacher-owned fields counts as known-stale, not a hard error", () => {
   const payload = minimalPayload();
-  const units = [{ UnitID: "TEST-U1", CourseID: "IM1", UnitName: "Test Unit" }];
+  const units = [{ UnitID: "TEST-U1", CourseID: "IM1", UnitNumber: 1, UnitTitle: "Test Unit" }];
   const lessons = [
     // Wrong Type AND a teacher field populated -> "blocked" with
     // preserve-teacher-fields, which must NOT be treated as a verification

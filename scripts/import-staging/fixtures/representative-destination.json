@@ -1,10 +1,11 @@
 {
-  "description": "Simulated Units/Lessons destination exercising every import-plan branch: an untouched legacy Math 8 row, an exact-match no-op, a title-mismatch source-update, a duplicate-ID hard fail, a teacher-field-protected block, and a cross-course-ID hard fail. Fictional data only — not read from or written to any real spreadsheet.",
+  "description": "Simulated Units/Lessons destination exercising every import-plan branch: an untouched legacy Math 8 row, an exact-match no-op, a title-mismatch source-update, a UnitNumber-only source-update, a combined title+UnitNumber source-update, a duplicate-ID hard fail, a teacher-field-protected block, a cross-course-ID hard fail, and an untouched real IM1-* placeholder unit/lesson (Sprint 6.1 — proves stable AMP-IM1-* ID matching never reaches an existing IM1-* placeholder row). Fictional data only — not read from or written to any real spreadsheet.",
   "units": [
     {
       "UnitID": "M8-U1",
       "CourseID": "M8",
-      "UnitName": "Rigid Transformations & Congruence",
+      "UnitNumber": 1,
+      "UnitTitle": "Rigid Transformations & Congruence",
       "RequiredDays": 12,
       "OptionalDays": 2,
       "SortOrder": 1
@@ -12,7 +13,8 @@
     {
       "UnitID": "AMP-IM1-U1",
       "CourseID": "IM1",
-      "UnitName": "Patterns and Sequences",
+      "UnitNumber": 1,
+      "UnitTitle": "Patterns and Sequences",
       "RequiredDays": null,
       "OptionalDays": null,
       "SortOrder": 1
@@ -20,7 +22,8 @@
     {
       "UnitID": "AMP-IM1-U2",
       "CourseID": "M8",
-      "UnitName": "Solving Equations and Inequalities",
+      "UnitNumber": 2,
+      "UnitTitle": "Solving Equations and Inequalities",
       "RequiredDays": null,
       "OptionalDays": null,
       "SortOrder": 2
@@ -28,10 +31,38 @@
     {
       "UnitID": "AMP-IM1-U3",
       "CourseID": "IM1",
-      "UnitName": "Systems (old placeholder title)",
+      "UnitNumber": 3,
+      "UnitTitle": "Systems (old placeholder title)",
       "RequiredDays": 17,
       "OptionalDays": 3,
       "SortOrder": 3
+    },
+    {
+      "UnitID": "AMP-IM1-U4",
+      "CourseID": "IM1",
+      "UnitNumber": 9,
+      "UnitTitle": "Describing Functions",
+      "RequiredDays": null,
+      "OptionalDays": null,
+      "SortOrder": 4
+    },
+    {
+      "UnitID": "AMP-IM1-U5",
+      "CourseID": "IM1",
+      "UnitNumber": 99,
+      "UnitTitle": "Exponential Functions (old placeholder title)",
+      "RequiredDays": null,
+      "OptionalDays": null,
+      "SortOrder": 5
+    },
+    {
+      "UnitID": "IM1-U1",
+      "CourseID": "IM1",
+      "UnitNumber": 1,
+      "UnitTitle": "Patterns and Sequences",
+      "RequiredDays": 15,
+      "OptionalDays": 3,
+      "SortOrder": 1
     }
   ],
   "lessons": [
@@ -138,6 +169,20 @@
       "PlannedDays": null,
       "TeacherNotes": null,
       "PrimaryLink": null
+    },
+    {
+      "LessonID": "IM1-U1-L1",
+      "UnitID": "IM1-U1",
+      "CourseID": "IM1",
+      "LessonNumber": 1,
+      "LessonTitle": "Real IM1 placeholder lesson",
+      "PlannedDays": 1,
+      "SortOrder": 1,
+      "KeyOutcome": "",
+      "Description": "",
+      "PrimaryLink": "",
+      "TeacherNotes": "Taught this already, real classroom notes.",
+      "IsOptional": false
     }
   ]
 }

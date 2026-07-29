@@ -36,10 +36,16 @@
 
 const AMPLIFY_IM1_IMPORTER_SUPPORTED_SCHEMA_VERSION = "1.0.0";
 
+// Corrected per the Sprint 5 read-only production audit (see
+// AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md's Sprint 6.1 section): the real
+// column is UnitTitle, not UnitName, and the real sheet also carries a
+// genuine, populated UnitNumber column distinct from SortOrder — both are
+// now required and both are publisher-owned (see amplifyIm1PlanUnit_).
 const AMPLIFY_IM1_REQUIRED_UNIT_HEADERS = [
   "UnitID",
   "CourseID",
-  "UnitName",
+  "UnitNumber",
+  "UnitTitle",
   "RequiredDays",
   "OptionalDays",
   "SortOrder",
@@ -327,6 +333,21 @@ function amplifyIm1PlanItem_(unit, artifactItem, destinationLessonsById, blocker
   };
 }
 
+// Publisher-owned Unit fields compared for source-update, mirroring
+// amplifyIm1PublisherFieldsDiffer_'s item-level pattern. UnitNumber added
+// per the Sprint 6.1 correction — confirmed by the Sprint 5 audit to be a
+// real, populated production column, not merely encoded in UnitID.
+function amplifyIm1UnitPublisherFieldsDiffer_(artifactUnit, destinationUnit) {
+  const diffs = [];
+  if (destinationUnit.UnitTitle !== artifactUnit.title) {
+    diffs.push({ field: "UnitTitle", current: destinationUnit.UnitTitle, proposed: artifactUnit.title });
+  }
+  if (Number(destinationUnit.UnitNumber) !== artifactUnit.unitNumber) {
+    diffs.push({ field: "UnitNumber", current: destinationUnit.UnitNumber, proposed: artifactUnit.unitNumber });
+  }
+  return diffs;
+}
+
 function amplifyIm1PlanUnit_(artifactUnit, destinationUnitsById, destinationLessonsById, blockers) {
   const matches = destinationUnitsById.get(artifactUnit.unitId) || [];
 
@@ -352,7 +373,8 @@ function amplifyIm1PlanUnit_(artifactUnit, destinationUnitsById, destinationLess
       proposedRow: {
         UnitID: artifactUnit.unitId,
         CourseID: artifactUnit.courseId,
-        UnitName: artifactUnit.title,
+        UnitNumber: artifactUnit.unitNumber,
+        UnitTitle: artifactUnit.title,
         RequiredDays: artifactUnit.requiredDays.status === "value_provided" ? artifactUnit.requiredDays.value : null,
         OptionalDays: artifactUnit.optionalDays.status === "value_provided" ? artifactUnit.optionalDays.value : null,
         SortOrder: artifactUnit.unitNumber,
@@ -366,17 +388,23 @@ function amplifyIm1PlanUnit_(artifactUnit, destinationUnitsById, destinationLess
         `but the artifact assigns it to course "${artifactUnit.courseId}". Hard fail — cross-course ID collision.`,
     );
     unitPlan = { unitId: artifactUnit.unitId, title: artifactUnit.title, classification: "blocked", reasons: ["cross-course-id-collision"] };
-  } else if (destinationUnit.UnitName !== artifactUnit.title) {
-    unitPlan = {
-      unitId: artifactUnit.unitId,
-      title: artifactUnit.title,
-      classification: "source-update",
-      reasons: ["title-mismatch-warning"],
-      publisherFieldDiffs: [{ field: "UnitName", current: destinationUnit.UnitName, proposed: artifactUnit.title }],
-      dayBudgetNote: "RequiredDays/OptionalDays are teacher-owned once the Unit exists and are never proposed for update by this plan.",
-    };
   } else {
-    unitPlan = { unitId: artifactUnit.unitId, title: artifactUnit.title, classification: "no-op", reasons: [] };
+    const unitDiffs = amplifyIm1UnitPublisherFieldsDiffer_(artifactUnit, destinationUnit);
+    if (unitDiffs.length === 0) {
+      unitPlan = { unitId: artifactUnit.unitId, title: artifactUnit.title, classification: "no-op", reasons: [] };
+    } else {
+      const titleMismatch = unitDiffs.some(function (diff) {
+        return diff.field === "UnitTitle";
+      });
+      unitPlan = {
+        unitId: artifactUnit.unitId,
+        title: artifactUnit.title,
+        classification: "source-update",
+        reasons: titleMismatch ? ["title-mismatch-warning"] : [],
+        publisherFieldDiffs: unitDiffs,
+        dayBudgetNote: "RequiredDays/OptionalDays are teacher-owned once the Unit exists and are never proposed for update by this plan.",
+      };
+    }
   }
 
   unitPlan.items = artifactUnit.items.map(function (item) {

@@ -9,9 +9,11 @@
 //
 // Field ownership map (per CURRICULUM_INFORMATION_MODEL.md §8/§9 and
 // AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md §2, §14 D-2/D-5):
-//   Publisher-owned (safe to propose updating): UnitName, item Title, Type,
-//     Subtitle-derived fields, Description/Summary, SortOrder, PlacementRule,
-//     IsOptional.
+//   Publisher-owned (safe to propose updating): UnitTitle, UnitNumber
+//     (corrected per Sprint 6.1 — the real production column is UnitTitle,
+//     not UnitName, and UnitNumber is a real, populated column, not merely
+//     encoded in UnitID), item Title, Type, Subtitle-derived fields,
+//     Description/Summary, SortOrder, PlacementRule, IsOptional.
 //   Teacher-owned (never written by this plan, never compared for "is this
 //     stale" purposes beyond detecting that they're populated): Unit
 //     RequiredDays/OptionalDays, Lesson PlannedDays, TeacherNotes,
@@ -150,6 +152,21 @@ function planItem(unit, artifactItem, destinationLessonsById, blockers) {
   };
 }
 
+// Publisher-owned Unit fields compared for source-update, mirroring
+// publisherFieldsDiffer's item-level pattern. UnitNumber added per the
+// Sprint 6.1 correction — confirmed by the Sprint 5 audit to be a real,
+// populated production column, not merely encoded in UnitID.
+function unitPublisherFieldsDiffer(artifactUnit, destinationUnit) {
+  const diffs = [];
+  if (destinationUnit.UnitTitle !== artifactUnit.title) {
+    diffs.push({ field: "UnitTitle", current: destinationUnit.UnitTitle, proposed: artifactUnit.title });
+  }
+  if (Number(destinationUnit.UnitNumber) !== artifactUnit.unitNumber) {
+    diffs.push({ field: "UnitNumber", current: destinationUnit.UnitNumber, proposed: artifactUnit.unitNumber });
+  }
+  return diffs;
+}
+
 function planUnit(artifactUnit, destinationUnitsById, destinationLessonsById, blockers) {
   const matches = destinationUnitsById.get(artifactUnit.unitId) ?? [];
 
@@ -177,7 +194,8 @@ function planUnit(artifactUnit, destinationUnitsById, destinationLessonsById, bl
       proposedRow: {
         UnitID: artifactUnit.unitId,
         CourseID: artifactUnit.courseId,
-        UnitName: artifactUnit.title,
+        UnitNumber: artifactUnit.unitNumber,
+        UnitTitle: artifactUnit.title,
         // Populated only because there's no existing teacher value to
         // preserve yet. Still explicitly informational, not authoritative —
         // see the "informational only" note in the preview report.
@@ -194,18 +212,22 @@ function planUnit(artifactUnit, destinationUnitsById, destinationLessonsById, bl
         `but the artifact assigns it to course "${artifactUnit.courseId}". Hard fail — cross-course ID collision.`,
     );
     unitPlan = { unitId: artifactUnit.unitId, title: artifactUnit.title, classification: "blocked", reasons: ["cross-course-id-collision"] };
-  } else if (destinationUnit.UnitName !== artifactUnit.title) {
-    unitPlan = {
-      unitId: artifactUnit.unitId,
-      title: artifactUnit.title,
-      classification: "source-update",
-      reasons: ["title-mismatch-warning"],
-      publisherFieldDiffs: [{ field: "UnitName", current: destinationUnit.UnitName, proposed: artifactUnit.title }],
-      dayBudgetNote:
-        "RequiredDays/OptionalDays are teacher-owned once the Unit exists and are never proposed for update by this plan.",
-    };
   } else {
-    unitPlan = { unitId: artifactUnit.unitId, title: artifactUnit.title, classification: "no-op", reasons: [] };
+    const unitDiffs = unitPublisherFieldsDiffer(artifactUnit, destinationUnit);
+    if (unitDiffs.length === 0) {
+      unitPlan = { unitId: artifactUnit.unitId, title: artifactUnit.title, classification: "no-op", reasons: [] };
+    } else {
+      const titleMismatch = unitDiffs.some((diff) => diff.field === "UnitTitle");
+      unitPlan = {
+        unitId: artifactUnit.unitId,
+        title: artifactUnit.title,
+        classification: "source-update",
+        reasons: titleMismatch ? ["title-mismatch-warning"] : [],
+        publisherFieldDiffs: unitDiffs,
+        dayBudgetNote:
+          "RequiredDays/OptionalDays are teacher-owned once the Unit exists and are never proposed for update by this plan.",
+      };
+    }
   }
 
   unitPlan.items = artifactUnit.items.map((item) => planItem(artifactUnit, item, destinationLessonsById, blockers));

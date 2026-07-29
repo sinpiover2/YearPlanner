@@ -102,7 +102,8 @@ Fields:
 
 - UnitID
 - CourseID
-- UnitName
+- UnitNumber
+- UnitTitle
 - RequiredDays
 - OptionalDays
 - SortOrder
