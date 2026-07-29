@@ -1,4 +1,10 @@
-import { isTrue, sortLessons, sortUnits } from "./plannerUtils";
+import {
+  isTrue,
+  sortUnits,
+  getSequencedItems,
+  isOptionalItem,
+  parseKnownNumber,
+} from "./plannerUtils";
 
 function getSectionForecast({
   section,
@@ -13,7 +19,10 @@ function getSectionForecast({
     units.filter((unit) => unit.CourseID === section.CourseID),
   );
 
-  const courseLessons = sortLessons(
+  // Flexible-placement items (no fixed SortOrder) are excluded here, before
+  // any sequential walk begins — see
+  // docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §6.
+  const courseLessons = getSequencedItems(
     lessons.filter((lesson) => lesson.CourseID === section.CourseID),
     courseUnits,
   );
@@ -33,11 +42,17 @@ function getSectionForecast({
 
   const plannedDaysCompleted = courseLessons
     .filter((lesson) => finishedLessonIds.has(lesson.LessonID))
-    .reduce((sum, lesson) => sum + Number(lesson.PlannedDays || 0), 0);
+    .reduce((sum, lesson) => sum + (parseKnownNumber(lesson.PlannedDays) ?? 0), 0);
 
+  // D-1 (approved): an unfinished optional item never blocks progression —
+  // the walk looks past it for the next unfinished *required* item. A
+  // finished optional item is already excluded by finishedLessonIds, same as
+  // any other finished item, so no separate case is needed for that side.
   const currentLesson =
-    courseLessons.find((lesson) => !finishedLessonIds.has(lesson.LessonID)) ??
-    null;
+    courseLessons.find(
+      (lesson) =>
+        !finishedLessonIds.has(lesson.LessonID) && !isOptionalItem(lesson),
+    ) ?? null;
 
   const currentLessonIndex = currentLesson
     ? courseLessons.findIndex(
@@ -49,8 +64,24 @@ function getSectionForecast({
     ? courseUnits.find((unit) => unit.UnitID === currentLesson.UnitID)
     : (courseUnits.at(-1) ?? null);
 
+  // An unconfirmed unit's day budget, or a finished lesson's unconfirmed
+  // PlannedDays, both make every sum below untrustworthy — flagged as
+  // dataComplete on the returned forecast rather than silently treated as a
+  // real zero. See docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §10.
+  const hasUnknownUnitDays = courseUnits.some(
+    (unit) =>
+      parseKnownNumber(unit.RequiredDays) === null ||
+      parseKnownNumber(unit.OptionalDays) === null,
+  );
+  const hasUnknownPlannedDays = courseLessons.some(
+    (lesson) =>
+      finishedLessonIds.has(lesson.LessonID) &&
+      parseKnownNumber(lesson.PlannedDays) === null,
+  );
+  const dataComplete = !hasUnknownUnitDays && !hasUnknownPlannedDays;
+
   const bufferDays = courseUnits.reduce(
-    (sum, unit) => sum + Number(unit.OptionalDays || 0),
+    (sum, unit) => sum + (parseKnownNumber(unit.OptionalDays) ?? 0),
     0,
   );
 
@@ -62,16 +93,16 @@ function getSectionForecast({
     currentUnitIndex >= 0 ? courseUnits.slice(currentUnitIndex) : [];
 
   const optionalDaysRemaining = remainingUnits.reduce(
-    (sum, unit) => sum + Number(unit.OptionalDays || 0),
+    (sum, unit) => sum + (parseKnownNumber(unit.OptionalDays) ?? 0),
     0,
   );
 
   const remainingRequiredDays = remainingUnits.reduce(
-    (sum, unit) => sum + Number(unit.RequiredDays || 0),
+    (sum, unit) => sum + (parseKnownNumber(unit.RequiredDays) ?? 0),
     0,
   );
 
-  const currentUnitOptionalDays = Number(currentUnit?.OptionalDays || 0);
+  const currentUnitOptionalDays = parseKnownNumber(currentUnit?.OptionalDays) ?? 0;
 
   const variance = actualDays - plannedDaysCompleted;
   const forecastShift = variance;
@@ -83,7 +114,7 @@ function getSectionForecast({
     actualDays -
     (plannedDaysCompleted + remainingRequiredDays);
   const totalRequiredDays = courseUnits.reduce(
-    (sum, unit) => sum + Number(unit.RequiredDays || 0),
+    (sum, unit) => sum + (parseKnownNumber(unit.RequiredDays) ?? 0),
     0,
   );
 
@@ -166,6 +197,7 @@ function getSectionForecast({
     visualStateClass,
     currentLessonNumber: currentLessonIndex + 1,
     totalLessons: courseLessons.length,
+    dataComplete,
   };
 }
 
@@ -176,18 +208,18 @@ function getSectionTimeline(forecast, units, lessons) {
     units.filter((unit) => unit.CourseID === section.CourseID),
   );
 
-  const courseLessons = sortLessons(
+  const courseLessons = getSequencedItems(
     lessons.filter((lesson) => lesson.CourseID === section.CourseID),
     courseUnits,
   );
 
   const totalRequiredDays = courseUnits.reduce(
-    (sum, unit) => sum + Number(unit.RequiredDays || 0),
+    (sum, unit) => sum + (parseKnownNumber(unit.RequiredDays) ?? 0),
     0,
   );
 
   const bufferDays = courseUnits.reduce(
-    (sum, unit) => sum + Number(unit.OptionalDays || 0),
+    (sum, unit) => sum + (parseKnownNumber(unit.OptionalDays) ?? 0),
     0,
   );
 
@@ -201,7 +233,7 @@ function getSectionTimeline(forecast, units, lessons) {
     currentLessonIndex >= 0
       ? courseLessons
           .slice(0, currentLessonIndex)
-          .reduce((sum, lesson) => sum + Number(lesson.PlannedDays || 0), 0)
+          .reduce((sum, lesson) => sum + (parseKnownNumber(lesson.PlannedDays) ?? 0), 0)
       : totalRequiredDays;
 
   const currentPositionPercent =
@@ -235,6 +267,9 @@ function getSectionTimeline(forecast, units, lessons) {
     projectedFinishPercent: forecast.projectedFinishPercent,
     endPositionPercent: forecast.endPositionPercent,
     expectedPositionPercent,
+    // Reused rather than recomputed — forecast already carries this from
+    // getSectionForecast, and both describe the same section.
+    dataComplete: forecast.dataComplete ?? true,
   };
 }
 

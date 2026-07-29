@@ -1,3 +1,5 @@
+import { getItemType } from "../utils/plannerUtils";
+
 function LessonTable({
   lessonList,
   selectedDailyProgress,
@@ -59,6 +61,10 @@ function LessonTable({
         const isTemporaryLesson = lesson.LessonID.startsWith("temp-");
         const isReorderDisabled =
           isTemporaryLesson || reorderingUnitId === lesson.UnitID;
+        // D-3 (approved): Instructional Item Type appears subtly in Units.
+        // An ordinary Lesson shows no badge at all, unchanged from before —
+        // see docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §5.
+        const itemType = getItemType(lesson);
 
         return (
           <div
@@ -69,6 +75,10 @@ function LessonTable({
 
             <div className="lesson-name-cell">
               <strong>{lesson.LessonTitle}</strong>
+
+              {itemType !== "Lesson" && (
+                <span className="lesson-pill type">{itemType}</span>
+              )}
 
               <span
                 className={

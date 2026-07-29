@@ -503,6 +503,12 @@ function addLesson(payload) {
     PrimaryLink: payload.primaryLink || "",
     Description: "",
     TeacherNotes: "",
+    // A teacher-added lesson is always a traditional, fixed-sequence Lesson —
+    // see docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §5. Only takes
+    // effect once a "Type" column actually exists on the sheet; harmless
+    // no-op otherwise, since the row-building step below only writes values
+    // for headers that are physically present.
+    Type: payload.type || "Lesson",
   };
 
   const row = headers.map((header) =>
@@ -572,7 +578,6 @@ function deleteLesson(payload) {
   const lessonIdIndex = headers.indexOf("LessonID");
   const unitIdIndex = headers.indexOf("UnitID");
   const sortOrderIndex = headers.indexOf("SortOrder");
-  const lessonNumberIndex = headers.indexOf("LessonNumber");
 
   const missingRequiredHeaders = [
     ["LessonID", lessonIdIndex],
@@ -615,16 +620,17 @@ function deleteLesson(payload) {
     unitRowsInOrder.map((row, index) => [row[lessonIdIndex], index + 1]),
   );
 
+  // SortOrder (physical position) is renumbered to close the gap left by the
+  // deleted row. LessonNumber is deliberately left untouched — it is the
+  // publisher's own lesson identity, not a derived position, and must remain
+  // stable across deletes/reorders of other rows. See
+  // docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §2 ("LessonNumber").
   const updatedRows = remainingRows.map((row) => {
     if (row[unitIdIndex] !== unitId) return row;
 
     const newPosition = positionByLessonId.get(row[lessonIdIndex]);
     const updatedRow = row.slice();
     updatedRow[sortOrderIndex] = newPosition;
-
-    if (lessonNumberIndex !== -1) {
-      updatedRow[lessonNumberIndex] = newPosition;
-    }
 
     return updatedRow;
   });
@@ -673,7 +679,6 @@ function reorderLessons(payload) {
   const lessonIdIndex = headers.indexOf("LessonID");
   const unitIdIndex = headers.indexOf("UnitID");
   const sortOrderIndex = headers.indexOf("SortOrder");
-  const lessonNumberIndex = headers.indexOf("LessonNumber");
 
   const missingRequiredHeaders = [
     ["LessonID", lessonIdIndex],
@@ -714,16 +719,16 @@ function reorderLessons(payload) {
     orderedLessonIds.map((lessonId, index) => [lessonId, index + 1]),
   );
 
+  // SortOrder follows the teacher's chosen order. LessonNumber is
+  // deliberately left untouched — a reorder changes teaching sequence, not
+  // the publisher's own lesson identity. See
+  // docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §2 ("LessonNumber").
   const updatedRows = values.slice(1).map((row) => {
     if (row[unitIdIndex] !== unitId) return row;
 
     const newPosition = positionByLessonId.get(row[lessonIdIndex]);
     const updatedRow = row.slice();
     updatedRow[sortOrderIndex] = newPosition;
-
-    if (lessonNumberIndex !== -1) {
-      updatedRow[lessonNumberIndex] = newPosition;
-    }
 
     return updatedRow;
   });

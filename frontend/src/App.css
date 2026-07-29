@@ -505,6 +505,14 @@ button {
   color: #1d4ed8;
 }
 
+/* Instructional Item Type — deliberately neutral/muted, distinct from the
+   status pills above (done/now/next/upcoming), which carry meaning about
+   progress. Type is identity, not status, so it gets no color of its own. */
+.lesson-pill.type {
+  background: #f1f5f9;
+  color: #475569;
+}
+
 .variance-warning {
   color: #b45309;
 }
@@ -1431,6 +1439,15 @@ button {
   display: block;
   margin-top: 0.25rem;
   opacity: 0.86;
+}
+
+/* Short, factual caveat when a section's day budget or planned days aren't
+   fully confirmed yet — inherits the calm .forecast-summary-card p base
+   style, only italicized to read as a caveat rather than another status
+   line. See docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §10. */
+.forecast-incomplete-note {
+  font-style: italic;
+  opacity: 0.75;
 }
 
 .forecast-card-body {

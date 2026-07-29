@@ -543,20 +543,28 @@ single- and multi-section roster printing, and configurable print sorting all
 share one canonical roster renderer. See
 `docs/Architecture/ROSTER_INFORMATION_MODEL.md`.
 
+Sprint 6.0 closed the anonymous planning-write security hole (every planning
+write now requires a shared token, checked server-side) and fixed a
+write-reliability defect (`mode: "no-cors"` had been masking failed writes
+across three of the five planning write actions). See
+`docs/History/SPRINT_HANDOFF_6.0.md`.
+
 ## Next Major Milestone
 
-Protect Teacher Work — with the core classroom workflow now built,
-teacher-authored lesson plans and instructional decisions are the highest-value
-data in the system (see `docs/LESSONS_LEARNED.md`, Product Lessons) and the
-most important thing left to build for. This means safe write behavior,
-confirmations before destructive actions, backups, recovery, and data
-integrity, rather than further classroom features by default.
+Protect Teacher Work — partially shipped in Sprint 6.0 (write authorization,
+in full, plus one write-reliability fix; see
+`docs/History/SPRINT_HANDOFF_6.0.md`). The remaining phases — a concurrency
+guard on planning writes, visible local-save failure signals, backups and
+recovery, and the canonical Session Enactment / Placement Enactment store —
+are still open, tracked in `docs/Architecture/SPRINT_6_0_ARCHITECTURE.md`.
 
 Real Data — importing and verifying the official 2026–2027 school calendar
 and full curriculum, so Planning and Forecast are reasoning about the actual
-school year rather than working data — remains open and important, but is no
-longer the primary driver of what gets built next. See
-`docs/Development/CLASSROOM_READINESS.md`, Section A.
+school year rather than working data — has been reprioritized ahead of the
+remaining Protect Teacher Work phases, starting with a Curriculum Import
+pilot for Amplify Math 1's Unit 1. See
+`docs/Development/CLASSROOM_READINESS.md`, Section A, and
+`docs/WORKFLOW/START_SPRINT.md`.
 
 ## Backlog (Post-Classroom-Readiness)
 

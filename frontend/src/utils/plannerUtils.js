@@ -61,24 +61,94 @@ export function getOutcomeList(value) {
     .filter(Boolean);
 }
 
+// Sprint 2: resolved the Sprint 1 TODO. An unconfirmed unit still contributes
+// 0 to this sum — unchanged from before — but that 0 is now reached via
+// parseKnownNumber() rather than the bare Number(x || 0) pattern, so this
+// stays consistent with every other planning-day read in this file and in
+// forecastModel.js. Neither of these two functions currently has a caller
+// that renders their result, so this is not yet a user-visible fix — see
+// docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §10.
 export function getRequiredDays(courseUnits) {
   return courseUnits.reduce(
-    (sum, unit) => sum + Number(unit.RequiredDays || 0),
+    (sum, unit) => sum + (parseKnownNumber(unit.RequiredDays) ?? 0),
     0,
   );
 }
 
 export function getOptionalDays(courseUnits) {
   return courseUnits.reduce(
-    (sum, unit) => sum + Number(unit.OptionalDays || 0),
+    (sum, unit) => sum + (parseKnownNumber(unit.OptionalDays) ?? 0),
     0,
   );
+}
+
+// Distinguishes a genuinely unknown planning value (blank cell, or missing
+// entirely) from a real, teacher-entered zero. Google Sheets returns "" for a
+// blank cell, and the Number(x || 0) pattern used throughout this file and
+// forecastModel.js collapses that to 0 — indistinguishable from an actual
+// zero. Not yet wired into any consumer (see the TODOs above and in
+// forecastModel.js) — introduced now so Sprint 2 can replace those call
+// sites without inventing this distinction from scratch. See
+// docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §9–§10.
+export function parseKnownNumber(value) {
+  if (value === "" || value === null || value === undefined) return null;
+
+  const number = Number(value);
+
+  return Number.isNaN(number) ? null : number;
+}
+
+const DEFAULT_INSTRUCTIONAL_ITEM_TYPE = "Lesson";
+
+// A blank or missing Type means an ordinary Lesson — true of every row in
+// the sheet today, so this default requires no migration. Unrecognized
+// future Type values are returned as-is; callers that need to branch on a
+// known set of types must treat anything else as Lesson-like rather than
+// failing. Not yet consumed anywhere. See
+// docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §5.
+export function getItemType(item) {
+  const type = item?.Type;
+
+  return typeof type === "string" && type.trim()
+    ? type.trim()
+    : DEFAULT_INSTRUCTIONAL_ITEM_TYPE;
+}
+
+// A blank PlacementRule means the item has a fixed sequence position
+// (SortOrder). A populated PlacementRule means the publisher itself defines
+// no fixed position for this item (e.g. Amplify's "Investigate" items,
+// usable "anytime after Lesson N"). Not yet consumed anywhere — Sprint 2 will
+// use this to exclude flexible items from sequential consumers (Forecast's
+// current-item walk, Planning's shelf) instead of letting them sort by a
+// fabricated or NaN SortOrder. See
+// docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §6.
+export function getPlacementRule(item) {
+  const rule = item?.PlacementRule;
+
+  return typeof rule === "string" && rule.trim() ? rule.trim() : null;
+}
+
+export function hasFixedPlacement(item) {
+  return getPlacementRule(item) === null;
+}
+
+// Item-level skippability (Amplify's optional Explores, Pre-Unit Checks,
+// etc.) — distinct from Unit.OptionalDays, which is a pacing buffer, not a
+// per-item flag. See docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §7.
+export function isOptionalItem(item) {
+  return isTrue(item?.IsOptional);
 }
 
 export function sortUnits(units) {
   return [...units].sort((a, b) => Number(a.SortOrder) - Number(b.SortOrder));
 }
 
+// Sorts by unit order, then SortOrder within the unit. Does not filter —
+// callers that only want the strict, fixed sequence should call
+// getSequencedItems() instead, which excludes flexible-placement items
+// first. Calling this directly on a list that includes flexible items (no
+// SortOrder) is unsafe: Number(undefined) is NaN, and comparator behavior
+// with NaN is unstable.
 export function sortLessons(lessons, units) {
   const unitOrder = new Map(
     units.map((unit) => [unit.UnitID, Number(unit.SortOrder)]),
@@ -92,6 +162,17 @@ export function sortLessons(lessons, units) {
 
     return Number(a.SortOrder) - Number(b.SortOrder);
   });
+}
+
+// The one safe way to get an ordered, strictly-sequential list of
+// Instructional Items for a unit or course: excludes flexible-placement
+// items (e.g. Amplify's "Investigate") before sorting, so no item without a
+// real SortOrder ever enters the sort. This is what Forecast's current-item
+// walk and Planning's fixed-sequence shelf should both call, instead of
+// sortLessons() directly, per
+// docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §6.
+export function getSequencedItems(items, units) {
+  return sortLessons(items.filter(hasFixedPlacement), units);
 }
 
 export function getCourseLabel(courseId) {

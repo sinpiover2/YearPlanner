@@ -215,6 +215,14 @@ export function getForecastCardSummary(forecast = {}) {
 
   return {
     key: section.SectionID || `${section.CourseID}-${section.Period}`,
+    // D-5 / §10: an unconfirmed Unit day budget or an unconfirmed PlannedDays
+    // on a completed lesson means every number on this card is a guess, not
+    // a trustworthy calculation. Surfaced as a short, factual note rather
+    // than silently presenting it as complete. See
+    // docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §10.
+    dataComplete: forecast.dataComplete ?? true,
+    incompleteDataText:
+      forecast.dataComplete === false ? "Planning days incomplete" : null,
     state: getCalmStateLabel(rawState),
     projectionState: projectionHeadline,
     stateClass,

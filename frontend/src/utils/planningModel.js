@@ -4,19 +4,29 @@ import {
   buildScheduleIndex,
   buildSectionMeetingMaps,
 } from "./planningCalendar";
-import { sortLessons } from "./plannerUtils";
+import { getSequencedItems, getItemType } from "./plannerUtils";
 import { getLessonSessionSummary } from "./lessonSessionStorage";
 
 function getLessonTitle(lesson) {
   return lesson?.LessonTitle || "Lesson Session";
 }
 
+// D-3 (approved): Instructional Item Type appears subtly in Planning. An
+// ordinary Lesson shows exactly as it always has; any other type is
+// prefixed so the citation reads e.g. "Practice Day · M1.3 Practice Day 1"
+// instead of an unlabeled title. See
+// docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §5.
 function getCurriculumLessonLabel(lesson) {
   if (!lesson) return null;
 
-  return [lesson.LessonCode || lesson.LessonNumber, lesson.LessonTitle]
-    .filter(Boolean)
-    .join(" ") || null;
+  const type = getItemType(lesson);
+  const typePrefix = type !== "Lesson" ? type : null;
+
+  return (
+    [typePrefix, lesson.LessonCode || lesson.LessonNumber, lesson.LessonTitle]
+      .filter(Boolean)
+      .join(" ") || null
+  );
 }
 
 function getSectionLabel(section) {
@@ -31,8 +41,11 @@ function getCourseContext(courseNavigation, lessons, units) {
   const currentUnit = courseNavigation?.currentUnit ?? null;
   const currentLesson = courseNavigation?.currentLesson ?? null;
 
+  // Flexible-placement items (no fixed SortOrder) are excluded before the
+  // shelf/current-lesson walk begins — see
+  // docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §6.
   const unitLessons = currentUnit
-    ? sortLessons(
+    ? getSequencedItems(
         lessons.filter((lesson) => lesson.UnitID === currentUnit.UnitID),
         units,
       )
@@ -173,6 +186,9 @@ export function getPlanningModel({
   const selectedCourseContext = getCachedCourseContext(selectedCourseId);
   const { currentUnit, unitLessons, currentLessonIndex } = selectedCourseContext;
 
+  // unitLessons already excludes flexible-placement items (see
+  // getCourseContext, above), so this slice is always the fixed sequence —
+  // no separate filtering needed here.
   const shelfItems = unitLessons
     .slice(
       Math.max(currentLessonIndex + teachingDays.length, 0),
@@ -181,6 +197,7 @@ export function getPlanningModel({
     .map((lesson) => ({
       id: lesson.LessonID,
       title: getLessonTitle(lesson),
+      type: getItemType(lesson),
     }));
 
   return {

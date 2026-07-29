@@ -41,7 +41,7 @@ Typical values:
 
 | Setting | Example |
 |----------|---------|
-| SchoolYear | 2026Ð2027 |
+| SchoolYear | 2026ï¿½2027 |
 | TimeZone | America/Los_Angeles |
 | CurrentPlan | Original |
 
@@ -152,7 +152,7 @@ Fields:
 - Description
 - PrimaryLink
 - TeacherNotes
-- Optional
+- IsOptional
 
 Lessons represent the planned curriculum.
 

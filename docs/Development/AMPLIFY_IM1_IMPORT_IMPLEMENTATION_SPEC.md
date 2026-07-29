@@ -1,0 +1,383 @@
+# Amplify IM1 Import — Implementation Specification
+
+**Document Status:** Implementation Specification — D-1 through D-5 approved; Implementation Sprints 1 and 2 complete (see "Sprint Progress," below)
+**Governed by:** `docs/Architecture/CURRICULUM_INFORMATION_MODEL.md` (the architectural decisions this spec implements — read that first)
+**Source data:** `Curriculm/M1/IM1_Curriculum_Extraction.md` (7 units, verified against Amplify's own PDFs)
+**Scope:** How to evolve the current `Units`/`Lessons` schema and its consumers into the documented Instructional Item model, and how to import the completed IM1 extraction — without breaking current classroom use.
+
+> Every "proposed," "recommended," or "should" statement not explicitly marked as implemented below is still a design decision, not a description of current behavior. Where this document describes what exists today, it cites the actual file and line so that claim can be checked directly.
+
+---
+
+## Sprint Progress
+
+**Implementation Sprint 1 — complete.** Scope: backward-compatible schema contract and read compatibility only. No importer, no production data, no production writes, no user-visible behavior change. See `docs/Architecture/CURRICULUM_INFORMATION_MODEL.md`, "Sprint 1 Implementation Note," for the architecture-level summary; full detail is in the Sprint 1 handoff/report.
+
+Implemented this sprint:
+- `apps-script-planning/Code.js`: `addLesson` now writes `Type` (defaulting to `"Lesson"`) when a `Type` column exists on the sheet — a no-op today, since that column doesn't exist in production yet.
+- `apps-script-planning/Code.js`: `deleteLesson` and `reorderLessons` no longer renumber `LessonNumber` from row position — only `SortOrder` is renumbered now. `LessonNumber` is preserved as stable publisher identity, per this spec's §2 and §9.
+- `frontend/src/utils/plannerUtils.js`: added `parseKnownNumber`, `getItemType`, `getPlacementRule`, `hasFixedPlacement` — all new, all currently unused by any consumer, ready for Sprint 2.
+- `frontend/src/utils/forecastModel.js`: added `TODO(Sprint 2)` comments at every silent-zero-coercion site (§10) — no logic changed.
+
+Not yet done — remains Sprint 2+ per the Implementation Sequence (§10): Type/PlacementRule actually consumed by any UI or Forecast logic; flexible-placement exclusion wired in; incomplete-data Forecast state; the importer itself; anything touching production data.
+
+**Implementation Sprint 2 — complete.** Scope: wire the Sprint 1 plumbing into real consumers, close the *silence* around zero-coercion (not the coercion itself — see below), add subtle Type display (D-3) — all behind conditions that don't fire for current classroom data. Still no importer, no production data, no production writes.
+
+Implemented this sprint:
+- `frontend/src/utils/plannerUtils.js`: added `isOptionalItem()` (reads `IsOptional`) and `getSequencedItems()` (filters to fixed-placement items via `hasFixedPlacement()`, then `sortLessons()`) — the one safe way to get a strict sequential walk. Resolved the two remaining Sprint 1 TODOs (`getRequiredDays`/`getOptionalDays` now use `parseKnownNumber()`; both functions are currently unused by any renderer, confirmed by inspection).
+- `frontend/src/utils/forecastModel.js`: `getSectionForecast`/`getSectionTimeline` now call `getSequencedItems()` instead of `sortLessons()` directly, so flexible-placement items (Amplify's `Investigate`) never enter the sequential walk or get a fabricated position. Current-item selection now skips an unfinished item that `isOptionalItem()` reports as optional (D-1), continuing to look for the next required one.
+- **Precisely what changed about the day-math, and what didn't:** every site that used to read `Number(x || 0)` directly now reads through `parseKnownNumber()` first, so an unknown value is recognized as unknown (`null`), not silently treated as identical to a real zero, *at the point of detection*. A `dataComplete` boolean is computed from that detection — `true` only when every relevant unit's day budget and every finished lesson's `PlannedDays` are confirmed — and surfaced in the UI as a short factual note when `false`. **The arithmetic itself was not redesigned**: once detected, an unknown value still falls back to `0` for the actual sum (`parseKnownNumber(x) ?? 0`), the same fallback as before, so the totals and variance Forecast computes internally are unchanged continuity math, not nullable-aware math propagated end-to-end. What changed is that this fallback is no longer *silent* — every consumer of that section's forecast can now check `dataComplete` and knows the number is a placeholder, where before there was no way to tell. Propagating `null` all the way through the arithmetic (rather than falling back to `0` for continuity) remains undone and is not assumed by anything built this sprint.
+- `frontend/src/utils/forecastCardUtils.js` / `frontend/src/components/ForecastSummaryCards.jsx`: when `dataComplete` is `false`, the card shows a short factual note ("Planning days incomplete") — reusing the existing card typography, no new component. Not Forecast interface redesign — an additive line, conditional, invisible when data is complete (true of all current Math 8/IM1 data).
+- `frontend/src/utils/planningModel.js`: unit-lesson sourcing now goes through `getSequencedItems()` (same flexible-item exclusion as Forecast, so a flexible item is excluded from the computed fixed sequence exactly as in Forecast); the Planning shelf's items now carry a normalized `type` field; `getCurriculumLessonLabel()` prefixes the Instructional Item Type when it isn't the default `Lesson` (D-3). **No alternate interface for flexible items exists yet** — a flexible item is excluded from the sequence, not given anywhere else to appear; this is a documented gap, not a silent omission (§8 already recorded this; restated here for the same reason). **The computed Planning "shelf" (`getPlanningModel()`'s `shelf` return value) is not presently rendered by any component in the application** — confirmed by inspection: no `.jsx` file reads `planningModel.shelf` today. This sprint's Type-awareness on the shelf is therefore currently inert data, not a visible feature; it is ready for whichever future sprint renders the shelf. **The Type display that is actually visible in the currently-rendered Planning experience is limited to the curriculum citation label** (`SessionTile.jsx`'s "Curriculum · …" line, built from `getCurriculumLessonLabel()`) — this is the only Planning surface where D-3 has any visible effect today.
+- `frontend/src/components/LessonTable.jsx` / `frontend/src/App.css`: Units now shows a small, neutral `.lesson-pill.type` badge next to a lesson's title when its Type isn't the default `Lesson` — invisible for every current row (D-3).
+
+Validated this sprint: a scratch, non-committed fixture script (19 checks — the full Sprint 2 test matrix) confirms every rule above against representative rows for all 9 Amplify item types plus legacy/unknown/incomplete cases, without touching production data. `npm run build` and `npm run lint` both pass with no new errors introduced. Live browser click-through could not be completed — see the accompanying report for why (an environment limitation, not a code defect).
+
+Not yet done — remains Sprint 3+: the importer itself; the staged intermediate artifact (D-4); teacher day-entry UI (D-2); `PlannedDays` initialization (D-5); propagating nullable planning values through Forecast's arithmetic (rather than falling back to `0` for continuity); anything touching production data.
+
+---
+
+## 1. Current-State Dependency Map
+
+| Surface | Files | Current assumption | Impact of Type | Impact of flexible placement | Impact of unknown day values | Required change |
+|---|---|---|---|---|---|---|
+| **Sheets schema** | `Units`, `Lessons` tabs (see `SHEET_STRUCTURE.md`) | Every `Lessons` row is a traditional lesson; `SortOrder` is always a real integer | New optional column needed | `SortOrder` has no "no position" representation today | Blank cell reads back as `""` | Add `Type` column; decide `SortOrder` nullability (§2) |
+| **Apps Script reads** | `apps-script-planning/Code.js:435` (`getSheetData`) | Generic — maps header row to keys dynamically; unknown columns pass through untouched | **No change needed** — already forward-compatible | No change needed | Blank cell → `""` in the JSON payload (confirmed: Sheets returns empty string for blank, not null) | None — this function already tolerates new columns |
+| **Apps Script writes — `addLesson`** | `Code.js:478` | `PlannedDays: Number(payload.plannedDays \|\| 1)` — blank/omitted defaults to **1**, a real assumed value written to the sheet | Must decide whether to accept/require `type` in the payload; currently omits it entirely from `rowObject`, so new rows get blank Type | N/A (new rows are always fixed-sequence, teacher-authored) | **Existing behavior already writes an assumed default (1), not a blank** — inconsistent with how Forecast reads unconfirmed values (§10) | Add `type` (default `"Lesson"`) to payload/rowObject; reconcile the `\|\| 1` default against §9's "don't invent publisher values" rule (this is teacher-authored data, so inventing a default here is legitimate — the rule applies to *publisher* data, not teacher entry) |
+| **Apps Script writes — `updateLesson`** | `Code.js:519` | Same `\|\| 1` default on edit | Would need a `type` update path if type is ever teacher-editable | N/A | Same as above | Minor — add `type` to the updatable fields list if teacher editing of type is desired (not required for import) |
+| **Apps Script writes — `deleteLesson`** | `Code.js:559–639` | On delete, renumbers **both** `SortOrder` and `LessonNumber` for every remaining row in the unit to match new physical position | **Breaks `LessonNumber`'s meaning** once non-Lesson rows are interleaved — a Quiz sitting between Lesson 8 and Lesson 9 would cause the real Lesson 9 to be renumbered `LessonNumber = 10` after any delete in that unit | Would also renumber a flexible item into a false fixed position if it has a `SortOrder` at all | N/A | **Must decouple `LessonNumber` (publisher-assigned lesson identity) from `SortOrder` (physical position)** — renumber `SortOrder` for all types, but only renumber `LessonNumber` among rows where `Type === "Lesson"` (or omit renumbering `LessonNumber` for imported rows entirely) |
+| **Apps Script writes — `reorderLessons`** | `Code.js:647–736` | Same renumber-both-fields behavior as delete | Same `LessonNumber` conflation risk | Same | N/A | Same fix as `deleteLesson` |
+| **Apps Script — no bulk-write/import path exists today** | — | `doPost` recognizes exactly 5 actions; none is a bulk import | N/A | N/A | N/A | A new, separate, manually-invoked function is needed (§7) — there is no existing endpoint to extend safely |
+| **Frontend API layer** | `frontend/src/api.js` | `fetchPlannerData()` returns the raw JSON untouched; no normalization of Units/Lessons happens here at all | None — normalization currently happens in each consumer, not centrally | None | Blank/unknown values pass through as `""` unchanged | Consider whether unknown-vs-zero normalization belongs here (once, centrally) instead of duplicated per consumer (§6) |
+| **Units** | `frontend/src/components/UnitsView.jsx` | Renders `UnitNumber`, `UnitTitle`, `UnitPurpose`; no Lessons-type awareness at all (lists whatever `Lessons` rows match `UnitID`) | Would need to either group/label items by type or continue rendering them undifferentiated | Would need to exclude or separately present flexible items | No current UI signal for "this unit's day budget is unconfirmed" | Add type-aware display (§9) |
+| **Forecast** | `frontend/src/utils/forecastModel.js`, `frontend/src/utils/plannerUtils.js` | Sums `Number(unit.RequiredDays \|\| 0)`, `Number(unit.OptionalDays \|\| 0)` (`plannerUtils.js:64-76`) and `Number(lesson.PlannedDays \|\| 0)` (`forecastModel.js:36`) unconditionally across **every** row for a course; walks lessons via `sortLessons` (`plannerUtils.js:82-95`) using `Number(a.SortOrder)` | Currently has no way to exclude non-Lesson rows from "current lesson" selection or day-cost sums | `sortLessons` uses `Number(a.SortOrder) - Number(b.SortOrder)`; `Number(undefined)` is `NaN`, and `Array.prototype.sort` comparator behavior with `NaN` is **unstable/undefined** — a flexible item with no `SortOrder` does not sort predictably today, it doesn't fail loudly | **This is the silent-zero risk described in `CURRICULUM_INFORMATION_MODEL.md` §10, confirmed at the exact line level** — an unconfirmed `RequiredDays`/`PlannedDays` is indistinguishable from a real zero | Must not call `sortLessons` on flexible-placement rows at all (filter first); must distinguish unknown from zero (§6) |
+| **Planning** | `frontend/src/utils/planningModel.js` | Filters `Lessons` by `UnitID`, sorts via `sortLessons`, presents next N as the "shelf" (`planningModel.js:176-184`); no type filtering exists because no type exists | Shelf currently shows every row for a unit undifferentiated | Same `sortLessons` fragility as Forecast | N/A (Planning doesn't sum days) | Filter shelf to sequenced items only; separately surface flexible items (§9) |
+| **Lesson Session linkage** | `frontend/src/utils/lessonSessionStorage.js`, referenced via `curriculumLessonId` in `planningModel.js:144-149` | A session may optionally store `curriculumLessonId` pointing at any `Lessons.LessonID`; the link is read-only citation, never structural | **No change required** — the link is already type-agnostic; it resolves by ID regardless of what the row's Type is | No change required — a session could already reference a flexible item's ID the same way it references any other | No change required | None — this surface is already forward-compatible by design |
+| **Print** | `frontend/src/utils/lessonPrintPayload.js` | `getEpisodeLesson()` looks up `curriculumLessons.find(l => l.LessonID === lessonId)` (`lessonPrintPayload.js:5-12`) — type-agnostic lookup | No change required for basic function; could optionally show item type as a label | No change required | No change required | None required; optional label enhancement only (§9) |
+| **Weekly Communication** | `frontend/src/utils/weeklyCommunication.js` | Reuses `buildLessonPrintPayload`; same type-agnostic lookup | Same as Print | Same as Print | Same as Print | None required |
+| **DailyProgress** | `Code.js:458` (`saveDailyProgress`), `SHEET_STRUCTURE.md` | References `LessonID` directly; assumes the referenced row is a lesson whose completion should count toward pacing | Logging progress against a non-Lesson `LessonID` (e.g. a Quiz) is already possible today and already silently counts in Forecast's sums — nothing currently prevents it | N/A | N/A | Decide whether logging progress against non-Lesson types should be allowed, encouraged, or filtered (§5) |
+| **Seed data** | — | **No Units/Lessons seed function exists in `Code.js`.** The only seed function present (`setupRosterSheetsV1`, `Code.js:139-374`) is for roster tables, not curriculum. | N/A | N/A | N/A | The importer is genuinely new — there is no existing curriculum-seeding code to extend, only a *pattern* to follow (§7) |
+| **Tests/validation** | — | **No automated test suite for Units/Lessons was found.** The closest precedent is `apps-script-roster-admin/ProductionDataAudit.js` and `ProductionDataCleanup.js` — a read-only audit function and a preview/execute cleanup pair, both `LockService`-guarded | N/A | N/A | N/A | Recommend the importer follow this exact precedent rather than inventing a new pattern (§7) |
+| **Documentation** | `SHEET_STRUCTURE.md`, `API_REFERENCE.md`, `UNITS_ARCHITECTURE.md`, `INFORMATION_MODEL.md` | Describe `Lessons` as lesson-only records; `SHEET_STRUCTURE.md` was already corrected once this sprint (`Optional` → `IsOptional`, see the Curriculum Information Model Review) | Will need a field addition once `Type` is implemented (not yet — see Non-Decisions) | N/A | N/A | Update only when the schema change actually ships, not now |
+
+---
+
+## 2. Proposed Schema Evolution
+
+Minimum evolution — no field is added without a stated purpose, owner, and consumer.
+
+| Field | Purpose | Owner | Required/Optional | Example values | Backward compatibility | Consumers | Migration impact |
+|---|---|---|---|---|---|---|---|
+| **`Type`** *(name below is a recommendation, not this spec's decision — see `CURRICULUM_INFORMATION_MODEL.md` §5)* | Preserve the publisher's literal instructional-item type | Publisher (import-time), never teacher-edited in v1 | Logically required for every row going forward; **physically optional** — blank is valid and means `Lesson` | `Lesson`, `Explore`, `Practice Day`, `Sub-Unit Quiz`, `Performance Task`, `Investigate`, `Meet & Greet` (verbatim strings from the extraction) | Blank/missing = `Lesson`. Every existing row today has no `Type` value and is therefore, correctly, a `Lesson` under this rule with zero migration required. | Planning shelf filtering, Forecast sequence walk, Units display, Print (optional label) | **None required** — additive column, default behavior preserves every existing row's meaning exactly |
+| **`SortOrder`** | Physical position within a unit | Mixed: publisher-sequenced for imported rows, system-assigned for teacher-added rows | Required for fixed-sequence items; **must become nullable** for flexible-placement items | `1, 2, 3…`; blank for a flexible item | Existing rows keep their existing values unchanged | Forecast, Planning, `sortLessons()` | `sortLessons()` and any other consumer must filter out rows with no `SortOrder` **before** sorting, not rely on the sort to skip them safely (confirmed unsafe today — §1) |
+| **`PlacementRule`** *(new, optional)* | Store the publisher's own flexible-placement text verbatim, for items with no fixed `SortOrder` | Publisher | Optional; only populated for flexible items | `"anytime in this course after Unit 5, Lesson 15"` | Absent on every existing row; absent = "not a flexible item," consistent with `SortOrder` being present instead | Units display (to explain *why* an item has no position), importer validation | None — new rows only |
+| **`LessonNumber`** *(existing field, semantics clarified, not renamed)* | The publisher's own "Lesson N" label — an identity, not a position | Publisher | Required for `Type = "Lesson"` rows; **meaningless for other types and should not be invented for them** | `1, 2, 3…` (restarts within each sub-unit's lesson count, per the extraction) | Existing rows unaffected | Print/UI labels ("Lesson 3: …") | Apps Script's delete/reorder renumbering logic must stop treating this as derivable from physical position (§1, §9) — this is a **behavior fix**, not a schema fix |
+| **`IsOptional`** *(existing field, no change)* | Item-level skippability | Publisher | Optional, defaults to falsy | `true`/`false` | Already present in production; already populated by the extraction | Not currently consumed anywhere (§1) — activating consumption is Recommended, not Essential | None |
+| **`SourceProvenance`** *(new, optional — recommended, not essential)* | Record where an imported row came from, for safe re-import and audit | System (import-time) | Optional | `"amplify-im1-u3-import-2026-08"` | Absent on every existing row | Importer idempotency/duplicate-detection (§7) | None — additive |
+| **`PlannedDays`** *(existing field, no schema change, behavior clarified)* | Per-item day cost | **Teacher**, never publisher (per `CURRICULUM_INFORMATION_MODEL.md` §9) | Optional (unknown ≠ zero, §6) | A number, or blank meaning "not yet estimated" | Unchanged | Forecast | None to the schema; **the risk is entirely in how blank is read downstream (§6, §10)** |
+
+**IDs and naming:** existing `UnitID`/`LessonID`/`CourseID` conventions (`IM1-U3`, `IM1-U3-L5`) can be preserved unchanged. Non-Lesson Instructional Items can use the same `{UnitID}-L{n}` pattern (an ID prefix does not need to encode Type) or a distinct prefix (`{UnitID}-I{n}`) — this spec recommends **keeping the existing `-L{n}` pattern** for all Instructional Item types, since `LessonID` already means "row identifier in the Lessons/Instructional-Items table," not "identifier of a traditional lesson specifically," and changing it would touch every existing consumer's ID-matching logic for no functional benefit.
+
+---
+
+## 3. Literal Type Strategy
+
+| Literal value (exact string) | Store verbatim? | Conceptual role (for logic, not storage) | Notes |
+|---|---|---|---|
+| `Meet & Greet` | Yes | Orientation | No publisher type prefix in source at all; stored as its own literal per `IM1_Curriculum_Extraction.md` treatment |
+| `Pre-Unit Check` | Yes | Diagnostic | Always optional, always first or second position |
+| `Explore` | Yes | Launch/hook | Always optional |
+| `Lesson` | Yes | Instructional | The default and the majority case |
+| `Practice` | Yes | Practice | Literal term used in Units 3–5 (pre-methodology-shift extraction) |
+| `Practice Day` | Yes | Practice | Literal term used in Units 1, 2, 6, 7 |
+| `Mid-Unit Check` | Yes | Assessment (formative) | Literal term used in Units 3–5, teacher-confirmed mapping from "Sub-Unit Quiz" |
+| `Sub-Unit Quiz` | Yes | Assessment (formative) | Literal term used in Units 2, 6, 7 — same conceptual role as `Mid-Unit Check` |
+| `Assessment` | Yes | Assessment (summative) | Literal term used in Units 3–5 for the Performance Task |
+| `Performance Task` | Yes | Assessment (summative) | Literal term used in Units 1, 2, 6, 7 — same conceptual role as `Assessment` |
+| `Reflection` | Yes | Reflective | Literal term used in Units 3–5 |
+| `Unit Synthesis and Reflection` | Yes | Reflective | Literal term used in Units 1, 2, 6, 7 — same conceptual role as `Reflection`; Title is this exact phrase in **every** unit regardless of which Type vocabulary that unit uses |
+| `Investigate` | Yes | Flexible-placement, optional | Never has a `SortOrder`; always carries a `PlacementRule` |
+
+**Storage decision:** literal values are stored exactly as found — no normalization at import time. **A separate conceptual-role mapping is not needed in the schema right now.** Where code needs to reason about role rather than literal string (e.g. "is this the unit's summative assessment, regardless of which unit's vocabulary it uses"), that mapping belongs in **code or configuration**, not in a stored field — a small lookup table (`{"Assessment": "summative", "Performance Task": "summative", ...}`) living in the frontend or importer, easily extended when a new literal appears. This keeps the source-of-truth data untouched by a mapping decision that may itself evolve.
+
+**Unknown-type behavior:** any consumer encountering a `Type` value not in its own lookup must treat it as an ordinary `Lesson` for sequencing/day-math purposes (safe degrade, per `CURRICULUM_INFORMATION_MODEL.md` §5) while still displaying the literal value verbatim wherever type is shown. It must never crash, drop the row, or silently discard it.
+
+---
+
+## 4. Ordering and Flexible Placement
+
+**Test cases:** `Investigate: Tuition Costs` (Unit 5) and `Investigate: Exploring Climate Change` (Unit 7) — both have no `SortOrder` in the extraction and both carry the identical placement text pattern ("anytime in this course after Unit N, Lesson [last lesson]").
+
+Consumer-by-consumer behavior:
+
+| Consumer | Behavior with a flexible item |
+|---|---|
+| **Forecast current-item selection** | Must exclude flexible items from the sequential walk entirely — they never become "the current lesson" and never contribute to `plannedDaysCompleted` sums by position. If a teacher does log progress against one (via `DailyProgress`), that's a valid `IsOptional`/teacher decision (§5), separate from sequence walking. |
+| **Planning shelf** | Must not appear in the ordered shelf. Presented separately (e.g., a small "anytime this unit" list) or not surfaced in Planning at all in v1 — this spec does not prescribe which; either satisfies the "no fabricated position" rule. |
+| **Units display** | May be shown, using the stored `PlacementRule` text (§2) to explain *why* it has no position, rather than silently omitting it or wedging it into the sequence. |
+| **Importer validation** | Must recognize "no `SortOrder` present" as a valid, expected state for these two items specifically — not an incomplete-import error. |
+| **Print and Weekly Communication** | Already type-agnostic (§1) — no change needed; if a teacher links a session to a flexible item, it prints exactly like any other citation. |
+| **Future editing** | If a teacher ever needs to manually schedule a flexible item onto a specific day, that's expressed as a `DailyProgress` entry or a Lesson Session link on that date — **not** by retroactively giving the `Lessons` row a fabricated `SortOrder`. The row's identity stays flexible; only the teacher's choice to teach it on a given day is recorded, elsewhere. |
+
+**The one rule that governs all of the above:** no code path may assign a `SortOrder` to a row whose source explicitly has none. Absence must remain absence, all the way through the system.
+
+---
+
+## 5. Optionality Behavior
+
+| Question | Technical requirement | Product decision needed? |
+|---|---|---|
+| Do optional items appear in Planning by default? | Technically trivial either way (a filter). | **Yes** — recommend: appear, but visually de-emphasized, so teachers see the full unit but aren't pressured to use every item. |
+| How are they visually distinguished? | Requires a UI treatment. | **Yes** — recommend a small label/badge, not a structural difference, to avoid a larger design task. |
+| Do they count toward Forecast progress? | Technically: only if `DailyProgress` references them, same as any row today. | No product decision required — this falls out of existing behavior; optional items already only affect Forecast if the teacher logs progress against them. |
+| Does skipping one require an explicit completion state? | Not currently — there's no "skipped" state in `DailyProgress` today (only `Finished` boolean). | **Yes, but not blocking** — recommend deferring; today's model (simply never log it) already expresses "skipped" adequately for v1. |
+| Do optional items contribute to `PlannedDays`? | Only if a value is entered, same as any row. | No — falls out of §6 either way. |
+| Does optionality affect current-item selection? | **Yes, this needs a rule.** If Forecast's "current lesson" walk includes an unstarted optional item, a teacher who deliberately skips it would appear stuck. | **Yes** — recommend: Forecast's sequence walk skips over an optional item once it's either completed **or** explicitly bypassed by moving on to the next required item; default behavior for v1 should not block progression on an optional item. |
+| How do optional flexible items behave? (e.g. `Investigate`) | Both properties apply independently — already excluded from sequence (§4) and already never blocking. | No additional decision — the two rules compose without conflict. |
+
+The one item requiring product input before Planning/Forecast are updated is flagged as **Decision D-1** in §14.
+
+---
+
+## 6. Planning-Day Strategy
+
+**Current confirmed state:** Unit day budgets (`RequiredDays`/`OptionalDays`) are confirmed for **1 of 7** units (Unit 3: 17/3). Per-item `PlannedDays` is confirmed **absent from the publisher source for all 7 units** — this is not a gap to close by re-reading the PDFs harder; Amplify does not publish it at this granularity.
+
+- **Storing unknown values:** a genuinely unknown day count is stored as a **blank cell**, not a zero and not a placeholder string. This matches current Sheets behavior exactly — no schema change needed, only a change in how blank is *interpreted* downstream.
+- **API representation of unknown vs. zero:** `getSheetData()` already returns `""` for a blank cell (§1) — this is already distinguishable from a real `0` if consumers check for it. The fix is entirely in the frontend's `Number(x || 0)` pattern, which currently collapses both cases to the same value. Recommend a small shared helper (e.g. `parseKnownNumber(value)` returning `null` for blank/unparseable input, a real number otherwise) used everywhere `Number(x || 0)` appears today, so "unknown" and "zero" become distinguishable at every call site without touching the sheet.
+- **Frontend display of unknown values:** show a distinct state (e.g. "Not yet planned" or "—") rather than "0 days," anywhere a day count is rendered.
+- **Forecast behavior when values are unknown:** recommend an explicit **incomplete-data state** for any unit missing a confirmed day budget, or any section whose current unit's lessons are missing `PlannedDays` — Forecast should say "pacing not available for this unit yet," not silently compute a number that happens to be wrong. This is the direct fix for the silent-zero risk (`CURRICULUM_INFORMATION_MODEL.md` §10).
+- **Where teacher entry/approval occurs:** the natural point is Units (where `RequiredDays`/`OptionalDays` already live conceptually) for unit-level budgets, and either Units or Planning for per-item `PlannedDays`. This spec does not prescribe the exact UI — only that entry happens through an existing teacher-facing surface, not a one-time import script guess.
+- **Initialization assistant or allocation tool:** **candidate options only, not a decision:**
+  - *Option A — manual entry, no tooling.* Teacher fills in each unit's day budget and each item's planned days directly, at their own pace. Simplest to build (nothing to build); slowest for the teacher.
+  - *Option B — even-split default, teacher-adjustable.* System proposes `PlannedDays = RequiredDays / (count of Lesson-type items)` per unit, clearly labeled as a system estimate, editable before being treated as real. Faster for the teacher; carries a real risk of the estimate being silently trusted past the point it should be reviewed.
+  - *Option C — deferred entirely.* Import curriculum content now; leave all day-budget fields blank; treat Forecast as intentionally unavailable for IM1 until a separate, later planning pass fills them in.
+  
+  This spec recommends **Option C for the initial IM1 import**, with Option B as a plausible fast-follow once a product decision confirms it — because Option B's "system estimate" must never be mistaken for publisher truth (§8 of the governing ADR), and that labeling discipline is easier to get right in a dedicated, later pass than bundled into the first import.
+- **Validation before Forecast is trustworthy:** every unit in the course must have a confirmed `RequiredDays`/`OptionalDays`, and every `Lesson`-type item a teacher expects Forecast to pace against must have a `PlannedDays` value — both **teacher-confirmed**, not system-inferred and left unreviewed.
+
+---
+
+## 7. Importer Design
+
+**Precedent this design follows:** `apps-script-roster-admin/ProductionDataAudit.js` (read-only audit) and `ProductionDataCleanup.js` (`previewProductionDataCleanupV1` / `executeProductionDataCleanupV1`, `LockService`-guarded, backup-before-write, plan-object shared between preview and execute). No comparable precedent exists for curriculum data — this would be new code, following an established pattern rather than inventing one.
+
+| Aspect | Specification |
+|---|---|
+| **Input format** | `IM1_Curriculum_Extraction.md`'s per-unit tables, treated as the single source of truth for what to import |
+| **Source document** | The extraction file itself — not a re-read of the original PDFs at import time; the extraction is the already-verified intermediate |
+| **Parsing/transformation approach** | A one-time, human-supervised transcription from the extraction's Markdown tables into a machine-readable intermediate (see "staged approach" below) — not an automated Markdown parser, given the extraction's own inconsistencies (two Type vocabularies, per-unit anomalies) are more safely handled by a human re-reading them once than by parsing logic that would need to special-case each one |
+| **Validation stages** | (1) structural — every row has `UnitID`, `Title`, `Type`; (2) referential — every `UnitID` referenced exists; (3) semantic — every fixed item has a `SortOrder`, every flexible item does not; (4) content — item counts and titles match the extraction exactly, spot-checked against `IM1_Curriculum_Extraction.md` |
+| **ID generation** | Follow the existing `{UnitID}-L{n}` convention (§2); `n` assigned by import-time position within the unit, not by the publisher's own numbering (which restarts per sub-unit and isn't unique) |
+| **Idempotency** | Re-running the importer against the same source must not create duplicate rows — checked via `SourceProvenance` (§2) or, absent that field, via an exact-match check on `UnitID` + `Title` + `Type` |
+| **Duplicate detection** | Same mechanism as idempotency; surfaced in the preview report as "already present, will be skipped" |
+| **Update behavior** | **Never silently overwrite a row that has any teacher-authored field populated** (`TeacherNotes`, a non-default `PlannedDays`, or any evidence of being referenced by a `DailyProgress`/Lesson-Session link). An update to publisher-owned fields (Title, Type, Summary) on an already-imported row is safe; an update that would touch `PlannedDays` or `TeacherNotes` must be skipped and flagged, never applied automatically |
+| **Dry-run behavior** | Mandatory first step. Produces the exact same "plan" object the execute step would use, with zero writes |
+| **Preview/reporting** | Human-readable summary (rows to add, rows to skip, rows flagged for manual review) plus a structured JSON report, following `ProductionDataCleanup.js`'s existing dual-format precedent exactly |
+| **Error handling** | Fail before any write on any structural/referential validation failure — no partial import |
+| **Rollback strategy** | Follow `ProductionDataCleanup.js`'s pattern: create an explicit backup (`cleanupCreateBackup_`) immediately before the first write, and provide a documented manual restore path from that backup. Apps Script has no cross-sheet transaction (noted directly in `Code.js:313-314`'s comment for the roster seeder) — rollback is "restore from backup," not "undo," and must be stated as such up front |
+| **Separation of source-derived vs. teacher-authored fields** | Enforced structurally: the importer only ever writes to fields classified as Publisher-owned in `CURRICULUM_INFORMATION_MODEL.md` §8. It never writes `PlannedDays`, `TeacherNotes`, or `PrimaryLink` with anything other than blank |
+| **Treatment of extraction notes/anomalies** | Each of the extraction's 18 Extraction Notes is either (a) already resolved and requires no special importer handling (e.g. Unit 3's day totals), or (b) requires a specific, named handling rule at import time — enumerated below |
+| **Treatment of flexible items** | Imported with `Type = "Investigate"`, `PlacementRule` populated from the source text, `SortOrder` left blank — never assigned a position |
+| **Treatment of unknown day values** | Imported as blank, per §6 — never defaulted to a guessed number by the importer itself |
+
+**Named anomaly handling** (from the extraction's own notes):
+- Unit 4's triplicated "Practice Day 2" source pages → import once, as already deduplicated in the extraction.
+- Unit 2's stray embedded asset URL in the Practice Day 1 summary → already excluded from the extraction's `Summary` field; importer uses the extraction's cleaned text, not the raw source.
+- "Meet & Greet" (Unit 1) → imported with `Type = "Meet & Greet"` exactly, `SortOrder = 1` (it does have a fixed position, unlike Investigate) — no special-case needed beyond accepting an unrecognized-but-valid literal type.
+- Unit 1's missing quiz → no quiz row imported for Unit 1; validation must not treat "zero quiz rows in this unit" as an error.
+
+**Staged approach recommendation:** **produce an intermediate machine-readable artifact first** (e.g. a reviewable JSON or CSV generated from the extraction, checked in or attached to the sprint, not yet written to the spreadsheet), rather than writing directly through Apps Script or generating spreadsheet rows blind. Reasoning: the extraction itself has already gone through several rounds of correction (Units 1 and 2 were fully re-extracted after being found wrong); an intermediate artifact gives one more inspectable checkpoint between "verified against the PDF" and "written to production" without adding meaningful delay, and it's the artifact the dry-run/preview step (above) would naturally consume. **This is the safest initial path given the current repository's precedent** — it mirrors `ProductionDataCleanup.js`'s plan-object approach one layer earlier, before any spreadsheet is touched at all.
+
+---
+
+## 8. Migration Strategy
+
+| Item | Migration treatment |
+|---|---|
+| Existing `Lessons` rows without `Type` | No migration required — blank means `Lesson`, which is already true of every existing row (§2) |
+| Existing `SortOrder` | Unchanged; no existing row needs its value touched |
+| Existing `LessonNumber` | Unchanged in value; **behavior** of `deleteLesson`/`reorderLessons` needs a fix (§1, §9) so future operations don't corrupt it once non-Lesson rows exist — this is a code change, not a data migration |
+| Existing `PlannedDays` | Unchanged — Math 8's existing lessons keep whatever values they already have |
+| Existing `IsOptional` | Unchanged |
+| Existing `DailyProgress` references | Unaffected — they reference `LessonID`, which doesn't change for existing rows |
+| Existing Lesson Session `curriculumLessonId` references | Unaffected — the link resolves by ID regardless of Type (§1); nothing to migrate |
+| Seed/production data (Math 8) | Not touched by this work at all — Math 8's curriculum is untouched; only IM1 rows are added |
+| `localStorage` sessions | Unaffected — Lesson Session storage doesn't inspect `Lessons` schema shape, only the ID it was given at link time |
+| **Read compatibility during phased deployment** | Safe at every phase: `getSheetData()` is already forward-compatible (§1); a frontend build that doesn't yet know about `Type` simply ignores the new column, exactly as it ignores any unknown key today |
+| **Write compatibility during phased deployment** | Safe as long as `addLesson`/`updateLesson` are updated to include a `type` field **before** any Instructional-Item-aware frontend ships that assumes it — sequencing this correctly is Implementation Sequence step 3 (§10) |
+
+**No step in this migration requires downtime or a frontend/backend version to move in lockstep** — every change here is additive-first, behavior-fix-second.
+
+---
+
+## 9. Consumer-by-Consumer Changes
+
+#### Apps Script
+- **Schema reads:** none — `getSheetData()` already works (§1).
+- **Schema writes:** `addLesson`/`updateLesson` (`Code.js:478`, `:519`) — add `type` to `rowObject`/`updates`, defaulting to `"Lesson"`.
+- **Validation:** `deleteLesson`/`reorderLessons` (`Code.js:559-736`) — stop unconditionally renumbering `LessonNumber`; scope that renumbering to `Type === "Lesson"` rows only (or drop it for imported rows entirely, leaving `LessonNumber` as a publisher-assigned constant once set at import).
+- **Compatibility defaults:** none beyond the above — `getSheetData()` needs no change.
+- **Import endpoint/script:** a new, separate, manually-invoked function (not wired to `doPost`), following `ProductionDataAudit.js`/`ProductionDataCleanup.js`'s exact shape — preview function, execute function, `LockService`, explicit confirmation string, backup-before-write.
+
+#### Frontend API layer
+- **Normalization:** introduce the shared "known vs. unknown number" helper described in §6, used at every current `Number(x || 0)` call site.
+- **Unknown numeric handling:** blank stays distinguishable from zero through to the component layer.
+- **Type defaults:** any row read without a `Type` value is treated as `"Lesson"` — likely a small helper (`getItemType(lesson)`) rather than scattering `lesson.Type || "Lesson"` everywhere.
+- **Flexible-placement representation:** a row with no `SortOrder` is recognized as flexible by every consumer that currently calls `sortLessons` — filter before sorting, per §4.
+
+#### Units
+- **Display changes:** group or label items by type once `Type` exists; show `PlacementRule` text for flexible items instead of silently omitting them.
+- **Day-budget status:** show an explicit "day budget not yet confirmed" state for any unit missing `RequiredDays`/`OptionalDays`, rather than showing a blank or a zero.
+
+#### Forecast
+- **Type-aware progression:** the sequential walk (`forecastModel.js`) excludes flexible items and, per the product decision in §5/§14, may skip over unstarted optional items so they don't block "current lesson."
+- **Optional-item behavior:** per §5's recommendation, optional items don't block sequence progression by default.
+- **Unknown-value state:** an explicit incomplete-data state per unit/section, replacing today's silent `0`.
+- **Prevention of silent-zero math:** every `Number(x || 0)` in `forecastModel.js`/`plannerUtils.js` (specifically `plannerUtils.js:64-76` and `forecastModel.js:29-36`) is replaced with the known/unknown-aware helper (§6, §9).
+
+#### Planning
+- **Fixed-sequence shelf:** unchanged in mechanism, filtered to exclude flexible items.
+- **Optional items:** shown with the visual de-emphasis recommended in §5, pending the product decision.
+- **Flexible-placement items:** presented separately if presented at all in v1 (§4) — this spec does not mandate a specific mechanism.
+- **Unknown types:** degrade to ordinary-Lesson shelf treatment (§3).
+
+#### Lesson Session
+- **Curriculum linking:** unchanged — `curriculumLessonId` already resolves by ID regardless of Type (§1).
+- **Backward compatibility:** full — nothing about Lesson Session storage or its schema needs to change for this work.
+- **Print/citation effect:** none — already type-agnostic.
+
+#### Print and Weekly Communication
+- **Should item type appear?** Optional enhancement only — e.g. showing "Practice Day" instead of a bare lesson-style citation, if a session links to one. Not required for v1.
+- **Safe fallback:** an unlabeled or generically-labeled citation if type information is ever missing — never a broken print.
+- **No-break expectation:** confirmed safe today (§1) and remains safe after every change proposed above, since none of them touch `lessonPrintPayload.js`'s actual lookup logic.
+
+---
+
+## 10. Implementation Sequence
+
+Each step is independently verifiable and, except where noted, touches no production data.
+
+| # | Objective | Files likely affected | Prerequisites | Verification | Rollback point | Touches production data? |
+|---|---|---|---|---|---|---|
+| 1 | Documentation and schema contract | `SHEET_STRUCTURE.md`, this spec, the governing ADR (already done) | None | Docs reviewed | Revert doc edit | No |
+| 2 | Backward-compatible read support (known/unknown numeric helper; `Type` default-to-`Lesson` helper) | `plannerUtils.js`, new small util | Step 1 | Unit-level manual check: existing Math 8/IM1 data renders identically to before | Revert commit | No |
+| 3 | `Type` field addition (Apps Script write paths + sheet column) | `Code.js` (`addLesson`, `updateLesson`), `Lessons` sheet header | Step 2 | Add a test lesson via the UI; confirm it gets `Type = "Lesson"` and nothing else changes | Remove column, revert `Code.js` | **Yes — additive column only, no existing data touched** |
+| 4 | Unknown numeric-value handling in Forecast | `forecastModel.js`, `plannerUtils.js` | Step 2 | Forecast still renders correctly for Math 8 (fully-populated data); a synthetic unit with blank days shows the new incomplete-data state instead of a silent zero | Revert commit | No |
+| 5 | Flexible-placement support (filtering before `sortLessons`) | `plannerUtils.js`, `planningModel.js`, `forecastModel.js` | Steps 3, 4 | Synthetic row with no `SortOrder` is excluded from Planning shelf and Forecast's sequence walk, doesn't crash either | Revert commit | No |
+| 6 | Consumer updates (Units display, Print label, `deleteLesson`/`reorderLessons` `LessonNumber` fix) | `UnitsView.jsx`, `Code.js`, `lessonPrintPayload.js` (optional) | Steps 3–5 | Manual click-through of Units page; delete a lesson in a unit with a mixed Type set (once test data exists) and confirm `LessonNumber` isn't corrupted for `Lesson`-type rows | Revert commit | No |
+| 7 | Importer dry run (against the extraction, producing the intermediate artifact from §7) | New script/artifact, not yet in `apps-script-planning` | Steps 3–6 shipped | Preview report reviewed by teacher; row counts match the extraction exactly (§11 Data validation) | Discard artifact | No |
+| 8 | Test import into non-production data (a scratch spreadsheet or a clearly-marked test tab) | Import script execution | Step 7 approved | Application-level validation (§11) against the test data | Delete test data | **No — explicitly not production** |
+| 9 | Teacher planning-data completion (Required/Optional Days confirmed for all 7 units; `PlannedDays` decision applied per §6) | Production spreadsheet, teacher-entered | Independent of 1–8; can happen in parallel | Every unit has a confirmed day budget or an explicit, reviewed decision to leave it blank | N/A (data entry) | **Yes, but additive/corrective only, teacher-directed** |
+| 10 | Production import | Production `Units`/`Lessons` sheets | Steps 7–9 complete; backup created per §7 | Post-write readback matches the dry-run plan exactly | Restore from backup (§7) | **Yes** |
+| 11 | Forecast validation | None (verification step) | Step 10 | Forecast page reviewed against real IM1 data; incomplete-data states appear only where genuinely expected | N/A | No |
+| 12 | Classroom validation | None (verification step) | Step 11 | A full planning cycle exercised against real IM1 content, per `CLASSROOM_READINESS.md` Section E | N/A | No |
+
+---
+
+## 11. Validation Plan
+
+**Static**
+- Every `Lessons` row has a non-blank `UnitID`, `Title`.
+- `Type` inventory contains only recognized literals or is explicitly flagged for review if a new one appears.
+- No duplicate `LessonID` values.
+- No row has both a `SortOrder` and a `PlacementRule` (fixed and flexible are mutually exclusive).
+
+**Data**
+- All 7 units present, matching `IM1_Curriculum_Extraction.md` unit-by-unit.
+- Item counts per unit match the extraction exactly (e.g. Unit 6 = 30 fixed-sequence items).
+- Titles and literal Types match verbatim.
+- `IsOptional` flags match the extraction's `Optional Item?` column.
+- Both flexible items (Unit 5, Unit 7 `Investigate`) present with no `SortOrder` and a populated `PlacementRule`.
+- No existing teacher-authored field (`TeacherNotes`, non-blank `PlannedDays` on a pre-existing row) is altered.
+
+**Application**
+- Units renders all 7 IM1 units without error.
+- Planning shelf shows fixed-sequence items in order; excludes or separately presents flexible items; doesn't crash on an unrecognized Type.
+- Forecast handles both a fully-confirmed unit (Unit 3) and an incomplete one (any other IM1 unit) without silently computing a wrong number.
+- Existing Lesson Session links (Math 8, any pre-existing IM1 test data) still resolve after the schema change.
+- Print still produces correct output for both linked and unlinked sessions.
+- Weekly Communication still produces correct output.
+
+**Production**
+- Read-only audit of the production sheet immediately before any write (following `auditProductionDataV1()`'s pattern).
+- Dry run produces a plan with exact expected row counts, reviewed by the teacher before execution.
+- Guarded execution: explicit confirmation string required, `LockService`-protected, backup created first.
+- Post-write readback compares the sheet's actual new state against the dry-run plan, row for row.
+- Documented restore-from-backup procedure, exercised (at least once, in the test-import step) before it's ever relied on in production.
+
+---
+
+## 12. Test Matrix
+
+| Case | Expected behavior |
+|---|---|
+| Legacy Lesson row with blank Type | Treated as `Lesson`; renders and paces identically to today |
+| Ordinary fixed Lesson | Sequenced normally in Planning and Forecast |
+| Optional Explore | Appears (de-emphasized per §5); doesn't block sequence progression once past |
+| Practice Day | Sequenced normally; counted in day-math once `PlannedDays` is known |
+| Sub-Unit Quiz | Sequenced normally; recognized as an assessment role in code where relevant, stored literally in data |
+| Performance Task | Sequenced normally; last-but-one position preserved |
+| Unit Synthesis and Reflection | Sequenced normally; last position preserved |
+| Unit 1 with no quiz | No error from "zero quiz rows" anywhere in validation or UI |
+| Unit 1 Meet & Greet | Renders with its literal, unrecognized-elsewhere Type; positioned first |
+| Unit 5 Investigate | No `SortOrder`; excluded from Forecast's sequence walk and (per §4) from the ordered Planning shelf; doesn't crash `sortLessons` |
+| Unit 7 Investigate | Same as above, confirming the pattern holds for a second instance |
+| Unknown future Type | Degrades to ordinary-Lesson treatment everywhere; literal value still displayed if type is shown at all |
+| Unit with unknown RequiredDays | Forecast shows an explicit incomplete-data state, not a silent zero |
+| Item with unknown PlannedDays | Excluded from variance math (or flagged), never silently treated as zero cost |
+| Completed item | Behaves exactly as today — `DailyProgress` reference, counted normally |
+| Skipped optional item | Simply never logged in `DailyProgress`; no error, no forced state |
+| Existing Lesson Session link to a legacy row | Resolves exactly as before — confirms §1's "no change required" claim for Lesson Session linkage |
+
+---
+
+## 13. Risks and Rollback
+
+| Risk | Likelihood | Impact | Mitigation | Rollback |
+|---|---|---|---|---|
+| Silent zero coercion (unconfirmed day values treated as real zeros) | **High if not addressed** — it's today's default behavior, confirmed at the code level (§1, §10) | High — corrupts whole-course Forecast math, not just the affected unit | Known/unknown-aware helper (§6, §9), applied before any IM1 unit is turned on in Forecast | Revert the helper change; no data-level rollback needed since nothing was written incorrectly, only displayed incorrectly |
+| Accidental overwrite of teacher-authored data on re-import | Medium — only if the importer's update path isn't built carefully | High — could destroy real planning work, the system's highest-priority protection per `PROJECT_CONTEXT.md` | Importer never writes non-blank teacher-owned fields (§7); idempotency check before any write | Restore from pre-import backup |
+| Duplicate import | Medium without idempotency check | Medium — clutter, confusing Forecast counts | `SourceProvenance` or exact-match duplicate detection (§7) | Restore from backup, or a targeted delete of the duplicate rows via existing `deleteLesson` |
+| Breaking current lesson ordering (Math 8, existing IM1 seed data) | Low | High if it happened — affects daily classroom use immediately | Every schema/behavior change in this spec is additive-first (§8); no existing row's values are altered | Revert the specific code change |
+| Breaking existing IDs or `DailyProgress` references | Low | High | ID convention preserved exactly (§2); no existing `LessonID` is renamed or reassigned | Revert |
+| Treating flexible items as fixed | Medium if `sortLessons` isn't updated carefully | Medium — a flexible item would silently gain a false position | Explicit filter-before-sort at every call site (§4, §9), tested directly (§12) | Revert the specific consumer change |
+| Consumer assumption "every row is a Lesson" (in code not yet updated) | Medium — this is the default state of every consumer today | Low individually (most consumers are already type-agnostic, per §1), but real for `sortLessons`/Forecast specifically | Type-default-to-Lesson (§3) makes this safe by construction for any consumer not yet updated | Revert |
+| Phased-deployment incompatibility (frontend/backend version mismatch) | Low | Low — confirmed safe both directions in §8 | Additive-only sequencing (§10) | Revert whichever side shipped out of order |
+| Documentation drifting from implementation | Medium over time | Low immediately, compounding later | This spec and the governing ADR both explicitly separate "implemented" from "proposed" — keep that discipline when steps actually ship | Update docs alongside the shipping code, not after |
+
+---
+
+## 14. Decisions Required Before Coding
+
+**All five decisions below are approved.** Table retained in its original question/options/recommendation form for traceability; the "Approved" column records the final answer actually adopted.
+
+| ID | Question | Options | Recommendation | Approved | Impact of delaying | Can coding start first? |
+|---|---|---|---|---|---|---|
+| **D-1** | Should an unstarted optional item block Forecast's "current lesson" progression? | (a) Yes, must complete before advancing; (b) No, skip over it automatically once the next required item is reached | (b) — matches how a teacher actually plans around optional content | **(b) approved as recommended.** Optional instructional items do not block Forecast progression. | Steps 4–5 (§10) can be built either way, but the exact skip rule needs this answer before shipping | **Yes** — steps 1–4 don't depend on this answer |
+| **D-2** | Where does teacher planning-day entry occur — Units, Planning, or a dedicated screen? | (a) Units; (b) Planning; (c) new dedicated surface | (a) Units, since `RequiredDays`/`OptionalDays` already conceptually live there | **(a) approved as recommended.** Teacher planning-day entry will live in the Units workspace. | Blocks step 9 (§10) only — not earlier steps | **Yes** |
+| **D-3** | Should item Type labels appear in the teacher-facing UI at all in v1, or stay internal? | (a) Show labels (e.g. "Practice Day" badge); (b) keep Type internal to logic only, no visible UI change yet | (b) for the minimum v1 — avoids a design task inside a data-migration sprint, consistent with `PROJECT_CONTEXT.md`'s lean-scope direction | **Refined, not (a) or (b) as originally framed:** Instructional Item Type will be shown subtly in Units and Planning — but **not** initially in Forecast or print. This is a v1-scope decision about *where*, not merely *whether*. **Not implemented in Sprint 1** — Sprint 1's own constraints explicitly excluded exposing Type in the UI; this decision governs a later sprint. | Low — purely cosmetic, easy to add later without migration | **Yes** |
+| **D-4** | Should the initial importer write directly to the production spreadsheet, or produce a staged intermediate artifact first? | (a) Direct write (via a new guarded Apps Script function); (b) staged artifact reviewed before any write | (b), per §7's reasoning | **(b) approved as recommended.** Curriculum import will use a staged intermediate artifact, followed by preview, guarded execution, and verification. | Blocks step 7 specifically | **Yes** — steps 1–6 don't depend on this |
+| **D-5** | Which `PlannedDays` initialization strategy (§6: manual / even-split-default / deferred)? | (a) Manual entry; (b) system-estimated default; (c) deferred entirely | (c) deferred, for the initial IM1 import | **(c) approved as recommended, with an explicit condition:** `PlannedDays` remains unknown by default; any initialization requires explicit teacher approval — no silent system default is ever applied. | Blocks Forecast trustworthiness (step 11), not the import itself | **Yes** — import can proceed with blank `PlannedDays` regardless of which option is eventually chosen |
+
+None of these five blocked starting Step 1 of the implementation sequence, which is why Sprint 1 (schema contract and read compatibility — see "Sprint Progress," above) was able to begin immediately after approval. D-1 and D-3 don't gate coding until their respective consumer-update steps (Sprint 2+). D-4 and D-5 only gate the importer step specifically (7 onward). **Every decision listed here was deliberately excluded from being resolved by a backward-compatible engineering default — each one is a real teacher/product-facing tradeoff**, not a technical question this spec could safely answer on its own.
+
+---
+
+## 15. Definition of Done
+
+**Information-model implementation** — done when: `Type` exists as a column, defaults correctly, and every current consumer (`sortLessons`, Forecast, Planning, Units, Print) either uses it or safely ignores it; flexible-placement items can exist without a fabricated `SortOrder`; the known/unknown numeric helper is in place everywhere `Number(x || 0)` used to be. Verified by Steps 1–6 (§10) and the Application-level checks in §11.
+
+**Importer implementation** — done when: the preview/execute pair exists, follows the `ProductionDataCleanup.js` precedent (backup, lock, confirmation string, plan-object shared between preview and execute), and passes a full dry run against the IM1 extraction with zero unexplained discrepancies. Verified by Step 7 and the Static/Data validation levels in §11.
+
+**Amplify IM1 data import** — done when: all 7 units exist in the production `Units`/`Lessons` sheets, matching the extraction exactly per the Data validation level in §11, with zero teacher-authored data altered and a verified restore path exercised at least once beforehand. Verified by Steps 8–10.
+
+**Forecast readiness** — done when: every IM1 unit has a teacher-confirmed day budget (or an explicit, reviewed decision to leave a specific unit unforecast for now), and Forecast's incomplete-data state — not a silent zero — is the only thing shown for anything still unconfirmed. Separate from, and later than, the import itself per D-5's recommendation. Verified by Step 11.
+
+**Classroom readiness** — done when: a full planning cycle (Forecast → Units → Planning → Lesson Session → Print → Teach) has been exercised against real IM1 content end to end, per `CLASSROOM_READINESS.md` Section E, with no point where the software "slows down thinking or creates uncertainty" specifically because of this import. Verified by Step 12 and is the last milestone in this document, not the same milestone as any of the four above.
+
+---
+
+## Non-Decisions (carried forward from the governing ADR, restated for this spec's scope)
+
+This specification does not select: the exact `PlannedDays` allocation algorithm (§6, §14 D-5); whether `Type` labels ever appear in the teacher UI beyond v1 (§14 D-3); whether the `Lessons` sheet is ever renamed; the full Teaching Episode architecture; or the exact production import date. All remain open, by design.

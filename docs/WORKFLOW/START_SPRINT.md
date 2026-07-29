@@ -1,15 +1,17 @@
 # Start Sprint
 
-## Sprint 5.9 Objective
+## Sprint 6.1 Objective
 
-**Primary objective:** Real Data (`docs/Development/CLASSROOM_READINESS.md`, Section A).
+**Primary objective:** Curriculum Import — Amplify Math 1 Unit 1 Pilot (`docs/Development/CLASSROOM_READINESS.md`, Section A).
 
-Weekly Communication shipped in Sprint 5.8 and all three August 1 Success
-Criteria are now met. Planning and Weekly Communication are currently
-reasoning about working data, not the verified official 2026–2027 school
-calendar, curriculum, and rosters. Import and verify the real data before
-adding further workflow features — see `docs/History/SPRINT_HANDOFF_5.8.md`
-for the full first-hour plan.
+Sprint 6.0 closed the anonymous planning-write security hole and fixed the
+`no-cors` write-reliability defect (see `docs/History/SPRINT_HANDOFF_6.0.md`).
+Planning and Forecast are still reasoning about working curriculum data, not
+a verified import. Import Amplify Math 1's Unit 1 using the existing
+Units/Lessons model — no schema expansion, no new entities — before
+resuming the remaining Protect Teacher Work phases. See
+`docs/History/SPRINT_HANDOFF_6.0.md` for the full first-hour plan and lean
+scope.
 
 ---
 
