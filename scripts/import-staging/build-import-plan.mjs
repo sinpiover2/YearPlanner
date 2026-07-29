@@ -31,29 +31,39 @@ function teacherFieldsPopulated(destinationLesson) {
   return TEACHER_OWNED_LESSON_FIELDS.filter((field) => !isBlank(destinationLesson[field]));
 }
 
+// A round-tripped `null` (write→read) comes back from a real spreadsheet as
+// an empty string, never `null` itself — a blank cell has no way to
+// represent "null" as distinct from "blank." Comparing raw `??` against
+// artifact.placementRule (which is genuinely `null` for fixed items) would
+// otherwise re-detect a false "change" forever on every rerun. Normalize
+// through `isBlank` (already null/undefined/"" aware) before comparing.
+function normalizeBlankToNull(value) {
+  return isBlank(value) ? null : value;
+}
+
 function publisherFieldsDiffer(artifactItem, destinationLesson) {
   const diffs = [];
   if (destinationLesson.LessonTitle !== artifactItem.title) {
     diffs.push({ field: "LessonTitle", current: destinationLesson.LessonTitle, proposed: artifactItem.title });
   }
-  if ((destinationLesson.Type ?? null) !== artifactItem.type) {
-    diffs.push({ field: "Type", current: destinationLesson.Type ?? null, proposed: artifactItem.type });
+  if (normalizeBlankToNull(destinationLesson.Type) !== artifactItem.type) {
+    diffs.push({ field: "Type", current: normalizeBlankToNull(destinationLesson.Type), proposed: artifactItem.type });
   }
-  if ((destinationLesson.SortOrder ?? null) !== artifactItem.order) {
-    diffs.push({ field: "SortOrder", current: destinationLesson.SortOrder ?? null, proposed: artifactItem.order });
+  if (normalizeBlankToNull(destinationLesson.SortOrder) !== artifactItem.order) {
+    diffs.push({ field: "SortOrder", current: normalizeBlankToNull(destinationLesson.SortOrder), proposed: artifactItem.order });
   }
-  if ((destinationLesson.PlacementRule ?? null) !== artifactItem.placementRule) {
+  if (normalizeBlankToNull(destinationLesson.PlacementRule) !== artifactItem.placementRule) {
     diffs.push({
       field: "PlacementRule",
-      current: destinationLesson.PlacementRule ?? null,
+      current: normalizeBlankToNull(destinationLesson.PlacementRule),
       proposed: artifactItem.placementRule,
     });
   }
   if (Boolean(destinationLesson.IsOptional) !== artifactItem.isOptional) {
     diffs.push({ field: "IsOptional", current: Boolean(destinationLesson.IsOptional), proposed: artifactItem.isOptional });
   }
-  if ((destinationLesson.Description ?? null) !== artifactItem.summary) {
-    diffs.push({ field: "Description", current: destinationLesson.Description ?? null, proposed: artifactItem.summary });
+  if (normalizeBlankToNull(destinationLesson.Description) !== artifactItem.summary) {
+    diffs.push({ field: "Description", current: normalizeBlankToNull(destinationLesson.Description), proposed: artifactItem.summary });
   }
   return diffs;
 }
@@ -85,6 +95,12 @@ function planItem(unit, artifactItem, destinationLessonsById, blockers) {
         PlacementRule: artifactItem.placementRule,
         IsOptional: artifactItem.isOptional,
         Description: artifactItem.summary,
+        // Never fabricated — the extraction does not carry a distinct
+        // LessonNumber field (only Order + occasional "Lesson N:" text
+        // inside Subtitle). Deriving one by parsing that text would be
+        // inventing structured publisher data. Left blank; a known,
+        // documented gap, not a silent guess.
+        LessonNumber: null,
         // Never initialized by the importer — D-5. Left blank for the
         // teacher to fill in, exactly as a brand-new row would be today.
         PlannedDays: null,
