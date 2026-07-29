@@ -1,0 +1,143 @@
+{
+  "description": "Simulated Units/Lessons destination exercising every import-plan branch: an untouched legacy Math 8 row, an exact-match no-op, a title-mismatch source-update, a duplicate-ID hard fail, a teacher-field-protected block, and a cross-course-ID hard fail. Fictional data only — not read from or written to any real spreadsheet.",
+  "units": [
+    {
+      "UnitID": "M8-U1",
+      "CourseID": "M8",
+      "UnitName": "Rigid Transformations & Congruence",
+      "RequiredDays": 12,
+      "OptionalDays": 2,
+      "SortOrder": 1
+    },
+    {
+      "UnitID": "AMP-IM1-U1",
+      "CourseID": "IM1",
+      "UnitName": "Patterns and Sequences",
+      "RequiredDays": null,
+      "OptionalDays": null,
+      "SortOrder": 1
+    },
+    {
+      "UnitID": "AMP-IM1-U2",
+      "CourseID": "M8",
+      "UnitName": "Solving Equations and Inequalities",
+      "RequiredDays": null,
+      "OptionalDays": null,
+      "SortOrder": 2
+    },
+    {
+      "UnitID": "AMP-IM1-U3",
+      "CourseID": "IM1",
+      "UnitName": "Systems (old placeholder title)",
+      "RequiredDays": 17,
+      "OptionalDays": 3,
+      "SortOrder": 3
+    }
+  ],
+  "lessons": [
+    {
+      "LessonID": "M8-U1-L1",
+      "UnitID": "M8-U1",
+      "CourseID": "M8",
+      "LessonNumber": 1,
+      "LessonTitle": "Some Math 8 Lesson",
+      "PlannedDays": 1,
+      "SortOrder": 1,
+      "KeyOutcome": "",
+      "Description": "",
+      "PrimaryLink": "",
+      "TeacherNotes": "",
+      "IsOptional": false
+    },
+    {
+      "LessonID": "AMP-IM1-U1-I01",
+      "UnitID": "AMP-IM1-U1",
+      "CourseID": "IM1",
+      "LessonNumber": null,
+      "LessonTitle": "Meet & Greet",
+      "Type": "Meet & Greet",
+      "SortOrder": 1,
+      "PlacementRule": null,
+      "IsOptional": true,
+      "Description": "This is intended to help you get to know your students and for them to get to know each other.",
+      "PlannedDays": null,
+      "TeacherNotes": null,
+      "PrimaryLink": null
+    },
+    {
+      "LessonID": "AMP-IM1-U1-I02",
+      "UnitID": "AMP-IM1-U1",
+      "CourseID": "IM1",
+      "LessonNumber": null,
+      "LessonTitle": "Pre-Unit Check (old placeholder)",
+      "Type": "Pre-Unit Check",
+      "SortOrder": 2,
+      "PlacementRule": null,
+      "IsOptional": true,
+      "Description": "Learn more about your students' understanding of foundational concepts and skills that will support them in the upcoming unit.",
+      "PlannedDays": null,
+      "TeacherNotes": null,
+      "PrimaryLink": null
+    },
+    {
+      "LessonID": "AMP-IM1-U1-I03",
+      "UnitID": "AMP-IM1-U1",
+      "CourseID": "IM1",
+      "LessonNumber": null,
+      "LessonTitle": "Patterns Found in Nature",
+      "Type": "Explore",
+      "SortOrder": 3,
+      "PlacementRule": null,
+      "IsOptional": true,
+      "Description": "What mathematical patterns can be seen in nature?",
+      "PlannedDays": null,
+      "TeacherNotes": null,
+      "PrimaryLink": null
+    },
+    {
+      "LessonID": "AMP-IM1-U1-I03",
+      "UnitID": "AMP-IM1-U1",
+      "CourseID": "IM1",
+      "LessonNumber": null,
+      "LessonTitle": "Patterns Found in Nature (duplicate row)",
+      "Type": "Explore",
+      "SortOrder": 3,
+      "PlacementRule": null,
+      "IsOptional": true,
+      "Description": "Duplicate row — should never happen in real data.",
+      "PlannedDays": null,
+      "TeacherNotes": null,
+      "PrimaryLink": null
+    },
+    {
+      "LessonID": "AMP-IM1-U1-I04",
+      "UnitID": "AMP-IM1-U1",
+      "CourseID": "IM1",
+      "LessonNumber": 1,
+      "LessonTitle": "Visual Patterns",
+      "Type": "Lesson",
+      "SortOrder": 999,
+      "PlacementRule": null,
+      "IsOptional": false,
+      "Description": "Let's explore visual patterns.",
+      "PlannedDays": 2,
+      "TeacherNotes": "Went well, extend to 2 days next time.",
+      "PrimaryLink": "https://example.com/slides"
+    },
+    {
+      "LessonID": "AMP-IM1-U1-I05",
+      "UnitID": "AMP-IM1-U1",
+      "CourseID": "M8",
+      "LessonNumber": 2,
+      "LessonTitle": "Sequence Carnival",
+      "Type": "Lesson",
+      "SortOrder": 5,
+      "PlacementRule": null,
+      "IsOptional": false,
+      "Description": "Let's explore sequences.",
+      "PlannedDays": null,
+      "TeacherNotes": null,
+      "PrimaryLink": null
+    }
+  ]
+}

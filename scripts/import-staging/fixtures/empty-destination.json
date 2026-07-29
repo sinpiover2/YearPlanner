@@ -1,0 +1,5 @@
+{
+  "description": "Simulated empty Units/Lessons destination — represents a spreadsheet with no Amplify IM1 rows yet. Every artifact unit and item should classify as \"create\".",
+  "units": [],
+  "lessons": []
+}
