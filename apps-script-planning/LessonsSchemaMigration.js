@@ -96,6 +96,15 @@ const LESSONS_MIGRATION_APPROVED_FINAL_HEADERS = [
 // suggested first was rejected in favor of this one.
 const LESSONS_MIGRATION_CONFIRMATION_PHRASE = "MIGRATE_LESSONS_SCHEMA_ADD_TYPE_AND_PLACEMENTRULE_V1";
 
+// The editor wrapper's default, intentionally non-matching value. Running
+// executeLessonsTypePlacementRuleMigrationFromEditor() unedited must refuse,
+// exactly like calling executeLessonsTypePlacementRuleMigration() with no
+// argument does — see that wrapper and this file's README for the
+// edit-then-run production authorization ceremony this value exists to
+// support. Never equal to LESSONS_MIGRATION_CONFIRMATION_PHRASE by
+// construction (asserted directly in lessons-schema-migration.test.mjs).
+const LESSONS_MIGRATION_EDITOR_PLACEHOLDER_CONFIRMATION = "REPLACE_WITH_EXACT_AUTHORIZATION_PHRASE_BEFORE_RUNNING";
+
 function lessonsMigrationIsBlank_(value) {
   return value === null || value === undefined || value === "";
 }
@@ -250,6 +259,22 @@ function lessonsMigrationCheckNewColumnsBlank_(headers, rawRows) {
 // exactly (no trim, no case-folding, no boolean/truthy acceptance).
 function lessonsMigrationValidateConfirmation_(provided) {
   return typeof provided === "string" && provided === LESSONS_MIGRATION_CONFIRMATION_PHRASE;
+}
+
+// Pure adapter behind the editor wrapper: call the injected executor, log
+// the exact structured result it returns, then return that same object
+// unchanged. Exists only so this call-log-return behavior is testable under
+// Node — the real executeLessonsTypePlacementRuleMigrationFromEditor()
+// below calls this with deps.executeMigration bound to the live, real
+// executeLessonsTypePlacementRuleMigration (which itself references
+// SpreadsheetApp/LockService/SHEET_ID globals this file's tests cannot
+// supply). Contains no migration, lock, backup, or schema logic of its
+// own — deps.executeMigration is the only thing that can mutate anything;
+// this function never inspects, branches on, or modifies what it returns.
+function lessonsMigrationRunEditorWrapper_(confirmation, deps) {
+  const report = deps.executeMigration(confirmation);
+  deps.log(JSON.stringify(report, null, 2));
+  return report;
 }
 
 // Compares a pre-migration snapshot (taken during the planning pass) against
@@ -635,6 +660,48 @@ function executeLessonsTypePlacementRuleMigration(confirmation) {
   });
 }
 
+// Apps Script's Run button always calls the selected function with zero
+// arguments, so executeLessonsTypePlacementRuleMigration(confirmation) has
+// no working invocation path from the editor's primary workflow — selecting
+// it and clicking Run always passes `confirmation` as `undefined`, which
+// correctly refuses (confirmed against production: see Sprint 6.3A/6.3B).
+// That zero-argument refusal remains a deliberate, unchanged safety
+// property; this wrapper only adds a way to *intentionally* run it.
+//
+// Also confirmed against production (Sprint 6.3B): the editor does not
+// display a function's returned value — only "Execution started" /
+// "Execution completed." A wrapper that merely returned the report would be
+// invisible to the operator, so this one explicitly logs the full report
+// before returning it, via the pure lessonsMigrationRunEditorWrapper_
+// helper above (kept there, not here, purely so that call-log-return
+// behavior can be exercised under Node without live Apps Script globals).
+//
+// Follows apps-script-roster-admin/ProductionDataCleanup.js's
+// executeProductionDataCleanupV1() pattern exactly — not a wrapper with the
+// real phrase hardcoded. The placeholder below does not match
+// LESSONS_MIGRATION_CONFIRMATION_PHRASE, so running this function as-is,
+// unedited, still refuses, exactly like clicking Run on the guarded
+// function itself. The only way to actually execute the migration is to
+// open this file in the editor, replace the placeholder on the line below
+// with the real phrase (from a preview report's confirmationRequired field,
+// or LESSONS_MIGRATION_CONFIRMATION_PHRASE above), save, and only then run
+// this function — a deliberate source edit is the confirmation act, not a
+// click. Revert the placeholder immediately afterward so the live source
+// never carries the real phrase at rest.
+function executeLessonsTypePlacementRuleMigrationFromEditor() {
+  // Change ONLY the line below, and only when ready to run the real
+  // migration against the LIVE production spreadsheet. Any value other than
+  // the exact phrase in LESSONS_MIGRATION_CONFIRMATION_PHRASE refuses to
+  // mutate anything — no partial phrase, no boolean, no accidental truthy
+  // value will work.
+  const CONFIRMATION = LESSONS_MIGRATION_EDITOR_PLACEHOLDER_CONFIRMATION;
+
+  return lessonsMigrationRunEditorWrapper_(CONFIRMATION, {
+    executeMigration: executeLessonsTypePlacementRuleMigration,
+    log: console.log,
+  });
+}
+
 // Read-only, standalone. Has no memory of what a specific execute run
 // touched (mirrors verifyAmplifyIm1Import()'s same honest limitation) — it
 // evaluates the current schema shape fresh every time it's called. It can
@@ -711,6 +778,7 @@ if (typeof module !== "undefined" && module.exports) {
     LESSONS_MIGRATION_INSERT_AFTER_HEADER,
     LESSONS_MIGRATION_APPROVED_FINAL_HEADERS,
     LESSONS_MIGRATION_CONFIRMATION_PHRASE,
+    LESSONS_MIGRATION_EDITOR_PLACEHOLDER_CONFIRMATION,
     lessonsMigrationFindDuplicateHeaders_,
     lessonsMigrationFindBlankHeaders_,
     lessonsMigrationArraysEqual_,
@@ -719,6 +787,7 @@ if (typeof module !== "undefined" && module.exports) {
     lessonsMigrationSnapshotsEqual_,
     lessonsMigrationCheckNewColumnsBlank_,
     lessonsMigrationValidateConfirmation_,
+    lessonsMigrationRunEditorWrapper_,
     lessonsMigrationVerifyMigration_,
     lessonsMigrationReadLessonsSheet_,
     lessonsMigrationCreateBackup_,

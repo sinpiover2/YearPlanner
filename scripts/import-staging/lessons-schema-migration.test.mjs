@@ -628,3 +628,80 @@ test("execute: a mid-migration failure between column insertion and header write
   // rather than claiming anything about the sheet's current shape.
   assert.equal(lessonsSheet.getLastColumn(), migration.LESSONS_MIGRATION_ORIGINAL_HEADERS.length + 2);
 });
+
+// ---------------------------------------------------------------------------
+// Editor wrapper (executeLessonsTypePlacementRuleMigrationFromEditor) —
+// exercised through the pure lessonsMigrationRunEditorWrapper_ helper, since
+// the real global wrapper calls executeLessonsTypePlacementRuleMigration,
+// which references live SpreadsheetApp/LockService/SHEET_ID globals this
+// suite cannot supply. See that helper's own comment in
+// LessonsSchemaMigration.js for why the split exists.
+// ---------------------------------------------------------------------------
+
+test("editor wrapper: default placeholder confirmation never equals the real confirmation phrase", () => {
+  assert.notEqual(
+    migration.LESSONS_MIGRATION_EDITOR_PLACEHOLDER_CONFIRMATION,
+    migration.LESSONS_MIGRATION_CONFIRMATION_PHRASE,
+  );
+  // Also never satisfies the real validator, not just string-different —
+  // the property that actually matters operationally.
+  assert.equal(
+    migration.lessonsMigrationValidateConfirmation_(migration.LESSONS_MIGRATION_EDITOR_PLACEHOLDER_CONFIRMATION),
+    false,
+  );
+});
+
+test("editor wrapper: passes its confirmation argument through to the injected executor unchanged", () => {
+  let receivedConfirmation = null;
+  const deps = {
+    executeMigration: (confirmation) => {
+      receivedConfirmation = confirmation;
+      return { mode: "execute", errorStage: null };
+    },
+    log: () => {},
+  };
+
+  migration.lessonsMigrationRunEditorWrapper_("some-confirmation-value", deps);
+
+  assert.equal(receivedConfirmation, "some-confirmation-value");
+});
+
+test("editor wrapper: logs the exact structured report it receives, as pretty-printed JSON", () => {
+  const fakeReport = { mode: "execute", writesOccurred: true, backup: { id: "abc123", url: "https://example" } };
+  let loggedText = null;
+  const deps = {
+    executeMigration: () => fakeReport,
+    log: (text) => {
+      loggedText = text;
+    },
+  };
+
+  migration.lessonsMigrationRunEditorWrapper_(migration.LESSONS_MIGRATION_CONFIRMATION_PHRASE, deps);
+
+  assert.equal(loggedText, JSON.stringify(fakeReport, null, 2));
+});
+
+test("editor wrapper: returns the identical report object it received, not a copy", () => {
+  const fakeReport = { mode: "execute", errorStage: "confirmation" };
+  const deps = {
+    executeMigration: () => fakeReport,
+    log: () => {},
+  };
+
+  const returned = migration.lessonsMigrationRunEditorWrapper_("whatever", deps);
+
+  assert.strictEqual(returned, fakeReport);
+});
+
+test("editor wrapper: contains no migration, lock, backup, or schema logic of its own", () => {
+  const source = migration.lessonsMigrationRunEditorWrapper_.toString();
+
+  // The only calls this function may make are its two injected deps — proof
+  // by inspection that no spreadsheet/lock/backup API is inlined here,
+  // rather than only by architectural argument.
+  ["SpreadsheetApp", "LockService", "insertColumnsAfter", "getRange", "copy(", "tryLock", "releaseLock"].forEach(
+    (forbidden) => {
+      assert.ok(!source.includes(forbidden), `unexpected "${forbidden}" reference in editor wrapper adapter`);
+    },
+  );
+});

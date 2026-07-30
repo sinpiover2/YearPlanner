@@ -131,16 +131,76 @@ confirm.
 
 ## Running execute (once authorized)
 
-```js
-// From the Apps Script editor, after reviewing a preview report:
-executeLessonsTypePlacementRuleMigration("MIGRATE_LESSONS_SCHEMA_ADD_TYPE_AND_PLACEMENTRULE_V1");
-```
+**Selecting `executeLessonsTypePlacementRuleMigration` from the editor's
+function dropdown and clicking Run does not work** — Apps Script's Run
+button always calls the selected function with zero arguments, so this
+always passes `confirmation` as `undefined`, which always refuses (confirmed
+against production in Sprint 6.3A/6.3B). That refusal is correct and
+intentional; it is simply not how you invoke the real run.
+
+**The editor also does not display a function's returned value** — only
+"Execution started" / "Execution completed" (also confirmed against
+production, Sprint 6.3B). A wrapper that only returned the report would
+leave the operator with no visible confirmation of what happened — including
+no visible backup ID if a mutation partially failed — so the wrapper below
+explicitly logs the full report before returning it.
+
+To actually execute, use the dedicated wrapper,
+`executeLessonsTypePlacementRuleMigrationFromEditor()`, which follows
+`apps-script-roster-admin/ProductionDataCleanup.js`'s
+`executeProductionDataCleanupV1()` pattern:
+
+1. Open `LessonsSchemaMigration.gs` in the Apps Script editor.
+2. Locate `executeLessonsTypePlacementRuleMigrationFromEditor()`.
+3. Temporarily replace the placeholder
+   (`"REPLACE_WITH_EXACT_AUTHORIZATION_PHRASE_BEFORE_RUNNING"`) on its
+   `CONFIRMATION` line with the exact authorization phrase — copied from a
+   preview report's `confirmationRequired` field, or from
+   `LESSONS_MIGRATION_CONFIRMATION_PHRASE` at the top of this file.
+4. Save the project.
+5. Select the wrapper (`executeLessonsTypePlacementRuleMigrationFromEditor`)
+   from the function dropdown.
+6. Run it once.
+7. Immediately copy the complete logged JSON report, especially:
+   `writesOccurred`, `errorStage` (the actual success/failure signal — this
+   report has no separate `success` field; `errorStage: null` means the run
+   completed successfully), `backup.id`, `backup.url`.
+8. Do not rerun on ambiguity or failure.
+9. Restore the placeholder immediately after capturing the report.
+10. Save again.
+11. Later, push the placeholder version from the repository back to Apps
+    Script HEAD so HEAD is not left armed with the real phrase.
+
+**Editing the placeholder is itself part of the explicit production
+authorization ceremony** — the deliberate source edit is the confirmation
+act, not the click on Run. Running the wrapper unedited (placeholder still
+in place) refuses exactly like clicking Run on the guarded function itself,
+because the placeholder is a value that will *never* accidentally equal the
+real phrase — it is not a hardcoded copy of it, and must never become one.
+
+**The wrapper is unsafe to leave armed with the real phrase.** Between step
+3 and step 9, the live Apps Script HEAD source contains the real
+confirmation phrase in cleartext, callable by a single Run click with no
+further confirmation. Minimize that window: edit, save, run once, restore,
+save again, in one sitting — and always follow step 11 before ending the
+session, so the repository's own (placeholder-only) version of this file is
+what HEAD reflects afterward.
+
+**The underlying guarded function, `executeLessonsTypePlacementRuleMigration(confirmation)`,
+remains the authoritative implementation.** The wrapper exists only because
+the Apps Script Run button cannot pass arguments to the function it calls,
+and because a function's returned object is not reliably visible in the
+editor unless explicitly logged. The wrapper adds no migration logic of its
+own — it is a thin adapter (see `lessonsMigrationRunEditorWrapper_` in
+`LessonsSchemaMigration.js`) that calls the guarded function, logs its
+result, and returns that same result unchanged.
 
 - The confirmation string must match **exactly** — `===`, no trimming, no
   case-folding, no boolean/truthy acceptance.
-- Calling `executeLessonsTypePlacementRuleMigration()` with no argument
-  always refuses — there is no default/placeholder value to accidentally
-  trigger a write.
+- Calling `executeLessonsTypePlacementRuleMigration()` directly with no
+  argument always refuses — there is no default/placeholder value on that
+  function itself to accidentally trigger a write. The wrapper adds an
+  intentional invocation path; it does not change this.
 - A backup (a full spreadsheet copy) is created before any mutation. Its ID
   and URL are in the returned report's `backup` field.
 - If `report.errorStage` is non-null, treat `report.backup` as the
