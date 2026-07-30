@@ -309,6 +309,23 @@ Not yet done at the end of Sprint 3 — became Sprint 4's scope: an execute-capa
 
 ---
 
+## Sprint 6.6 — Make Guarded-Migration Refusals Impossible to Mistake for Success
+
+**Scope: safety-signaling fix across the guarded-execute editor wrapper, prompted by a real production incident — not a new migration.** A real invocation of `executeUnitsArchiveMigrationFromEditor()` against production "completed with no exception," and the operator reasonably read that as success. A separate `verifyUnitsArchiveMigration()` call caught that the `Units` schema was unchanged and nothing had been archived. Every refusal branch in `unitsArchiveExecuteLocked_` was independently audited and already returned a report rather than throwing (confirmation, lock, planning, backup, revalidation, and post-write-verification checks all do this) — the most likely actual outcome was a refused confirmation check, `errorStage: "confirmation"`, `writesOccurred: false`. **The defect was never in the guard logic; it was that a JS function returning normally is reported by the Apps Script editor as "Execution completed" regardless of what the returned value says**, and the report had been logged only through `console.log`, which lands in Cloud Logging/the Executions panel rather than the classic "View > Logs" transcript most people check first.
+
+**Fix, in `apps-script-planning/UnitsArchiveMigration.js`:**
+- Every execute report now carries an explicit `success` boolean, computed exactly once by a new `finish()` helper from the report's own final state — no future added return path can compute or forget this field independently.
+- The interactive editor wrapper now logs through every function in `deps.logFns` (`Logger.log` **and** `console.log` — both transcripts, not one), and then **throws** a descriptive `Error` whenever the outcome was not a genuine success, so Apps Script visibly reports "Execution failed" rather than "Execution completed."
+- `executeUnitsArchiveMigration()` itself (the programmatic/test entry point) is unchanged and still always returns a report rather than throwing — only the disarmed editor wrapper's failure-signaling behavior changed.
+
+**This pattern is not yet applied to the codebase's other guarded editor wrappers** — `AmplifyIm1Importer.js`, `LessonsSchemaMigration.js`, and `LegacyIm1CleanupMigration.js` still use the plain-return-and-log pattern this sprint replaced. Any future work on those wrappers, or any new guarded migration's editor wrapper, should follow the `success`-boolean-plus-throw pattern from the start.
+
+**Test results.** `node --test scripts/import-staging/units-archive-migration.test.mjs` — **44/44 pass** (up from 37), adding 7 tests that reproduce the exact incident end-to-end: an execute run through the full editor wrapper with the wrong (placeholder) confirmation throws, logs that nothing was archived through both loggers, and proves the sheet is untouched; general success/failure signaling coverage for the `finish()` helper and the wrapper's throw behavior. All 180 tests across the full `scripts/import-staging/*.test.mjs` suite (Sprint 3/4/6.1/6.2A/6.2B/6.3/6.4/6.5/6.6) re-run unchanged and pass. `npm run build` passes; `npm run lint` unchanged (28 pre-existing/unrelated errors).
+
+**Not deployed. No `clasp push`, no execution against production this sprint.** Production's `Units` sheet is confirmed (via the incident's own `verifyUnitsArchiveMigration()` call) to still have no `IsArchived` column and no archived units — the migration itself has never successfully executed. Deploying the hardened wrapper and re-running the full guarded sequence is Sprint 6.7's recommended first objective; see `docs/History/SPRINT_HANDOFF_6.6.md`.
+
+---
+
 ## 1. Current-State Dependency Map
 
 | Surface | Files | Current assumption | Impact of Type | Impact of flexible placement | Impact of unknown day values | Required change |

@@ -549,22 +549,32 @@ write-reliability defect (`mode: "no-cors"` had been masking failed writes
 across three of the five planning write actions). See
 `docs/History/SPRINT_HANDOFF_6.0.md`.
 
+Sprints 6.1–6.6 built the full Amplify Math 1 curriculum-import pipeline —
+staged artifact, guarded importer, guarded `Lessons` schema migration
+(`Type`/`PlacementRule`), a guarded legacy-IM1 archival migration
+(`Units.IsArchived`, replacing an earlier `Active`-reuse design corrected in
+Sprint 6.5), and Units workspace support for hiding archived curriculum by
+default. **None of this has been deployed or executed against production
+yet** — every migration remains structurally complete and locally tested
+only. Sprint 6.6 specifically hardened every guarded migration's editor
+wrapper so a refused execution now visibly fails in the Apps Script editor
+instead of silently reporting "Execution completed." See
+`docs/History/SPRINT_HANDOFF_6.6.md`.
+
 ## Next Major Milestone
+
+Real Data — deploy and execute `UnitsArchiveMigration.js` against
+production (Sprint 6.7's objective; see `docs/WORKFLOW/START_SPRINT.md`),
+then resume the rest of the Amplify Math 1 import. See
+`docs/Development/CLASSROOM_READINESS.md`, Section A.
 
 Protect Teacher Work — partially shipped in Sprint 6.0 (write authorization,
 in full, plus one write-reliability fix; see
 `docs/History/SPRINT_HANDOFF_6.0.md`). The remaining phases — a concurrency
 guard on planning writes, visible local-save failure signals, backups and
 recovery, and the canonical Session Enactment / Placement Enactment store —
-are still open, tracked in `docs/Architecture/SPRINT_6_0_ARCHITECTURE.md`.
-
-Real Data — importing and verifying the official 2026–2027 school calendar
-and full curriculum, so Planning and Forecast are reasoning about the actual
-school year rather than working data — has been reprioritized ahead of the
-remaining Protect Teacher Work phases, starting with a Curriculum Import
-pilot for Amplify Math 1's Unit 1. See
-`docs/Development/CLASSROOM_READINESS.md`, Section A, and
-`docs/WORKFLOW/START_SPRINT.md`.
+are still open, tracked in `docs/Architecture/SPRINT_6_0_ARCHITECTURE.md`,
+and remain deferred behind Real Data per teacher direction.
 
 ## Backlog (Post-Classroom-Readiness)
 

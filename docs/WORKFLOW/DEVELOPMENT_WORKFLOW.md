@@ -231,6 +231,50 @@ matter what order the other steps happen in.
 
 ---
 
+# Guarded Production Migration Execution Procedure
+
+Every guarded Apps Script migration in this codebase (`AmplifyIm1Importer.js`,
+`LessonsSchemaMigration.js`, `LegacyIm1CleanupMigration.js`,
+`UnitsArchiveMigration.js`, and any future one) follows the same
+preview/execute/verify shape with a disarmed editor wrapper. Use this
+sequence whenever actually running one of them against production — not just
+reading its own README, which documents the mechanics but not the full
+sequence around it.
+
+1. **Preview.** Run the read-only preview function first, always. Review
+   `plan.blocked`, every `blocked` action, and every warning before
+   considering execution.
+2. **Execute.** Open the migration's `...FromEditor()` wrapper, temporarily
+   replace its placeholder confirmation string with the real phrase, save,
+   run once, and immediately copy the complete logged report
+   (`writesOccurred`, `errorStage`, `backup.id`/`backup.url`). Do not rerun on
+   ambiguity or failure.
+3. **Verify.** Run the migration's standalone `verify...()` function and
+   confirm its report matches what the execute report claimed — do not treat
+   "no exception was thrown" as sufficient confirmation by itself (see
+   `LESSONS_LEARNED.md`, Sprint 6.6: a JS function that returns normally is
+   reported by the Apps Script editor as "Execution completed" regardless of
+   what the returned value says, including a refusal).
+4. **Restore the editor placeholder.** Put the placeholder confirmation
+   string back on the wrapper's `CONFIRMATION` line and save again, in the
+   same sitting as step 2 — the live Apps Script HEAD must never be left
+   armed with the real phrase.
+5. **`clasp pull`.** Pull the now-restored, placeholder-only source back into
+   the repository from Apps Script HEAD. The editor session in steps 2–4
+   edited the live script directly, not through `clasp push`, so the
+   repository's copy is stale until this step.
+6. **Verify repository cleanliness.** Run `git status` / `git diff` on the
+   pulled files. The only expected diff is whatever the migration module
+   itself legitimately changed this sprint (if any) — confirm no stray armed
+   confirmation phrase, no unrelated formatting churn from `clasp pull`, and
+   no leftover generated-file drift before committing.
+
+Skipping steps 4–6 leaves either the real confirmation phrase live in
+production (a single accidental Run click away from re-executing) or the
+repository silently out of sync with what Apps Script actually runs.
+
+---
+
 # Definition of Done
 
 A sprint is complete only when all of the following are true.

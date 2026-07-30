@@ -1,17 +1,18 @@
 # Start Sprint
 
-## Sprint 6.1 Objective
+## Sprint 6.7 Objective
 
-**Primary objective:** Curriculum Import — Amplify Math 1 Unit 1 Pilot (`docs/Development/CLASSROOM_READINESS.md`, Section A).
-
-Sprint 6.0 closed the anonymous planning-write security hole and fixed the
-`no-cors` write-reliability defect (see `docs/History/SPRINT_HANDOFF_6.0.md`).
-Planning and Forecast are still reasoning about working curriculum data, not
-a verified import. Import Amplify Math 1's Unit 1 using the existing
-Units/Lessons model — no schema expansion, no new entities — before
-resuming the remaining Protect Teacher Work phases. See
-`docs/History/SPRINT_HANDOFF_6.0.md` for the full first-hour plan and lean
-scope.
+**Primary objective:** Deploy and execute `UnitsArchiveMigration.js` against
+production — the guarded migration is now hardened (Sprint 6.6: an execute
+report carries an explicit `success` boolean, and the editor wrapper throws
+on any non-success outcome instead of returning quietly) but has never
+actually been pushed to Apps Script or successfully run. Production's
+`Units` sheet still has no `IsArchived` column and the 9 legacy `IM1-U0`…
+`IM1-U8` units are still unarchived. Follow the Guarded Production Migration
+Execution Procedure in `DEVELOPMENT_WORKFLOW.md` exactly (preview → execute →
+verify → restore placeholder → `clasp pull` → verify repository cleanliness).
+See `docs/History/SPRINT_HANDOFF_6.6.md` for full context and the first-hour
+plan.
 
 ---
 

@@ -137,11 +137,22 @@ now considered classroom-ready.
 
 ### Integrated Math 1
 
-- [ ] Import complete curriculum
+- [ ] Import complete curriculum — guarded tooling now exists
+      (`apps-script-planning/AmplifyIm1Importer.js`, `LessonsSchemaMigration.js`)
+      for Amplify Math 1; this item is about running it against production, not
+      building it. **Not yet deployed or executed** — see
+      `docs/History/SPRINT_HANDOFF_6.6.md`.
 - [ ] Verify units
 - [ ] Verify lessons
 - [ ] Verify required instructional days
 - [ ] Verify learning goals
+- [ ] Archive legacy pre-Amplify IM1 curriculum — guarded tooling now exists
+      (`apps-script-planning/UnitsArchiveMigration.js`, Sprint 6.5/6.6) and the
+      Units workspace already hides archived units by default once the
+      `IsArchived` flag is set; this item is about actually running the
+      migration, which has been previewed against live production
+      (`safeToExecute: true`) but never successfully executed. See
+      `docs/History/SPRINT_HANDOFF_6.6.md` for the exact next step.
 
 ---
 
