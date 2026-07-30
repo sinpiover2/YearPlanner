@@ -519,6 +519,204 @@ function amplifyIm1VerifyAgainstPayload_(payload, currentUnitsObjects, currentLe
   };
 }
 
+// --- Compact preview summary (pure) -----------------------------------------
+//
+// Production use found previewAmplifyIm1Import()'s full report — every
+// proposed row for all 164 items — exceeds the Apps Script execution log's
+// size limit ("Logging output too large. Truncating output."). This does
+// not change that full report at all; it is a pure, read-only transform of
+// an already-built report into a compact aggregate, so a human can review
+// plan.blocked/classification counts/conflicts without the log truncating
+// before showing them. Never recomputes the plan itself — it only
+// aggregates amplifyIm1BuildImportPlan_'s own classifications, the same
+// "do not maintain two conflicting policy implementations" rule
+// amplifyIm1VerifyAgainstPayload_ above already follows.
+//
+// Classification-bucket mapping (this importer's real classifications are
+// "create" / "source-update" / "no-op" / "blocked" — there is no "delete"
+// classification anywhere in this importer, by design: it never deletes a
+// row, so that bucket is always 0, not invented):
+//   "create"          -> create
+//   "source-update"    -> update
+//   "no-op"            -> unchanged
+//   "blocked", reasons include "preserve-teacher-fields" and neither
+//     "duplicate-destination-id" nor "cross-course-id-collision"
+//                      -> teacherFieldProtected (intentional, expected
+//                         protection of teacher-authored data — mirrors
+//                         amplifyIm1VerifyAgainstPayload_'s own
+//                         "knownStaleCount is not an error" rule above;
+//                         counted separately, never folded into "conflict")
+//   "blocked", any other reason (duplicate-destination-id,
+//     cross-course-id-collision)
+//                      -> conflict
+function amplifyIm1ClassifyForSummary_(classification, reasons) {
+  if (classification === "create") return "create";
+  if (classification === "source-update") return "update";
+  if (classification === "no-op") return "unchanged";
+  if (classification === "blocked") {
+    const list = reasons || [];
+    const isTeacherFieldProtectionOnly =
+      list.indexOf("preserve-teacher-fields") !== -1 &&
+      list.indexOf("duplicate-destination-id") === -1 &&
+      list.indexOf("cross-course-id-collision") === -1;
+    return isTeacherFieldProtectionOnly ? "teacherFieldProtected" : "conflict";
+  }
+  return "unchanged";
+}
+
+function amplifyIm1EmptyClassificationCounts_() {
+  return { create: 0, update: 0, unchanged: 0, conflict: 0, delete: 0 };
+}
+
+// Pure function of an already-built preview report (from
+// amplifyIm1BuildPreviewReport_/previewAmplifyIm1Import() — never mutated,
+// never re-fetched). Contains no planning/import logic of its own: every
+// classification it aggregates was already decided by
+// amplifyIm1BuildImportPlan_; this only counts and summarizes. Never
+// includes a proposedRow, Description/summary, PrimaryLink, TeacherNotes,
+// or any of the 164 raw item objects — only IDs, titles (publisher
+// content, not teacher-authored), counts, and short reason strings.
+function amplifyIm1BuildPreviewSummary_(fullReport) {
+  const plan = fullReport.plan;
+
+  const unitCounts = amplifyIm1EmptyClassificationCounts_();
+  const itemCounts = Object.assign(amplifyIm1EmptyClassificationCounts_(), { teacherFieldProtected: 0 });
+  const units = [];
+  const warnings = [];
+  const teacherFieldsAffected = {};
+
+  if (plan) {
+    plan.units.forEach(function (unit) {
+      const unitBucket = amplifyIm1ClassifyForSummary_(unit.classification, unit.reasons);
+      // Units never carry teacher-owned fields the way lessons do (RequiredDays/
+      // OptionalDays are teacher-owned but are never compared for source-update,
+      // per D-2/D-5 — see amplifyIm1PlanUnit_), so a unit can never classify as
+      // teacherFieldProtected; this branch exists only to be structurally
+      // honest if that ever changed, not because it's reachable today.
+      unitCounts[unitBucket === "teacherFieldProtected" ? "conflict" : unitBucket] += 1;
+
+      if ((unit.reasons || []).indexOf("title-mismatch-warning") !== -1) {
+        warnings.push(`Unit ${unit.unitId}: title-mismatch-warning`);
+      }
+
+      const itemBuckets = amplifyIm1EmptyClassificationCounts_();
+      const unitMessages = [];
+
+      (unit.items || []).forEach(function (item) {
+        const bucket = amplifyIm1ClassifyForSummary_(item.classification, item.reasons);
+
+        if (bucket === "teacherFieldProtected") {
+          (item.populatedTeacherFields || []).forEach(function (field) {
+            teacherFieldsAffected[field] = (teacherFieldsAffected[field] || 0) + 1;
+          });
+          unitMessages.push(`${item.itemId}: preserve-teacher-fields`);
+        } else {
+          itemBuckets[bucket] += 1;
+          if (bucket === "conflict") {
+            unitMessages.push(`${item.itemId}: ${(item.reasons || []).join(", ")}`);
+          }
+        }
+        itemCounts[bucket] += 1;
+
+        if ((item.reasons || []).indexOf("title-mismatch-warning") !== -1) {
+          warnings.push(`Item ${item.itemId}: title-mismatch-warning`);
+        }
+      });
+
+      units.push({
+        unitId: unit.unitId,
+        title: unit.title,
+        classification: unitBucket,
+        itemCounts: itemBuckets,
+        messages: unitMessages,
+      });
+    });
+  }
+
+  // "Conflict" for the safety gate below deliberately excludes
+  // teacherFieldProtected — that state is intentional, expected, and
+  // already proven safe by amplifyIm1VerifyAgainstPayload_'s own
+  // knownStaleCount rule; only a true duplicate/cross-course collision
+  // should be able to block authorization.
+  const trueConflictCount = unitCounts.conflict + itemCounts.conflict;
+
+  const collectedErrors = []
+    .concat(fullReport.payloadIntegrity ? fullReport.payloadIntegrity.errors || [] : [])
+    .concat(fullReport.payloadStructure ? fullReport.payloadStructure.errors || [] : [])
+    .concat(fullReport.destinationSchema ? fullReport.destinationSchema.errors || [] : [])
+    .concat(plan ? plan.blockers || [] : []);
+
+  const safeToAuthorizeExecute =
+    fullReport.mode === "preview" &&
+    fullReport.writesOccurred === false &&
+    !!fullReport.payloadIntegrity && fullReport.payloadIntegrity.valid === true &&
+    !!fullReport.payloadStructure && fullReport.payloadStructure.valid === true &&
+    !!fullReport.destinationSchema && fullReport.destinationSchema.valid === true &&
+    !!plan && plan.blocked === false &&
+    trueConflictCount === 0 &&
+    collectedErrors.length === 0;
+
+  return {
+    mode: fullReport.mode || null,
+    timestamp: fullReport.timestamp || null,
+    artifact: fullReport.artifact || null,
+    confirmationRequired: fullReport.confirmationRequired || null,
+    // Safely represented: the sheet ID itself (not a secret, but not
+    // reproduced here in full to keep this summary's own footprint small
+    // and avoid a second place that identifier lives at rest) is reduced to
+    // a short, non-reversible-looking prefix/suffix — matches this
+    // project's own convention elsewhere of not printing full private IDs.
+    spreadsheetIdentity:
+      typeof fullReport.spreadsheetId === "string" && fullReport.spreadsheetId.length > 12
+        ? fullReport.spreadsheetId.slice(0, 6) + "..." + fullReport.spreadsheetId.slice(-4)
+        : fullReport.spreadsheetId || null,
+    sheetsPresent: fullReport.sheetsPresent || null,
+    payloadIntegrity: fullReport.payloadIntegrity
+      ? { valid: fullReport.payloadIntegrity.valid, errors: fullReport.payloadIntegrity.errors || [] }
+      : null,
+    payloadStructure: fullReport.payloadStructure
+      ? { valid: fullReport.payloadStructure.valid, errors: fullReport.payloadStructure.errors || [] }
+      : null,
+    destinationSchema: fullReport.destinationSchema
+      ? {
+          valid: fullReport.destinationSchema.valid,
+          errors: fullReport.destinationSchema.errors || [],
+          missingUnitHeaders: fullReport.destinationSchema.missingUnitHeaders || [],
+          missingLessonHeaders: fullReport.destinationSchema.missingLessonHeaders || [],
+        }
+      : null,
+    plan: plan ? { blocked: plan.blocked, blockers: plan.blockers || [] } : null,
+    unitClassificationCounts: unitCounts,
+    itemClassificationCounts: itemCounts,
+    units: units,
+    teacherFieldPreservation: {
+      // Count of Lesson rows intentionally left stale to protect
+      // teacher-authored data, plus which teacher-owned fields were the
+      // reason, by field name only — never the field's actual value.
+      itemsProtected: itemCounts.teacherFieldProtected,
+      fieldsAffected: teacherFieldsAffected,
+    },
+    // Not present on the full preview report at all (amplifyIm1BuildPreviewReport_
+    // never reads or returns a row count) — reported honestly as null rather
+    // than invented.
+    rowsExpected: null,
+    writesOccurred: typeof fullReport.writesOccurred === "boolean" ? fullReport.writesOccurred : null,
+    // The full preview report has no backup field — preview never creates
+    // one, by design (see amplifyIm1BuildPreviewReport_'s own note field).
+    backup: null,
+    // errorStage/errorMessage belong to the execute()/verify() report
+    // shapes only; a preview report never carries either.
+    errorStage: null,
+    errorMessage: null,
+    warnings: warnings,
+    omissions:
+      "Full proposed row content, item descriptions, teacher notes, links, and per-item field diffs are " +
+      "intentionally excluded from this summary to stay well under the Apps Script logging limit. See " +
+      "previewAmplifyIm1Import()'s full report for complete per-item detail.",
+    safeToAuthorizeExecute: safeToAuthorizeExecute,
+  };
+}
+
 // ============================================================================
 // SECTION 2 — Apps Script I/O boundary. Everything below touches
 // SpreadsheetApp/LockService/Utilities (or accepts injected stand-ins for
@@ -646,6 +844,33 @@ function previewAmplifyIm1Import() {
   );
   Logger.log(JSON.stringify(report, null, 2));
   return report;
+}
+
+// Production use of previewAmplifyIm1Import() found its full report — every
+// proposed row across all 164 items — exceeds the Apps Script execution
+// log's size limit ("Logging output too large. Truncating output."),
+// truncating before the top-level plan.blocked/classification-count
+// information a reviewer actually needs was ever shown. This calls the
+// exact same underlying report builder previewAmplifyIm1Import() itself
+// calls — never a second, duplicated preview implementation — and logs
+// only the compact aggregate amplifyIm1BuildPreviewSummary_ produces.
+// Read-only: performs no writes, creates no backup, and does not change
+// previewAmplifyIm1Import()'s own full report in any way.
+function previewAmplifyIm1ImportSummary() {
+  const startedAt = new Date();
+  const fullReport = amplifyIm1BuildPreviewReport_(
+    {
+      spreadsheetApp: SpreadsheetApp,
+      sheetId: SHEET_ID,
+      computeSha256Hex: amplifyIm1RealSha256Hex_,
+      payload: AMPLIFY_IM1_IMPORT_PAYLOAD,
+      metadata: AMPLIFY_IM1_IMPORT_METADATA,
+    },
+    startedAt,
+  );
+  const summary = amplifyIm1BuildPreviewSummary_(fullReport);
+  Logger.log(JSON.stringify(summary, null, 2));
+  return summary;
 }
 
 // --- Guarded write sequence --------------------------------------------------
@@ -952,6 +1177,9 @@ if (typeof module !== "undefined" && module.exports) {
     amplifyIm1ValidateDestinationSchema_,
     amplifyIm1BuildImportPlan_,
     amplifyIm1VerifyAgainstPayload_,
+    amplifyIm1ClassifyForSummary_,
+    amplifyIm1EmptyClassificationCounts_,
+    amplifyIm1BuildPreviewSummary_,
     amplifyIm1ReadSheet_,
     amplifyIm1CreateBackup_,
     amplifyIm1ApplyPlan_,

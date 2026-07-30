@@ -605,3 +605,233 @@ test("sanity: generated data file exposes the expected real artifact shape", () 
   assert.equal(importData.AMPLIFY_IM1_IMPORT_METADATA.unitCount, 7);
   assert.equal(importData.AMPLIFY_IM1_IMPORT_METADATA.itemCount, 164);
 });
+
+// ---------------------------------------------------------------------------
+// Compact preview summary (previewAmplifyIm1ImportSummary /
+// amplifyIm1BuildPreviewSummary_) — added because a real production preview
+// run against the full 164-item artifact exceeded the Apps Script execution
+// log's size limit before showing plan.blocked/classification counts. These
+// tests exercise the pure summary builder directly (no spreadsheet needed
+// for most), plus one full-pipeline test against a fake spreadsheet for the
+// two cases that need a real, multi-branch plan.
+// ---------------------------------------------------------------------------
+
+function fakeCleanFullReport(overrides = {}) {
+  return {
+    mode: "preview",
+    timestamp: "2026-01-01T00:00:00.000Z",
+    artifact: { schemaVersion: "1.0.0", sha256: "fixturesha256", unitCount: 1, itemCount: 2 },
+    confirmationRequired: "IMPORT_AMPLIFY_IM1_fixturesha_1_2",
+    spreadsheetId: "1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789",
+    sheetsPresent: { units: true, lessons: true },
+    payloadIntegrity: { valid: true, errors: [] },
+    payloadStructure: { valid: true, errors: [] },
+    destinationSchema: { valid: true, errors: [], missingUnitHeaders: [], missingLessonHeaders: [] },
+    plan: {
+      blocked: false,
+      blockers: [],
+      units: [
+        {
+          unitId: "AMP-IM1-U1",
+          title: "Test Unit",
+          classification: "create",
+          reasons: [],
+          items: [
+            { itemId: "AMP-IM1-U1-I01", title: "A Lesson", classification: "create", reasons: [] },
+            { itemId: "AMP-IM1-U1-I02", title: "Another Lesson", classification: "no-op", reasons: [] },
+          ],
+        },
+      ],
+      summary: { units: { create: 1, "source-update": 0, "no-op": 0, blocked: 0 }, items: { create: 1, "source-update": 0, "no-op": 1, blocked: 0 } },
+    },
+    writesOccurred: false,
+    note: "This preview performed zero writes. No spreadsheet was modified.",
+    ...overrides,
+  };
+}
+
+test("preview summary: does not mutate the full preview report it is given", () => {
+  const fullReport = fakeCleanFullReport();
+  const before = JSON.stringify(fullReport);
+
+  importer.amplifyIm1BuildPreviewSummary_(fullReport);
+
+  assert.equal(JSON.stringify(fullReport), before);
+});
+
+test("preview summary: a clean preview (valid, unblocked, no conflicts) produces safeToAuthorizeExecute: true", () => {
+  const summary = importer.amplifyIm1BuildPreviewSummary_(fakeCleanFullReport());
+
+  assert.equal(summary.safeToAuthorizeExecute, true);
+  assert.deepEqual(summary.unitClassificationCounts, { create: 1, update: 0, unchanged: 0, conflict: 0, delete: 0 });
+  assert.deepEqual(summary.itemClassificationCounts, {
+    create: 1,
+    update: 0,
+    unchanged: 1,
+    conflict: 0,
+    delete: 0,
+    teacherFieldProtected: 0,
+  });
+});
+
+test("preview summary: writesOccurred true forces safeToAuthorizeExecute false, even if everything else looks clean", () => {
+  const summary = importer.amplifyIm1BuildPreviewSummary_(fakeCleanFullReport({ writesOccurred: true }));
+  assert.equal(summary.safeToAuthorizeExecute, false);
+});
+
+test("preview summary: invalid destinationSchema (plan not buildable) forces safeToAuthorizeExecute false", () => {
+  const summary = importer.amplifyIm1BuildPreviewSummary_(
+    fakeCleanFullReport({
+      destinationSchema: { valid: false, errors: ['Lessons sheet is missing required column(s): Type, PlacementRule.'], missingUnitHeaders: [], missingLessonHeaders: ["Type", "PlacementRule"] },
+      plan: null,
+    }),
+  );
+  assert.equal(summary.safeToAuthorizeExecute, false);
+  assert.equal(summary.plan, null);
+  assert.deepEqual(summary.destinationSchema.missingLessonHeaders, ["Type", "PlacementRule"]);
+});
+
+test("preview summary: a hard-fail conflict (e.g. cross-course-id-collision) forces safeToAuthorizeExecute false, distinct from a benign teacher-field protection", () => {
+  const summary = importer.amplifyIm1BuildPreviewSummary_(
+    fakeCleanFullReport({
+      plan: {
+        blocked: true,
+        blockers: ['LessonID "AMP-IM1-U1-I02" already exists under CourseID "M8", but the artifact assigns it to course "IM1".'],
+        units: [
+          {
+            unitId: "AMP-IM1-U1",
+            title: "Test Unit",
+            classification: "no-op",
+            reasons: [],
+            items: [
+              {
+                itemId: "AMP-IM1-U1-I01",
+                title: "A Lesson",
+                classification: "blocked",
+                reasons: ["preserve-teacher-fields"],
+                populatedTeacherFields: ["PlannedDays", "TeacherNotes"],
+              },
+              {
+                itemId: "AMP-IM1-U1-I02",
+                title: "Another Lesson",
+                classification: "blocked",
+                reasons: ["cross-course-id-collision"],
+              },
+            ],
+          },
+        ],
+      },
+    }),
+  );
+
+  assert.equal(summary.safeToAuthorizeExecute, false);
+  assert.equal(summary.itemClassificationCounts.conflict, 1);
+  assert.equal(summary.itemClassificationCounts.teacherFieldProtected, 1);
+  assert.equal(summary.teacherFieldPreservation.itemsProtected, 1);
+  assert.deepEqual(summary.teacherFieldPreservation.fieldsAffected, { PlannedDays: 1, TeacherNotes: 1 });
+  assert.equal(summary.units[0].messages.some((m) => m.includes("preserve-teacher-fields")), true);
+  assert.equal(summary.units[0].messages.some((m) => m.includes("cross-course-id-collision")), true);
+});
+
+test("preview summary: excludes full proposed rows and verbose item content, staying compact", () => {
+  const artifact = buildArtifact();
+  const destination = JSON.parse(
+    require("node:fs").readFileSync(path.join(__dirname, "fixtures", "representative-destination.json"), "utf8"),
+  );
+  const plan = importer.amplifyIm1BuildImportPlan_(artifact, destination);
+  const fullReport = fakeCleanFullReport({ plan });
+
+  const summary = importer.amplifyIm1BuildPreviewSummary_(fullReport);
+  const serialized = JSON.stringify(summary);
+
+  // No per-unit entry carries a proposedRow, and the summary never repeats
+  // an item's Description/summary text anywhere.
+  summary.units.forEach((unitSummary) => {
+    assert.equal(Object.prototype.hasOwnProperty.call(unitSummary, "proposedRow"), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(unitSummary, "items"), false);
+  });
+  assert.equal(serialized.includes("proposedRow"), false);
+  // A real Description string from the fixture must never appear.
+  assert.equal(serialized.includes("Let's explore visual patterns."), false);
+  // Comfortably smaller than the full plan's own serialization (164 items'
+  // worth of proposed rows/descriptions).
+  assert.ok(serialized.length < JSON.stringify(plan).length);
+});
+
+test("preview summary: aggregates a real, multi-branch plan into classification counts and per-unit item counts that match an independent tally of the same plan", () => {
+  const artifact = buildArtifact();
+  const destination = JSON.parse(
+    require("node:fs").readFileSync(path.join(__dirname, "fixtures", "representative-destination.json"), "utf8"),
+  );
+  const plan = importer.amplifyIm1BuildImportPlan_(artifact, destination);
+  const summary = importer.amplifyIm1BuildPreviewSummary_(fakeCleanFullReport({ plan }));
+
+  function isTeacherFieldProtectedOnly(reasons) {
+    const list = reasons || [];
+    return (
+      list.indexOf("preserve-teacher-fields") !== -1 &&
+      list.indexOf("duplicate-destination-id") === -1 &&
+      list.indexOf("cross-course-id-collision") === -1
+    );
+  }
+
+  // Independently tallied directly from the SAME plan object returned by
+  // amplifyIm1BuildImportPlan_ — proves aggregation correctness without
+  // re-implementing that function's own classification decisions.
+  const expectedUnitCounts = { create: 0, update: 0, unchanged: 0, conflict: 0, delete: 0 };
+  const expectedItemCounts = { create: 0, update: 0, unchanged: 0, conflict: 0, delete: 0, teacherFieldProtected: 0 };
+  const unitBucketOf = (classification) =>
+    ({ create: "create", "source-update": "update", "no-op": "unchanged" })[classification] || "conflict";
+
+  plan.units.forEach((unit, unitIndex) => {
+    expectedUnitCounts[unitBucketOf(unit.classification)] += 1;
+
+    let expectedItemTotalForUnit = 0;
+    (unit.items || []).forEach((item) => {
+      let bucket;
+      if (item.classification === "create") bucket = "create";
+      else if (item.classification === "source-update") bucket = "update";
+      else if (item.classification === "no-op") bucket = "unchanged";
+      else if (item.classification === "blocked" && isTeacherFieldProtectedOnly(item.reasons)) bucket = "teacherFieldProtected";
+      else bucket = "conflict";
+      expectedItemCounts[bucket] += 1;
+      expectedItemTotalForUnit += 1;
+    });
+
+    const summaryUnit = summary.units[unitIndex];
+    const summaryItemTotalForUnit =
+      Object.values(summaryUnit.itemCounts).reduce((a, b) => a + b, 0) +
+      (unit.items || []).filter((item) => item.classification === "blocked" && isTeacherFieldProtectedOnly(item.reasons)).length;
+    assert.equal(summaryItemTotalForUnit, expectedItemTotalForUnit, `unit ${unit.unitId} item count mismatch`);
+  });
+
+  assert.deepEqual(summary.unitClassificationCounts, expectedUnitCounts);
+  assert.deepEqual(summary.itemClassificationCounts, expectedItemCounts);
+  // This fixture is documented to include a duplicate-ID and a cross-course
+  // hard fail, so plan.blocked must be true and safety must be false.
+  assert.equal(plan.blocked, true);
+  assert.equal(summary.plan.blocked, true);
+  assert.equal(summary.safeToAuthorizeExecute, false);
+});
+
+test("preview summary pipeline: the exact sequence previewAmplifyIm1ImportSummary performs (build report, then summary) logs valid, parseable JSON and returns the summary unchanged", () => {
+  // previewAmplifyIm1ImportSummary() itself calls amplifyIm1BuildPreviewReport_
+  // then amplifyIm1BuildPreviewSummary_ against the real SpreadsheetApp/
+  // SHEET_ID globals, which this suite cannot supply directly — the same
+  // reason previewAmplifyIm1Import() itself is never unit-tested directly
+  // elsewhere in this file. This test exercises the identical two-call
+  // sequence against a fake spreadsheet instead.
+  const deps = baseDeps();
+  const fullReport = importer.amplifyIm1BuildPreviewReport_(deps, new Date());
+  const summary = importer.amplifyIm1BuildPreviewSummary_(fullReport);
+
+  const loggedLines = [];
+  const fakeLoggerLog = (text) => loggedLines.push(text);
+  fakeLoggerLog(JSON.stringify(summary, null, 2));
+
+  assert.equal(loggedLines.length, 1);
+  assert.deepEqual(JSON.parse(loggedLines[0]), summary);
+  assert.equal(summary.mode, "preview");
+  assert.equal(summary.writesOccurred, false);
+  assert.equal(summary.backup, null);
+});
