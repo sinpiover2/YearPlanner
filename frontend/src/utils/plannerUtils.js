@@ -52,6 +52,17 @@ export function calculateProgressPercent(actual, planned) {
   return Math.min(100, (actual / Math.max(planned, 1)) * 100);
 }
 
+// Mirrors isSectionActive's exact convention (frontend/src/App.jsx,
+// established for Sections): blank/missing Active means active/visible;
+// only an explicit falsy value means archived. Used by Units so that every
+// existing row (imported or teacher-authored, none of which has an Active
+// value yet) keeps rendering exactly as before, and only rows a migration
+// explicitly marks Active: false become hidden by default.
+export function isUnitActive(unit) {
+  const activeValue = unit?.Active;
+  return activeValue === undefined || activeValue === "" || isTrue(activeValue);
+}
+
 export function getOutcomeList(value) {
   if (!value) return [];
 

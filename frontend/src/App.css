@@ -958,6 +958,17 @@ button {
   font-weight: 750;
 }
 
+.units-show-archived-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
 .units-map-row {
   position: relative;
   display: flex;
@@ -1076,6 +1087,16 @@ button {
 .units-map-card-state.upcoming {
   background: #f1f5f9;
   color: #64748b;
+}
+
+.units-map-card-state.archived {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+.units-map-card.archived-unit {
+  background: #f8fafc;
+  opacity: 0.7;
 }
 
 .units-map-card strong {

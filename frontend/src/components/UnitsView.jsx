@@ -7,6 +7,7 @@ import {
   getUnitRemainingDays,
   getUnitRequiredDays,
 } from "../utils/unitUtils";
+import { isUnitActive } from "../utils/plannerUtils";
 
 function getUnitPurpose(unit) {
   return [unit?.Purpose, unit?.UnitPurpose, unit?.purpose, unit?.unitPurpose]
@@ -66,7 +67,15 @@ function UnitsView({
     ? units.filter((unit) => unit.CourseID === activeCourse.CourseID)
     : [];
 
-  const projectedUnits = getProjectedUnits(activeCourseUnits, schoolCalendar);
+  const [showArchivedUnits, setShowArchivedUnits] = useState(false);
+
+  const visibleCourseUnits = showArchivedUnits
+    ? activeCourseUnits
+    : activeCourseUnits.filter(isUnitActive);
+
+  const archivedUnitCount = activeCourseUnits.length - activeCourseUnits.filter(isUnitActive).length;
+
+  const projectedUnits = getProjectedUnits(visibleCourseUnits, schoolCalendar);
 
   const selectedUnitPurpose = getUnitPurpose(selectedUnit);
 
@@ -130,9 +139,14 @@ function UnitsView({
               const nextCourseUnits = units.filter(
                 (unit) => unit.CourseID === course.CourseID,
               );
+              const nextActiveCourseUnits = nextCourseUnits.filter(isUnitActive);
 
               setSelectedCourseId(course.CourseID);
-              setSelectedUnitId(nextCourseUnits[0]?.UnitID || "");
+              setSelectedUnitId(
+                nextActiveCourseUnits[0]?.UnitID ||
+                  nextCourseUnits[0]?.UnitID ||
+                  "",
+              );
             }}
           >
             {course.CourseName}
@@ -150,11 +164,23 @@ function UnitsView({
               {projectedUnits.length} units · click any unit to navigate the
               curriculum
             </p>
+
+            {archivedUnitCount > 0 && (
+              <label className="units-show-archived-toggle">
+                <input
+                  type="checkbox"
+                  checked={showArchivedUnits}
+                  onChange={(e) => setShowArchivedUnits(e.target.checked)}
+                />
+                Show Archived Curriculum ({archivedUnitCount})
+              </label>
+            )}
           </div>
 
           <div className="units-map-row">
             {projectedUnits.map((unit) => {
               const isSelected = selectedUnit?.UnitID === unit.UnitID;
+              const isArchived = !isUnitActive(unit);
               const progressPercent = getUnitProgressPercent(
                 selectedDailyProgress,
                 unit,
@@ -171,11 +197,13 @@ function UnitsView({
 
               return (
                 <button
-                  className={
-                    isSelected
-                      ? "units-map-card selected-unit"
-                      : "units-map-card"
-                  }
+                  className={[
+                    "units-map-card",
+                    isSelected ? "selected-unit" : "",
+                    isArchived ? "archived-unit" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   key={unit.UnitID}
                   onClick={() => {
                     setSelectedCourseId(unit.CourseID);
@@ -188,15 +216,21 @@ function UnitsView({
 
                   <strong>{unit.UnitTitle}</strong>
 
-                  <span
-                    className={`units-map-card-state ${unitState}`}
-                  >
-                    {unitState === "complete"
-                      ? "✓ Complete"
-                      : unitState === "current"
-                        ? "Current"
-                        : "Upcoming"}
-                  </span>
+                  {isArchived ? (
+                    <span className="units-map-card-state archived">
+                      Archived
+                    </span>
+                  ) : (
+                    <span
+                      className={`units-map-card-state ${unitState}`}
+                    >
+                      {unitState === "complete"
+                        ? "✓ Complete"
+                        : unitState === "current"
+                          ? "Current"
+                          : "Upcoming"}
+                    </span>
+                  )}
 
                   <span className="units-map-card-days">
                     {loggedDays} / {unit.RequiredDays} days

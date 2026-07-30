@@ -98,12 +98,23 @@ Purpose:
 
 Unit definitions.
 
+**`Active` field (added by `apps-script-planning/UnitsArchiveMigration.js`,
+Sprint 6.5 — approved, not yet executed against production):** reuses the
+exact convention already established for Sections (see below) — blank/
+missing `Active` means active/visible; only an explicit `false` means
+archived. Used to mark the legacy (pre-Amplify) Integrated Math 1 units
+(`IM1-U0` through `IM1-U8`) as archived historical curriculum, distinct from
+the imported `AMP-IM1-*` units, which are never archived. Archiving hides a
+unit from the Units workspace by default; it never deletes, migrates, or
+otherwise modifies the unit's own data.
+
 Fields:
 
 - UnitID
 - CourseID
 - UnitNumber
 - UnitTitle
+- **Active** *(new — see above; blank/missing on every row until the migration runs)*
 - RequiredDays
 - OptionalDays
 - SortOrder
