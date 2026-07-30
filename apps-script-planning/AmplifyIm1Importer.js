@@ -93,6 +93,35 @@ function amplifyIm1ValidateConfirmation_(provided, expected) {
   return typeof provided === "string" && typeof expected === "string" && provided === expected;
 }
 
+// The editor wrapper's default, intentionally non-matching value. Running
+// executeAmplifyIm1ImportFromEditor() unedited must refuse, exactly like
+// calling executeAmplifyIm1Import() with no argument does — see that
+// wrapper, below, and this file's README for the edit-then-run production
+// authorization ceremony this value exists to support. Never equal to
+// AMPLIFY_IM1_IMPORT_METADATA.confirmationPhrase by construction (asserted
+// directly in importer.test.mjs). Mirrors
+// LessonsSchemaMigration.js's LESSONS_MIGRATION_EDITOR_PLACEHOLDER_CONFIRMATION
+// exactly, per the same Sprint 6.3B pattern — kept as its own copy here
+// (not a shared constant) so this file remains independently reviewable,
+// consistent with this file's own header comment on why small, deliberate
+// duplication is preferred over cross-file coupling.
+const AMPLIFY_IM1_EDITOR_PLACEHOLDER_CONFIRMATION = "REPLACE_WITH_EXACT_AUTHORIZATION_PHRASE_BEFORE_RUNNING";
+
+// Pure adapter behind the editor wrapper: call the injected executor, log
+// the exact structured result it returns, then return that same object
+// unchanged. Exists only so this call-log-return behavior is testable under
+// Node — the real executeAmplifyIm1ImportFromEditor() below calls this with
+// deps.executeImport bound to the live, real executeAmplifyIm1Import (which
+// itself references SpreadsheetApp/LockService/SHEET_ID globals this file's
+// tests cannot supply). Contains no import/planning/lock/backup logic of
+// its own — deps.executeImport is the only thing that can mutate anything;
+// this function never inspects, branches on, or modifies what it returns.
+function amplifyIm1RunEditorWrapper_(confirmation, deps) {
+  const report = deps.executeImport(confirmation);
+  deps.log(JSON.stringify(report, null, 2));
+  return report;
+}
+
 // --- Payload integrity (tamper/drift guard) ---------------------------------
 
 // Recomputes the payload's own hash from its in-memory content and compares
@@ -955,15 +984,16 @@ function amplifyIm1PlansEqual_(planA, planB) {
   return JSON.stringify(planA) === JSON.stringify(planB);
 }
 
-// The one real public execute entry point. No default parameter — calling
-// this with zero arguments (e.g. an accidental Apps Script editor "Run"
-// click, which always calls with zero arguments) passes `confirmation as
-// undefined`, which can never satisfy amplifyIm1ValidateConfirmation_'s
-// exact-string-match requirement. There is deliberately no zero-arg wrapper
-// with a placeholder default to edit, unlike ProductionDataCleanup.js's
-// pattern — that pattern exists there because Apps Script's Run button only
-// calls zero-arg functions; here, refusing by construction on zero args is
-// simpler and at least as safe.
+// The one real authoritative execute entry point. No default parameter —
+// calling this with zero arguments (e.g. an accidental Apps Script editor
+// "Run" click, which always calls with zero arguments) passes `confirmation
+// as undefined`, which can never satisfy amplifyIm1ValidateConfirmation_'s
+// exact-string-match requirement. This function itself logs nothing — see
+// executeAmplifyIm1ImportFromEditor(), below, for the editor-safe
+// invocation path (added Sprint 6.3F, after production use of this file's
+// own previewAmplifyIm1ImportSummary() confirmed the editor does not
+// display a function's return value, the same finding that motivated
+// LessonsSchemaMigration.js's own wrapper in Sprint 6.3B).
 function executeAmplifyIm1Import(confirmation) {
   return amplifyIm1ExecuteLocked_(confirmation, {
     spreadsheetApp: SpreadsheetApp,
@@ -974,6 +1004,48 @@ function executeAmplifyIm1Import(confirmation) {
     metadata: AMPLIFY_IM1_IMPORT_METADATA,
     formatTimestamp: function () {
       return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HHmmss");
+    },
+  });
+}
+
+// Apps Script's Run button always calls the selected function with zero
+// arguments, so executeAmplifyIm1Import(confirmation) has no working
+// invocation path from the editor's primary workflow — selecting it and
+// clicking Run always passes `confirmation` as `undefined`, which correctly
+// refuses. The editor also does not reliably display a function's returned
+// value (only "Execution started" / "Execution completed"), so a wrapper
+// that merely returned the report would leave the operator with no visible
+// confirmation of what happened — including no visible backup ID/URL if a
+// write partially failed. This wrapper explicitly logs the full report
+// before returning it, via the pure amplifyIm1RunEditorWrapper_ helper
+// above (kept there, not here, purely so that call-log-return behavior can
+// be exercised under Node without live Apps Script globals).
+//
+// Follows LessonsSchemaMigration.js's executeLessonsTypePlacementRuleMigrationFromEditor()
+// pattern exactly (itself following apps-script-roster-admin/
+// ProductionDataCleanup.js's executeProductionDataCleanupV1()) — not a
+// wrapper with the real phrase hardcoded. The placeholder below does not
+// match AMPLIFY_IM1_IMPORT_METADATA.confirmationPhrase, so running this
+// function as-is, unedited, still refuses, exactly like clicking Run on the
+// guarded function itself. The only way to actually execute the import is
+// to open this file in the editor, replace the placeholder on the line
+// below with the real phrase (from a preview report's confirmationRequired
+// field, or AMPLIFY_IM1_IMPORT_METADATA.confirmationPhrase), save, and only
+// then run this function — a deliberate source edit is the confirmation
+// act, not a click. Revert the placeholder immediately afterward so the
+// live source never carries the real phrase at rest.
+function executeAmplifyIm1ImportFromEditor() {
+  // Change ONLY the line below, and only when ready to run the real import
+  // against the LIVE production spreadsheet. Any value other than the exact
+  // phrase in AMPLIFY_IM1_IMPORT_METADATA.confirmationPhrase refuses to
+  // mutate anything — no partial phrase, no boolean, no accidental truthy
+  // value will work.
+  const CONFIRMATION = AMPLIFY_IM1_EDITOR_PLACEHOLDER_CONFIRMATION;
+
+  return amplifyIm1RunEditorWrapper_(CONFIRMATION, {
+    executeImport: executeAmplifyIm1Import,
+    log: function (text) {
+      Logger.log(text);
     },
   });
 }
@@ -1172,6 +1244,8 @@ if (typeof module !== "undefined" && module.exports) {
     AMPLIFY_IM1_REQUIRED_LESSON_HEADERS,
     AMPLIFY_IM1_TEACHER_OWNED_LESSON_FIELDS,
     amplifyIm1ValidateConfirmation_,
+    AMPLIFY_IM1_EDITOR_PLACEHOLDER_CONFIRMATION,
+    amplifyIm1RunEditorWrapper_,
     amplifyIm1ValidatePayloadIntegrity_,
     amplifyIm1ValidatePayloadStructure_,
     amplifyIm1ValidateDestinationSchema_,

@@ -835,3 +835,100 @@ test("preview summary pipeline: the exact sequence previewAmplifyIm1ImportSummar
   assert.equal(summary.writesOccurred, false);
   assert.equal(summary.backup, null);
 });
+
+// ---------------------------------------------------------------------------
+// Editor wrapper (executeAmplifyIm1ImportFromEditor) — exercised through the
+// pure amplifyIm1RunEditorWrapper_ helper, since the real global wrapper
+// calls executeAmplifyIm1Import, which references live SpreadsheetApp/
+// LockService/SHEET_ID globals this suite cannot supply. Mirrors
+// LessonsSchemaMigration.js's own editor-wrapper test suite exactly (Sprint
+// 6.3B), applied here to the importer's execute path (Sprint 6.3F).
+// ---------------------------------------------------------------------------
+
+test("editor wrapper: default placeholder confirmation never equals the real confirmation phrase", () => {
+  const metadata = buildMetadataFor(importData.AMPLIFY_IM1_IMPORT_PAYLOAD);
+  assert.notEqual(importer.AMPLIFY_IM1_EDITOR_PLACEHOLDER_CONFIRMATION, metadata.confirmationPhrase);
+  assert.notEqual(
+    importer.AMPLIFY_IM1_EDITOR_PLACEHOLDER_CONFIRMATION,
+    importData.AMPLIFY_IM1_IMPORT_METADATA.confirmationPhrase,
+  );
+  assert.equal(
+    importer.amplifyIm1ValidateConfirmation_(
+      importer.AMPLIFY_IM1_EDITOR_PLACEHOLDER_CONFIRMATION,
+      importData.AMPLIFY_IM1_IMPORT_METADATA.confirmationPhrase,
+    ),
+    false,
+  );
+});
+
+test("editor wrapper: passes its confirmation argument through to the injected executor unchanged", () => {
+  let receivedConfirmation = null;
+  const deps = {
+    executeImport: (confirmation) => {
+      receivedConfirmation = confirmation;
+      return { mode: "execute", errorStage: null };
+    },
+    log: () => {},
+  };
+
+  importer.amplifyIm1RunEditorWrapper_("some-confirmation-value", deps);
+
+  assert.equal(receivedConfirmation, "some-confirmation-value");
+});
+
+test("editor wrapper: logs the exact structured report it receives, as pretty-printed JSON", () => {
+  const fakeReport = { mode: "execute", writesOccurred: true, backup: { id: "abc123", url: "https://example" } };
+  let loggedText = null;
+  const deps = {
+    executeImport: () => fakeReport,
+    log: (text) => {
+      loggedText = text;
+    },
+  };
+
+  importer.amplifyIm1RunEditorWrapper_(importData.AMPLIFY_IM1_IMPORT_METADATA.confirmationPhrase, deps);
+
+  assert.equal(loggedText, JSON.stringify(fakeReport, null, 2));
+});
+
+test("editor wrapper: returns the identical report object it received, not a copy", () => {
+  const fakeReport = { mode: "execute", errorStage: "confirmation" };
+  const deps = {
+    executeImport: () => fakeReport,
+    log: () => {},
+  };
+
+  const returned = importer.amplifyIm1RunEditorWrapper_("whatever", deps);
+
+  assert.strictEqual(returned, fakeReport);
+});
+
+test("editor wrapper: contains no import, planning, lock, or backup logic of its own", () => {
+  const source = importer.amplifyIm1RunEditorWrapper_.toString();
+
+  // The only calls this function may make are its two injected deps — proof
+  // by inspection that no spreadsheet/lock/backup/planning API is inlined
+  // here, rather than only by architectural argument.
+  [
+    "SpreadsheetApp",
+    "LockService",
+    "amplifyIm1BuildImportPlan_",
+    "amplifyIm1ApplyPlan_",
+    "amplifyIm1CreateBackup_",
+    "getRange",
+    "copy(",
+    "tryLock",
+    "releaseLock",
+  ].forEach((forbidden) => {
+    assert.ok(!source.includes(forbidden), `unexpected "${forbidden}" reference in editor wrapper adapter`);
+  });
+});
+
+test("editor wrapper: strict confirmation validation is unchanged (exact match only, no trim/case-fold/truthy)", () => {
+  const metadata = buildMetadataFor(minimalPayload());
+  assert.equal(importer.amplifyIm1ValidateConfirmation_(metadata.confirmationPhrase, metadata.confirmationPhrase), true);
+  assert.equal(importer.amplifyIm1ValidateConfirmation_(metadata.confirmationPhrase + " ", metadata.confirmationPhrase), false);
+  assert.equal(importer.amplifyIm1ValidateConfirmation_(" " + metadata.confirmationPhrase, metadata.confirmationPhrase), false);
+  assert.equal(importer.amplifyIm1ValidateConfirmation_(true, metadata.confirmationPhrase), false);
+  assert.equal(importer.amplifyIm1ValidateConfirmation_(undefined, metadata.confirmationPhrase), false);
+});
