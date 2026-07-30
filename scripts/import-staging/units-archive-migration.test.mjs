@@ -20,6 +20,8 @@ import {
   unitsArchivePlansMatch_,
   unitsArchiveBuildPreviewReport_,
   unitsArchiveValidateConfirmation_,
+  unitsArchiveReportSucceeded_,
+  unitsArchiveBuildHumanSummaryLine_,
   unitsArchiveRunEditorWrapper_,
   unitsArchiveVerify_,
   unitsArchiveExecuteLocked_,
@@ -253,9 +255,9 @@ test("editor placeholder never matches the real confirmation phrase", () => {
   assert.notEqual(UNITS_ARCHIVE_EDITOR_PLACEHOLDER_CONFIRMATION, UNITS_ARCHIVE_CONFIRMATION_PHRASE);
 });
 
-test("editor wrapper logs and returns the executor's report unchanged", () => {
+test("editor wrapper logs and returns the executor's report unchanged, on a genuine success", () => {
   const logged = [];
-  const fakeReport = { mode: "execute", writesOccurred: true };
+  const fakeReport = { mode: "execute", errorStage: null, writesOccurred: true, alreadyComplete: false, unitsArchived: 9, backup: { url: "http://fake" } };
   const result = unitsArchiveRunEditorWrapper_("whatever", {
     executeMigration: (c) => {
       assert.equal(c, "whatever");
@@ -265,6 +267,134 @@ test("editor wrapper logs and returns the executor's report unchanged", () => {
   });
   assert.equal(result, fakeReport);
   assert.equal(logged.length, 1);
+});
+
+// ---------------------------------------------------------------------------
+// Regression coverage for the real production incident: preview showed
+// safeToExecute: true, executeUnitsArchiveMigrationFromEditor() "completed
+// with no exception," but verifyUnitsArchiveMigration() found nothing had
+// been written. Root cause: a refused run (almost certainly a confirmation
+// mismatch — the single most likely way to reach this exact symptom set)
+// still just `return`s a report object in JavaScript, which Apps Script's
+// editor reports as "Execution completed" regardless of what the report
+// says — visually indistinguishable from real success unless a caller
+// reads errorStage/writesOccurred/alreadyComplete correctly together. These
+// tests prove the fix: any non-success outcome is now both an explicit
+// report.success: false AND a thrown exception from the editor wrapper.
+// ---------------------------------------------------------------------------
+
+test("unitsArchiveReportSucceeded_: true only for a real write or a genuine already-archived no-op", () => {
+  assert.equal(unitsArchiveReportSucceeded_({ errorStage: null, writesOccurred: true, alreadyComplete: false }), true);
+  assert.equal(unitsArchiveReportSucceeded_({ errorStage: null, writesOccurred: false, alreadyComplete: true }), true);
+  assert.equal(unitsArchiveReportSucceeded_({ errorStage: "confirmation", writesOccurred: false, alreadyComplete: false }), false);
+  assert.equal(unitsArchiveReportSucceeded_({ errorStage: null, writesOccurred: false, alreadyComplete: false }), false);
+  assert.equal(unitsArchiveReportSucceeded_({ errorStage: undefined, writesOccurred: true, alreadyComplete: false }), false);
+});
+
+test("every real execute report carries an explicit success field consistent with its own outcome", () => {
+  const confirmationRefused = unitsArchiveExecuteLocked_("wrong", depsFor(buildRealShapeUnitsRows()));
+  assert.equal(confirmationRefused.success, false);
+
+  const lockRefused = unitsArchiveExecuteLocked_(UNITS_ARCHIVE_CONFIRMATION_PHRASE, depsFor(buildRealShapeUnitsRows(), { lockSucceeds: false }));
+  assert.equal(lockRefused.success, false);
+
+  const planningRefused = unitsArchiveExecuteLocked_(
+    UNITS_ARCHIVE_CONFIRMATION_PHRASE,
+    depsFor(buildRealShapeUnitsRows().filter((r) => r[0] !== "IM1-U8")),
+  );
+  assert.equal(planningRefused.success, false);
+
+  const succeeded = unitsArchiveExecuteLocked_(UNITS_ARCHIVE_CONFIRMATION_PHRASE, depsFor(buildRealShapeUnitsRows()));
+  assert.equal(succeeded.success, true);
+
+  const alreadyDone = depsFor(buildRealShapeUnitsRows());
+  unitsArchiveExecuteLocked_(UNITS_ARCHIVE_CONFIRMATION_PHRASE, alreadyDone);
+  const noOp = unitsArchiveExecuteLocked_(UNITS_ARCHIVE_CONFIRMATION_PHRASE, alreadyDone);
+  assert.equal(noOp.success, true);
+  assert.equal(noOp.alreadyComplete, true);
+});
+
+test("unitsArchiveBuildHumanSummaryLine_ states plainly whether anything was archived", () => {
+  const failLine = unitsArchiveBuildHumanSummaryLine_({
+    errorStage: "confirmation",
+    errorMessage: "Confirmation did not match exactly. No data was read or touched.",
+    writesOccurred: false,
+    alreadyComplete: false,
+  });
+  assert.match(failLine, /FAILED/);
+  assert.match(failLine, /NOTHING WAS ARCHIVED/);
+
+  const successLine = unitsArchiveBuildHumanSummaryLine_({
+    errorStage: null,
+    writesOccurred: true,
+    alreadyComplete: false,
+    unitsArchived: 9,
+    backup: { url: "http://fake" },
+  });
+  assert.match(successLine, /SUCCESS/);
+  assert.match(successLine, /9/);
+});
+
+test("editor wrapper THROWS on a refused/failed report — the core fix for the production incident (silent-looking failure is no longer possible)", () => {
+  const logged = [];
+  assert.throws(
+    () =>
+      unitsArchiveRunEditorWrapper_(UNITS_ARCHIVE_EDITOR_PLACEHOLDER_CONFIRMATION, {
+        executeMigration: (confirmation) => unitsArchiveExecuteLocked_(confirmation, depsFor(buildRealShapeUnitsRows())),
+        log: (msg) => logged.push(msg),
+      }),
+    /FAILED/,
+  );
+  // The report was still logged before the throw — an operator inspecting
+  // either the exception message or the log gets the full picture.
+  assert.equal(logged.length, 1);
+  assert.match(logged[0], /confirmation/);
+});
+
+test("editor wrapper does NOT throw on a genuine success", () => {
+  const deps = depsFor(buildRealShapeUnitsRows());
+  assert.doesNotThrow(() =>
+    unitsArchiveRunEditorWrapper_(UNITS_ARCHIVE_CONFIRMATION_PHRASE, {
+      executeMigration: (confirmation) => unitsArchiveExecuteLocked_(confirmation, deps),
+      log: () => {},
+    }),
+  );
+});
+
+test("editor wrapper logs through every function in deps.logFns, not just one", () => {
+  const loggerLogCalls = [];
+  const consoleLogCalls = [];
+  assert.throws(() =>
+    unitsArchiveRunEditorWrapper_("wrong-confirmation", {
+      executeMigration: (confirmation) => unitsArchiveExecuteLocked_(confirmation, depsFor(buildRealShapeUnitsRows())),
+      logFns: [(msg) => loggerLogCalls.push(msg), (msg) => consoleLogCalls.push(msg)],
+    }),
+  );
+  assert.equal(loggerLogCalls.length, 1);
+  assert.equal(consoleLogCalls.length, 1);
+  assert.equal(loggerLogCalls[0], consoleLogCalls[0]);
+});
+
+test("real production incident, reproduced end-to-end: wrong confirmation through the full editor wrapper throws and reports nothing archived", () => {
+  const deps = depsFor(buildRealShapeUnitsRows());
+  let thrown = null;
+  try {
+    unitsArchiveRunEditorWrapper_("THIS-IS-NOT-THE-REAL-PHRASE", {
+      executeMigration: (confirmation) => unitsArchiveExecuteLocked_(confirmation, deps),
+      log: () => {},
+    });
+  } catch (error) {
+    thrown = error;
+  }
+  assert.ok(thrown, "must throw rather than returning quietly");
+  assert.match(thrown.message, /FAILED/);
+  assert.match(thrown.message, /NOTHING WAS ARCHIVED/);
+
+  // Prove nothing was actually written — matches the real incident's own
+  // verifyUnitsArchiveMigration() finding.
+  const sheet = deps.spreadsheet.getSheetByName("Units");
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  assert.deepEqual(headers, UNITS_ARCHIVE_ORIGINAL_HEADERS);
 });
 
 test("unitsArchivePlansMatch_ detects identical vs changed target sets and degraded safety", () => {

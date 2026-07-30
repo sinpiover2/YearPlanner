@@ -332,12 +332,61 @@ function unitsArchiveValidateConfirmation_(provided) {
   return typeof provided === "string" && provided === UNITS_ARCHIVE_CONFIRMATION_PHRASE;
 }
 
+// True only for a report that represents a genuine successful outcome —
+// either a completed write (errorStage null, writesOccurred true) or a
+// legitimate no-op because everything was already archived (alreadyComplete
+// true). Any other shape (errorStage non-null, or neither writesOccurred
+// nor alreadyComplete) is not success. Exposed as report.success (below) so
+// no caller — human or code — has to correctly interpret several fields at
+// once to know whether the migration actually happened.
+function unitsArchiveReportSucceeded_(report) {
+  return report.errorStage === null && (report.writesOccurred === true || report.alreadyComplete === true);
+}
+
+// One unmissable line, independent of how a caller renders the full JSON
+// report — states plainly whether anything actually happened.
+function unitsArchiveBuildHumanSummaryLine_(report) {
+  if (unitsArchiveReportSucceeded_(report)) {
+    return report.alreadyComplete
+      ? "UNITS ARCHIVE MIGRATION: NO-OP — already fully archived; nothing was written."
+      : "UNITS ARCHIVE MIGRATION: SUCCESS — archived " + report.unitsArchived + " unit(s). Backup: " +
+          (report.backup ? report.backup.url : "(none)");
+  }
+  return "UNITS ARCHIVE MIGRATION: FAILED at stage '" + report.errorStage + "' — " + report.errorMessage +
+    " NOTHING WAS ARCHIVED.";
+}
+
 // Pure adapter behind the editor wrapper — see the identical pattern and
 // rationale in AmplifyIm1Importer.js / LessonsSchemaMigration.js /
-// LegacyIm1CleanupMigration.js.
+// LegacyIm1CleanupMigration.js. Hardened beyond that shared pattern after a
+// real production run: a refused/failed guarded function still just
+// `return`s normally in JavaScript, which the Apps Script editor reports as
+// "Execution completed" — visually indistinguishable from a real success —
+// so a report logged only as JSON was too weak a signal for a manually
+// invoked, high-stakes ceremony. This wrapper now (1) logs through every
+// deps.log function supplied — the real entry point supplies both
+// Logger.log (the classic Apps Script "Executions"/"Logs" transcript) and
+// console.log (Cloud Logging / the newer Executions panel), so the report
+// is visible regardless of which view the operator checks — and (2) throws
+// a real JS Error whenever the outcome was not a genuine success, which
+// Apps Script surfaces as "Execution failed" with a visible stack
+// trace/message — impossible to mistake for "it worked." The underlying
+// executeMigration function itself is unchanged and still always returns
+// (never throws) for programmatic/test callers; only this interactive
+// wrapper escalates a failed report into a thrown exception.
 function unitsArchiveRunEditorWrapper_(confirmation, deps) {
   const report = deps.executeMigration(confirmation);
-  deps.log(JSON.stringify(report, null, 2));
+  const summaryLine = unitsArchiveBuildHumanSummaryLine_(report);
+  const fullText = summaryLine + "\n" + JSON.stringify(report, null, 2);
+
+  (deps.logFns || [deps.log]).forEach(function (logFn) {
+    if (typeof logFn === "function") logFn(fullText);
+  });
+
+  if (!unitsArchiveReportSucceeded_(report)) {
+    throw new Error(summaryLine);
+  }
+
   return report;
 }
 
@@ -505,12 +554,31 @@ function unitsArchiveExecuteLocked_(confirmation, deps) {
     writesOccurred: false,
     errorStage: null,
     errorMessage: null,
+    // Set immediately before every return below, from the report's own
+    // final state — never left to be inferred by a caller from multiple
+    // other fields. This is the fix for a real production incident: every
+    // refusal branch already set errorStage correctly, but a JS function
+    // that `return`s (rather than throws) reports as "Execution completed"
+    // in the Apps Script editor regardless of what the returned value says
+    // — indistinguishable from genuine success unless a caller reads
+    // errorStage/writesOccurred/alreadyComplete correctly together. success
+    // collapses that into one field so it can never be misread.
+    success: false,
   };
+
+  // Every return in this function goes through here so `success` is always
+  // set from the report's actual final state, not duplicated at each call
+  // site (which is exactly how a future edit could add a new return path
+  // and forget to set it).
+  function finish() {
+    report.success = unitsArchiveReportSucceeded_(report);
+    return report;
+  }
 
   if (!unitsArchiveValidateConfirmation_(confirmation)) {
     report.errorStage = "confirmation";
     report.errorMessage = "Confirmation did not match exactly. No data was read or touched.";
-    return report;
+    return finish();
   }
   report.confirmationAccepted = true;
 
@@ -524,7 +592,7 @@ function unitsArchiveExecuteLocked_(confirmation, deps) {
   if (!lockAcquired) {
     report.errorStage = "lock";
     report.errorMessage = "Could not acquire the script lock within 30 seconds. No data was touched.";
-    return report;
+    return finish();
   }
   report.lockAcquired = true;
 
@@ -536,13 +604,13 @@ function unitsArchiveExecuteLocked_(confirmation, deps) {
 
     if (planningPass.alreadyComplete) {
       report.alreadyComplete = true;
-      return report;
+      return finish();
     }
 
     if (!planningPass.safeToExecute) {
       report.errorStage = "planning";
       report.errorMessage = "Archive plan is not safe to execute (blocking findings present); no data was touched.";
-      return report;
+      return finish();
     }
 
     let backup;
@@ -551,7 +619,7 @@ function unitsArchiveExecuteLocked_(confirmation, deps) {
     } catch (error) {
       report.errorStage = "backup";
       report.errorMessage = "Backup creation failed: " + error.message + ". No data was touched.";
-      return report;
+      return finish();
     }
     report.backup = backup;
 
@@ -559,7 +627,7 @@ function unitsArchiveExecuteLocked_(confirmation, deps) {
     if (!unitsArchivePlansMatch_(planningPass, revalidationPass)) {
       report.errorStage = "revalidation";
       report.errorMessage = "Units data changed between planning and mutation; aborted before writing anything.";
-      return report;
+      return finish();
     }
 
     const sheet = spreadsheet.getSheetByName("Units");
@@ -612,10 +680,10 @@ function unitsArchiveExecuteLocked_(confirmation, deps) {
       report.errorMessage =
         "Rows were written but post-write verification found mismatches. Manual recovery may be required " +
           "from the backup created this run. No automatic rollback was performed.";
-      return report;
+      return finish();
     }
 
-    return report;
+    return finish();
   } catch (error) {
     report.errorStage = report.errorStage || "exception";
     report.errorMessage = report.backup
@@ -623,7 +691,7 @@ function unitsArchiveExecuteLocked_(confirmation, deps) {
           " The write may have partially applied and was not confirmed complete. Manual recovery may be " +
           "required from the backup created this run (see report.backup). No automatic rollback was performed."
       : error.message;
-    return report;
+    return finish();
   } finally {
     if (lockAcquired) {
       try {
@@ -660,7 +728,15 @@ function executeUnitsArchiveMigrationFromEditor() {
 
   return unitsArchiveRunEditorWrapper_(CONFIRMATION, {
     executeMigration: executeUnitsArchiveMigration,
-    log: console.log,
+    // Both loggers, deliberately — Logger.log is what the classic Apps
+    // Script "View > Logs" transcript shows; console.log is what the
+    // Executions panel / Cloud Logging shows. A real production run of
+    // this exact ceremony was refused at the confirmation stage and the
+    // operator did not notice, because the report was only logged one way.
+    // Supplying both, plus the thrown exception below (see
+    // unitsArchiveRunEditorWrapper_), makes a refusal impossible to miss
+    // regardless of which view is open.
+    logFns: [Logger.log, console.log],
   });
 }
 
@@ -720,6 +796,8 @@ if (typeof module !== "undefined" && module.exports) {
     unitsArchivePlansMatch_,
     unitsArchiveBuildPreviewReport_,
     unitsArchiveValidateConfirmation_,
+    unitsArchiveReportSucceeded_,
+    unitsArchiveBuildHumanSummaryLine_,
     unitsArchiveRunEditorWrapper_,
     unitsArchiveVerify_,
     unitsArchiveReadUnitsSheet_,
