@@ -234,6 +234,36 @@ Not yet done at the end of Sprint 3 — became Sprint 4's scope: an execute-capa
 
 ---
 
+## Sprint 6.3 — Guarded Legacy IM1 Cleanup (Not Yet Executed — Blocked by Real Data)
+
+**Scope: build a guarded preview/execute/verify cleanup for the legacy (pre-Amplify) `IM1-U*` curriculum rows, now that a separate read-only provenance trace confirmed the Amplify IM1 import reached production intact.** Followed the exact guarded-write-sequence shape `AmplifyIm1Importer.js`/`LessonsSchemaMigration.js` established (preview/execute/verify, confirmation phrase, lock, backup-before-write, planning-pass + revalidation-pass, disarmed editor wrapper) and `ProductionDataCleanup.js`'s row-deletion techniques (bottom-to-top `deleteRow`, blockingFindings, exact-count-style all-or-nothing refusal). **Not executed against production this sprint** — no deployment, no `clasp push`, no Apps Script function call, no production write.
+
+**Module.** `apps-script-planning/LegacyIm1CleanupMigration.js` — `previewLegacyIm1CleanupMigration()` (read-only), `executeLegacyIm1CleanupMigration(confirmation)` (guarded write; disarmed editor wrapper `executeLegacyIm1CleanupMigrationFromEditor()` mirrors the established placeholder-confirmation ceremony exactly), `verifyLegacyIm1CleanupMigration()` (read-only, standalone). Confirmation phrase `DELETE-LEGACY-IM1-CURRICULUM-CONFIRMED-V1` — static, not artifact-hash-derived, since this cleanup's scope is a fixed rule, not a versioned data artifact.
+
+**Scoping rule — the one correction this sprint made to the task's own literal instruction.** "Legacy IM1 units that are NOT `AMP-IM1-*`" was the requested scope, but applied literally that rule also matches `IM1-U0` ("Class Orientation") and `IM1-U8` ("Quadratic Equations") — real production data shows neither has an `AMP-IM1-*` counterpart, because the Amplify extraction only ever covered 7 of the course's 9 real units (`UnitNumber` 1–7). This module's actual rule (`legacyCleanupClassifyUnits_`) is narrower and derived from the data, not the naming convention: a legacy unit is a cleanup candidate ("superseded") only if an `AMP-IM1-*` unit already exists at the same `CourseID` + `UnitNumber`. `IM1-U0`/`IM1-U8` classify `no-amp-replacement` and are structurally excluded from the candidate set — never merely "blocked," never touched by any code path. See `docs/WORKFLOW/LESSONS_LEARNED.md`, Sprint 6.3, for the generalized lesson.
+
+**Teacher-owned-field guard.** Never deletes a unit with populated `RequiredDays`/`OptionalDays`, or a lesson with populated `PlannedDays`/`TeacherNotes`/`PrimaryLink`/`KeyOutcome` (`KeyOutcome` included per the read-only provenance trace's finding that it is exclusively teacher-entered, never importer-written). A row failing this check classifies `blocked`, reason `preserve-teacher-fields`, with the specific populated fields and values listed — never silently deleted, never silently skipped without being reported.
+
+**Dependent-record guard.** `DailyProgress` rows referencing a candidate unit's or lesson's ID are detected (`legacyCleanupFindDependentDailyProgress_`) and block deletion of that specific unit/lesson (`dependent-records-exist`), cascading to the parent unit if any of its lessons are blocked (`child-lesson-blocked`) — this cleanup never deletes a lesson while leaving a `DailyProgress` row orphaned, and never deletes a unit while one of its own lessons remains.
+
+**All-or-nothing.** `safeToExecute` is `true` only when at least one candidate exists and zero candidates (units or lessons) are blocked for any reason — matching `ProductionDataCleanup.js`'s own convention of refusing the entire run rather than executing "the clean subset" while blockers remain elsewhere in scope.
+
+**Real, read-only preview run against live production** (`scripts/import-staging/preview-legacy-cleanup-live.mjs`, via the same anonymous `doGet` endpoint the frontend already calls — no Apps Script execution, no sheet opened, zero writes):
+
+- 7 legacy units correctly classified `superseded` (`IM1-U1`–`IM1-U7`) — **all 7 blocked**, every one carrying populated `RequiredDays`/`OptionalDays` with no destination field on the corresponding `AMP-IM1-*` row (confirmed blank on every `AMP-IM1-*` unit).
+- `IM1-U0` and `IM1-U8` correctly classified `no-amp-replacement` — excluded from the candidate set entirely, listed as preserved/out-of-scope.
+- 2 legacy lessons found under `IM1-U1` (`IM1-U1-L1`, `IM1-U1-L2`) — **both blocked**, both carrying populated `KeyOutcome` (teacher-authored "Learning goals" text) and `PlannedDays`, and both referenced by 2 real `DailyProgress` rows each (4 total).
+- **`safeToExecute: false`. Zero records would be deleted.** This is the guard working correctly against real risk, not a defect — see `LESSONS_LEARNED.md`, Sprint 6.3.
+- Math 8 (9 units, 50 lessons) and every `AMP-IM1-*` row (7 units, 164 lessons) confirmed untouched by the plan — neither appears in any candidate list.
+
+**Test results.** `node --test scripts/import-staging/legacy-im1-cleanup.test.mjs` — **28/28 pass**, covering: the scoping rule against a fixture mirroring the real production shape byte-for-byte (proving `IM1-U0`/`IM1-U8` are excluded and `IM1-U1`/`IM1-U2` are found-but-blocked, matching the live preview exactly); the teacher-field and dependent-record guards; the all-or-nothing `safeToExecute` rule; confirmation-phrase exactness; the disarmed editor wrapper; every guarded-execute refusal path (wrong confirmation, blocked plan, lock failure, backup failure, revalidation-window state change); a full successful execute against a separate, fully-resolved fixture (proving the tool can delete correctly, verify, and remain idempotent, entirely in simulation); and post-write verification (remaining-legacy-row detection, orphaned-`DailyProgress` detection, AMP unit/lesson count regression). Sprint 3/4/6.1/6.2A/6.2B's pre-existing 108 tests re-run unchanged and still pass. `node --check` passes on the new file.
+
+**Known limitation, by design.** Like every prior guarded-write module in this codebase, `executeLegacyIm1CleanupMigration()` has never been run against the real production spreadsheet — every execute-path guarantee is proven against in-memory fakes only. Given this sprint's own real preview result (`safeToExecute: false`), a real execution attempt would refuse at the planning stage regardless.
+
+**Remaining prerequisites before a real execution could even be attempted:** (1) a product decision on the 7 blocked units' `RequiredDays`/`OptionalDays` — migrate the values onto the corresponding `AMP-IM1-*` units before removing the legacy rows, or explicitly accept their loss; (2) the same decision for `IM1-U1-L1`/`IM1-U1-L2`'s `KeyOutcome`/`PlannedDays`; (3) a decision on the 4 dependent `DailyProgress` rows (reassign to the corresponding `AMP-IM1-*` `LessonID`, or explicitly accept them being orphaned/removed); (4) re-running `previewLegacyIm1CleanupMigration()` for real after those decisions land, and confirming `safeToExecute: true` before ever editing the editor wrapper's placeholder.
+
+---
+
 ## 1. Current-State Dependency Map
 
 | Surface | Files | Current assumption | Impact of Type | Impact of flexible placement | Impact of unknown day values | Required change |

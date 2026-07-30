@@ -8,6 +8,13 @@ It is not a changelog of features. Each entry should describe a lesson that gene
 
 ---
 
+## Sprint 6.3
+
+- **"Not the new ID scheme" is not the same as "superseded" — verify replacement existence per record, not by ID-prefix pattern alone.** The legacy-IM1-cleanup task defined "legacy" as "IM1 units whose ID doesn't start with `AMP-IM1-`." Applied literally, that rule would have deleted `IM1-U0` ("Class Orientation") and `IM1-U8` ("Quadratic Equations") — neither has an `AMP-IM1-*` counterpart, because the Amplify extraction only ever covered 7 of the course's 9 real units. The safe rule turned out to be narrower and derivable from the data itself: a legacy unit is a cleanup candidate only if an `AMP-IM1-*` unit already exists at the same `CourseID` + `UnitNumber`. Any cleanup scoped by "the new system replaced the old one" should confirm a same-identity replacement actually exists for every record it's about to touch, not infer it from a naming convention that happens to hold for most rows.
+- **A guarded cleanup's own safety check finding real, populated teacher-owned data is a correct, expected result — not a tooling failure to work around.** A real, read-only preview against production found every superseded legacy IM1 unit carrying populated `RequiredDays`/`OptionalDays`, and legacy `IM1-U1`'s two lessons carrying populated `KeyOutcome`/`PlannedDays` plus four real `DailyProgress` rows logged against them — none of which has any destination on the corresponding `AMP-IM1-*` rows today. The guard correctly reported `safeToExecute: false` and deleted nothing. Treat that outcome the same way Sprint 5's schema-mismatch finding was treated: evidence to report and resolve (a data-migration or product decision), not a defect in the guard to loosen.
+
+---
+
 ## Sprint 6.1
 
 - **Curriculum source material arrives with inconsistent structure even within the same course, so extraction has to say "not provided" rather than fill gaps by pattern-matching against a sibling unit.** Extracting Amplify IM1 Units 1–4 for the curriculum import pilot: Unit 1 gave explicit per-item planned days and unit-level required/optional day totals; Unit 2 gave the day totals but no per-item detail at all; Units 3 and 4 gave rich per-item titles but no per-item day counts. Filling those gaps by assuming "1 day per item" or backfilling an unmarked optional flag would have been indistinguishable from real source data once written down. Treat each unit's source as its own contract; record what's actually missing instead of normalizing it away.
