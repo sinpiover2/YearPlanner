@@ -7,7 +7,7 @@ import {
   getUnitRemainingDays,
   getUnitRequiredDays,
 } from "../utils/unitUtils";
-import { isUnitActive } from "../utils/plannerUtils";
+import { isUnitArchived } from "../utils/plannerUtils";
 
 function getUnitPurpose(unit) {
   return [unit?.Purpose, unit?.UnitPurpose, unit?.purpose, unit?.unitPurpose]
@@ -71,9 +71,9 @@ function UnitsView({
 
   const visibleCourseUnits = showArchivedUnits
     ? activeCourseUnits
-    : activeCourseUnits.filter(isUnitActive);
+    : activeCourseUnits.filter((unit) => !isUnitArchived(unit));
 
-  const archivedUnitCount = activeCourseUnits.length - activeCourseUnits.filter(isUnitActive).length;
+  const archivedUnitCount = activeCourseUnits.filter(isUnitArchived).length;
 
   const projectedUnits = getProjectedUnits(visibleCourseUnits, schoolCalendar);
 
@@ -139,7 +139,9 @@ function UnitsView({
               const nextCourseUnits = units.filter(
                 (unit) => unit.CourseID === course.CourseID,
               );
-              const nextActiveCourseUnits = nextCourseUnits.filter(isUnitActive);
+              const nextActiveCourseUnits = nextCourseUnits.filter(
+                (unit) => !isUnitArchived(unit),
+              );
 
               setSelectedCourseId(course.CourseID);
               setSelectedUnitId(
@@ -180,7 +182,7 @@ function UnitsView({
           <div className="units-map-row">
             {projectedUnits.map((unit) => {
               const isSelected = selectedUnit?.UnitID === unit.UnitID;
-              const isArchived = !isUnitActive(unit);
+              const isArchived = isUnitArchived(unit);
               const progressPercent = getUnitProgressPercent(
                 selectedDailyProgress,
                 unit,

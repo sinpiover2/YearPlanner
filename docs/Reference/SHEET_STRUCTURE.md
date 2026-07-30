@@ -98,15 +98,21 @@ Purpose:
 
 Unit definitions.
 
-**`Active` field (added by `apps-script-planning/UnitsArchiveMigration.js`,
-Sprint 6.5 — approved, not yet executed against production):** reuses the
-exact convention already established for Sections (see below) — blank/
-missing `Active` means active/visible; only an explicit `false` means
-archived. Used to mark the legacy (pre-Amplify) Integrated Math 1 units
-(`IM1-U0` through `IM1-U8`) as archived historical curriculum, distinct from
-the imported `AMP-IM1-*` units, which are never archived. Archiving hides a
-unit from the Units workspace by default; it never deletes, migrates, or
-otherwise modifies the unit's own data.
+**`IsArchived` field (added by `apps-script-planning/UnitsArchiveMigration.js`,
+Sprint 6.5 — approved, not yet executed against production):** a distinct
+convention from Sections' `Active` field (see below) — deliberately not
+reused, since Sections' `Active` represents operational availability while
+a Unit's archival status represents curriculum lifecycle, a different
+domain concept. Opposite polarity from `Active`: blank/missing/false means
+NOT archived (visible); only an explicit `true` means archived. Used to
+mark the legacy (pre-Amplify) Integrated Math 1 units (`IM1-U0` through
+`IM1-U8`) as archived historical curriculum, distinct from the imported
+`AMP-IM1-*` units, which are never archived. Archiving hides a unit from
+the Units workspace by default; it never deletes, migrates, or otherwise
+modifies the unit's own data. An earlier design (never executed against
+production) used a field named `Active` for this same purpose; this
+migration explicitly detects and refuses to run against a stray `Active`
+column on Units rather than silently reinterpreting it as `IsArchived`.
 
 Fields:
 
@@ -114,10 +120,11 @@ Fields:
 - CourseID
 - UnitNumber
 - UnitTitle
-- **Active** *(new — see above; blank/missing on every row until the migration runs)*
 - RequiredDays
 - OptionalDays
 - SortOrder
+- UnitPurpose
+- **IsArchived** *(new — see above; appended as the last column; blank/missing on every row until the migration runs)*
 
 Examples:
 

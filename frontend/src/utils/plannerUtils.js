@@ -52,15 +52,17 @@ export function calculateProgressPercent(actual, planned) {
   return Math.min(100, (actual / Math.max(planned, 1)) * 100);
 }
 
-// Mirrors isSectionActive's exact convention (frontend/src/App.jsx,
-// established for Sections): blank/missing Active means active/visible;
-// only an explicit falsy value means archived. Used by Units so that every
-// existing row (imported or teacher-authored, none of which has an Active
-// value yet) keeps rendering exactly as before, and only rows a migration
-// explicitly marks Active: false become hidden by default.
-export function isUnitActive(unit) {
-  const activeValue = unit?.Active;
-  return activeValue === undefined || activeValue === "" || isTrue(activeValue);
+// Deliberately a distinct field/convention from Sections' Active (see
+// docs/WORKFLOW/LESSONS_LEARNED.md, Sprint 6.5): Active represents Sections'
+// operational availability; IsArchived represents a Unit's curriculum
+// lifecycle (is this historical/superseded content), a different domain
+// concept that happens to also gate default visibility. Opposite polarity
+// from isSectionActive: blank/missing/false means NOT archived (visible);
+// only an explicit truthy value means archived (hidden by default). Every
+// existing row (none of which has an IsArchived value yet) keeps rendering
+// exactly as before until a migration explicitly marks it archived.
+export function isUnitArchived(unit) {
+  return isTrue(unit?.IsArchived);
 }
 
 export function getOutcomeList(value) {
