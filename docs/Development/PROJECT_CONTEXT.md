@@ -554,18 +554,24 @@ staged artifact, guarded importer, guarded `Lessons` schema migration
 (`Type`/`PlacementRule`), a guarded legacy-IM1 archival migration
 (`Units.IsArchived`, replacing an earlier `Active`-reuse design corrected in
 Sprint 6.5), and Units workspace support for hiding archived curriculum by
-default. **None of this has been deployed or executed against production
-yet** — every migration remains structurally complete and locally tested
-only. Sprint 6.6 specifically hardened every guarded migration's editor
-wrapper so a refused execution now visibly fails in the Apps Script editor
-instead of silently reporting "Execution completed." See
+default. Sprint 6.6 hardened every guarded migration's editor wrapper so a
+refused execution now visibly fails in the Apps Script editor instead of
+silently reporting "Execution completed" — prompted by a real production
+near-miss where a refused run of the archival migration looked like success.
+**With that fix deployed, `UnitsArchiveMigration.js` was then successfully
+executed against production**: the `IsArchived` column now exists on the
+live `Units` sheet and the 9 legacy `IM1-U0`…`IM1-U8` units are archived,
+confirmed by `verifyUnitsArchiveMigration()` (`archivedCount: 9`). The
+importer and the `Lessons` schema migration remain structurally complete and
+locally tested only — neither has been deployed or executed. See
 `docs/History/SPRINT_HANDOFF_6.6.md`.
 
 ## Next Major Milestone
 
-Real Data — deploy and execute `UnitsArchiveMigration.js` against
-production (Sprint 6.7's objective; see `docs/WORKFLOW/START_SPRINT.md`),
-then resume the rest of the Amplify Math 1 import. See
+Real Data — deploy and execute the `Lessons` schema migration and the
+Amplify IM1 importer itself against production (Sprint 6.7's objective; see
+`docs/WORKFLOW/START_SPRINT.md`), continuing the Amplify Math 1 import now
+that the legacy-curriculum archival step is complete. See
 `docs/Development/CLASSROOM_READINESS.md`, Section A.
 
 Protect Teacher Work — partially shipped in Sprint 6.0 (write authorization,

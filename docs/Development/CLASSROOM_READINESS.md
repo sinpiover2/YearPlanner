@@ -146,13 +146,14 @@ now considered classroom-ready.
 - [ ] Verify lessons
 - [ ] Verify required instructional days
 - [ ] Verify learning goals
-- [ ] Archive legacy pre-Amplify IM1 curriculum — guarded tooling now exists
-      (`apps-script-planning/UnitsArchiveMigration.js`, Sprint 6.5/6.6) and the
-      Units workspace already hides archived units by default once the
-      `IsArchived` flag is set; this item is about actually running the
-      migration, which has been previewed against live production
-      (`safeToExecute: true`) but never successfully executed. See
-      `docs/History/SPRINT_HANDOFF_6.6.md` for the exact next step.
+- [x] Archive legacy pre-Amplify IM1 curriculum — executed successfully
+      against production in Sprint 6.6
+      (`apps-script-planning/UnitsArchiveMigration.js`): the `IsArchived`
+      column now exists on the live `Units` sheet, all 9 legacy `IM1-U0`…
+      `IM1-U8` units are archived (`verifyUnitsArchiveMigration()`:
+      `archivedCount: 9`), and the Units workspace hides them by default
+      behind a "Show Archived Curriculum" toggle. See
+      `docs/History/SPRINT_HANDOFF_6.6.md`.
 
 ---
 

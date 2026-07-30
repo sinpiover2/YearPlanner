@@ -2,17 +2,20 @@
 
 ## Sprint 6.7 Objective
 
-**Primary objective:** Deploy and execute `UnitsArchiveMigration.js` against
-production — the guarded migration is now hardened (Sprint 6.6: an execute
-report carries an explicit `success` boolean, and the editor wrapper throws
-on any non-success outcome instead of returning quietly) but has never
-actually been pushed to Apps Script or successfully run. Production's
-`Units` sheet still has no `IsArchived` column and the 9 legacy `IM1-U0`…
-`IM1-U8` units are still unarchived. Follow the Guarded Production Migration
-Execution Procedure in `DEVELOPMENT_WORKFLOW.md` exactly (preview → execute →
-verify → restore placeholder → `clasp pull` → verify repository cleanliness).
-See `docs/History/SPRINT_HANDOFF_6.6.md` for full context and the first-hour
-plan.
+**Primary objective:** Deploy and execute the `Lessons` schema migration
+(`Type`/`PlacementRule`) and the Amplify IM1 importer itself against
+production. `UnitsArchiveMigration.js` was successfully deployed and
+executed in Sprint 6.6 — the `IsArchived` column exists on the live `Units`
+sheet and all 9 legacy `IM1-U0`…`IM1-U8` units are archived
+(`verifyUnitsArchiveMigration()`: `archivedCount: 9`) — so Sprint 6.7 does
+not repeat that migration. First, confirm this checkout's copy of
+`apps-script-planning/UnitsArchiveMigration.js` reflects the restored-
+placeholder `clasp pull` from Sprint 6.6 (run `clasp pull` if it hasn't
+landed here yet). Then follow the Guarded Production Migration Execution
+Procedure in `DEVELOPMENT_WORKFLOW.md` exactly (preview → execute → verify →
+restore placeholder → `clasp pull` → verify repository cleanliness) for the
+next pipeline module. See `docs/History/SPRINT_HANDOFF_6.6.md` for full
+context and the first-hour plan.
 
 ---
 
