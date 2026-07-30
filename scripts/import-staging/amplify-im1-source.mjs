@@ -153,7 +153,14 @@ export const UNITS = [
 
   {
     unitNumber: 2,
-    title: "Solving Equations and Inequalities",
+    // Corrected (Sprint 6.3D): the actual M1.2 Unit Overview source page
+    // titles this unit "Linear Equations and Inequalities" — confirmed by
+    // direct inspection of Curriculm/M1/Unit 2/Screenshots/Screenshot
+    // 2026-07-29 at 7.29.16 AM.png. "Solving Equations and Inequalities"
+    // was a transcription error; see IM1_Curriculum_Extraction.md's
+    // Extraction Note #19 for the full trace. No other field on this unit
+    // was affected.
+    title: "Linear Equations and Inequalities",
     purpose:
       "Students revisit strategies to determine the solutions to one-variable linear equations and extend their knowledge to make sense of solving multi-variable linear equations. They create equivalent equations as they solve linear equations and interpret the different types of solutions such as infinitely many solutions and no solutions in context. They connect graphs, tables, and equations to the situations they represent and interpret key features such as the x-intercept and y-intercept. Students represent the same linear equation in point-slope form, standard form, or slope-intercept form. They determine the solution set to an inequality algebraically and use technology tools to strategically find the graphical solution region to inequalities, investigating real situations and modeling their constraints using equations and inequalities.",
     requiredDays: { status: "not_yet_verified", value: null },

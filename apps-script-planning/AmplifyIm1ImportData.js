@@ -21,7 +21,7 @@ const AMPLIFY_IM1_IMPORT_PAYLOAD = Object.freeze({
     "script": "scripts/import-staging/generate-artifact.mjs",
     "sourceTranscription": "scripts/import-staging/amplify-im1-source.mjs",
     "sourceDocument": "Curriculm/M1/IM1_Curriculum_Extraction.md",
-    "sourceDocumentSha256": "a89e4ced77b7d7bf15ae8e118176bcbd8ed913dc1ca15ecde5b1d0af9974d880"
+    "sourceDocumentSha256": "35e456fab50224d38c1f71b471ac4444006a2d0694fddd7bbe896d8b0c2a97c9"
   },
   "course": {
     "courseId": "IM1",
@@ -203,7 +203,7 @@ const AMPLIFY_IM1_IMPORT_PAYLOAD = Object.freeze({
     {
       "unitId": "AMP-IM1-U2",
       "unitNumber": 2,
-      "title": "Solving Equations and Inequalities",
+      "title": "Linear Equations and Inequalities",
       "purpose": "Students revisit strategies to determine the solutions to one-variable linear equations and extend their knowledge to make sense of solving multi-variable linear equations. They create equivalent equations as they solve linear equations and interpret the different types of solutions such as infinitely many solutions and no solutions in context. They connect graphs, tables, and equations to the situations they represent and interpret key features such as the x-intercept and y-intercept. Students represent the same linear equation in point-slope form, standard form, or slope-intercept form. They determine the solution set to an inequality algebraically and use technology tools to strategically find the graphical solution region to inequalities, investigating real situations and modeling their constraints using equations and inequalities.",
       "requiredDays": {
         "status": "not_yet_verified",
@@ -2114,12 +2114,12 @@ const AMPLIFY_IM1_IMPORT_PAYLOAD = Object.freeze({
 const AMPLIFY_IM1_IMPORT_METADATA = Object.freeze({
   "schemaVersion": "1.0.0",
   "artifactPath": "data/import-staging/amplify-im1.json",
-  "artifactSha256": "efcaf3b942eebdf711c2857af7a1a32806c3e9e78ddb97e62ece8fd7e7f20396",
+  "artifactSha256": "68497b899352093ee9eb8cec80dec4616d7afa242df52b3ea0931ba47b0555bf",
   "sourceDocument": "Curriculm/M1/IM1_Curriculum_Extraction.md",
-  "sourceDocumentSha256": "a89e4ced77b7d7bf15ae8e118176bcbd8ed913dc1ca15ecde5b1d0af9974d880",
+  "sourceDocumentSha256": "35e456fab50224d38c1f71b471ac4444006a2d0694fddd7bbe896d8b0c2a97c9",
   "unitCount": 7,
   "itemCount": 164,
-  "confirmationPhrase": "IMPORT_AMPLIFY_IM1_efcaf3b942ee_7_164"
+  "confirmationPhrase": "IMPORT_AMPLIFY_IM1_68497b899352_7_164"
 });
 
 // Allows this file's constants to be loaded from Node for local testing

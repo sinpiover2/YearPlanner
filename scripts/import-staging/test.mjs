@@ -50,6 +50,30 @@ test("real artifact has all 7 units with expected item counts", () => {
   }
 });
 
+// Independently transcribed from direct visual inspection of each unit's
+// own "M1.N Unit Overview" source screenshot (not derived from
+// amplify-im1-source.mjs or IM1_Curriculum_Extraction.md, the same
+// independence principle EXPECTED_UNIT_COUNTS already follows for counts).
+// Regression coverage for Sprint 6.3D: Unit 2's title was wrong
+// ("Solving Equations and Inequalities") until traced to
+// Curriculm/M1/Unit 2/Screenshots/Screenshot 2026-07-29 at 7.29.16 AM.png,
+// which shows the real title "Linear Equations and Inequalities" directly
+// beneath the "M1.2 Unit Overview" heading. Unit 7 was independently
+// re-verified against Curriculm/M1/Unit 7/Screenshots/Screenshot 2026-07-29
+// at 7.15.33 AM.png in the same audit and found already correct.
+const VERIFIED_UNIT_TITLES = {
+  2: "Linear Equations and Inequalities",
+  7: "Describing Data",
+};
+
+test("Unit 2 and Unit 7 titles match their verified source screenshots (Sprint 6.3D regression)", () => {
+  const artifact = buildArtifact();
+  for (const [unitNumber, expectedTitle] of Object.entries(VERIFIED_UNIT_TITLES)) {
+    const unit = findUnit(artifact, Number(unitNumber));
+    assert.equal(unit.title, expectedTitle, `Unit ${unitNumber} title`);
+  }
+});
+
 test("real artifact passes validation with zero errors", () => {
   const artifact = buildArtifact();
   const result = validateArtifact(artifact);
