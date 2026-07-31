@@ -2,26 +2,33 @@
 
 ## Sprint 6.7 Objective
 
-**Primary objective:** Deploy and execute the `Lessons` schema migration
-(`Type`/`PlacementRule`) and the Amplify IM1 importer itself against
-production. `UnitsArchiveMigration.js` was successfully deployed and
-executed in Sprint 6.6 — the `IsArchived` column exists on the live `Units`
-sheet and all 9 legacy `IM1-U0`…`IM1-U8` units are archived
-(`verifyUnitsArchiveMigration()`: `archivedCount: 9`) — so Sprint 6.7 does
-not repeat that migration. First, confirm this checkout's copy of
-`apps-script-planning/UnitsArchiveMigration.js` reflects the restored-
-placeholder `clasp pull` from Sprint 6.6 (run `clasp pull` if it hasn't
-landed here yet). Then follow the Guarded Production Migration Execution
-Procedure in `DEVELOPMENT_WORKFLOW.md` exactly (preview → execute → verify →
-restore placeholder → `clasp pull` → verify repository cleanliness) for the
-next pipeline module. See `docs/History/SPRINT_HANDOFF_6.6.md` for full
-context and the first-hour plan.
+**Primary objective:** Extract and import the Amplify Math 8 curriculum
+using the proven curriculum import workflow
+(`docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`), generalized from the
+Amplify IM1 pipeline built in Sprints 6.1–6.6. This is an intentional pivot:
+Sprint 6.7 applies the now-documented, reusable process to a second
+curriculum rather than continuing to chase Amplify IM1's own remaining
+production steps.
+
+**Amplify IM1's production import is not finished** — the `Lessons` schema
+migration (`Type`/`PlacementRule`) and the Amplify IM1 importer itself
+remain structurally complete and locally tested only, never deployed or
+executed. `UnitsArchiveMigration.js` was the one piece of that pipeline
+successfully deployed and executed in Sprint 6.6 (the `IsArchived` column
+exists on the live `Units` sheet and all 9 legacy `IM1-U0`…`IM1-U8` units
+are archived, confirmed by `verifyUnitsArchiveMigration()`:
+`archivedCount: 9`). Finishing IM1's import is deferred, not abandoned — see
+`docs/History/SPRINT_HANDOFF_6.6.md`'s Remaining Priorities before deciding
+whether to interleave it with Math 8 work or complete it afterward.
 
 ---
 
 ## 1. Read the Handoff (under 60 seconds)
 
 - [ ] Read the latest sprint handoff — Layer 1 (60-Second Startup) only
+- [ ] Read `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md` before beginning
+      any Math 8 extraction work — it is the canonical process this sprint
+      follows, not a reference to consult after the fact
 - [ ] Confirm today's sprint goal
 
 ---

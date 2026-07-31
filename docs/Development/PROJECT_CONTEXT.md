@@ -239,6 +239,12 @@ Imported curriculum should:
 
 Teacher-authored thinking is always primary.
 
+Every curriculum import (Amplify Math 1, Amplify Math 8, and any future
+adoption) follows the same canonical process, proven on Amplify Math 1 across
+Sprints 6.1–6.6:
+`docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`. That document is the
+process description; it is not restated here.
+
 ---
 
 # Forecast Philosophy
@@ -561,18 +567,26 @@ near-miss where a refused run of the archival migration looked like success.
 **With that fix deployed, `UnitsArchiveMigration.js` was then successfully
 executed against production**: the `IsArchived` column now exists on the
 live `Units` sheet and the 9 legacy `IM1-U0`…`IM1-U8` units are archived,
-confirmed by `verifyUnitsArchiveMigration()` (`archivedCount: 9`). The
-importer and the `Lessons` schema migration remain structurally complete and
-locally tested only — neither has been deployed or executed. See
+confirmed by `verifyUnitsArchiveMigration()` (`archivedCount: 9`). **The
+Amplify IM1 importer and the `Lessons` schema migration remain structurally
+complete and locally tested only — neither has been deployed or executed
+against production, so no actual IM1 curriculum data exists in production
+yet.** This sprint span also generalized the proven pipeline shape (staged
+artifact → preview → guarded execute → verify → archive-not-delete) into a
+permanent, curriculum-agnostic process:
+`docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`. See
 `docs/History/SPRINT_HANDOFF_6.6.md`.
 
 ## Next Major Milestone
 
-Real Data — deploy and execute the `Lessons` schema migration and the
-Amplify IM1 importer itself against production (Sprint 6.7's objective; see
-`docs/WORKFLOW/START_SPRINT.md`), continuing the Amplify Math 1 import now
-that the legacy-curriculum archival step is complete. See
-`docs/Development/CLASSROOM_READINESS.md`, Section A.
+Extract and Import Amplify Math 8 — apply the canonical
+`CURRICULUM_IMPORT_WORKFLOW.md` process to a second curriculum (Sprint 6.7's
+objective; see `docs/WORKFLOW/START_SPRINT.md`). Amplify Math 1's own
+production import is not finished — the `Lessons` schema migration and the
+importer itself still need to be deployed and executed — but that work no
+longer gates starting Math 8; it is tracked as deferred, still-open work
+rather than abandoned. See `docs/Development/CLASSROOM_READINESS.md`,
+Section A.
 
 Protect Teacher Work — partially shipped in Sprint 6.0 (write authorization,
 in full, plus one write-reliability fix; see

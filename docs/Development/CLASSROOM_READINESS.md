@@ -69,6 +69,16 @@ that `docs/Development/PROJECT_CONTEXT.md` now lists Protect Teacher Work
 ahead of Real Data in overall project priority; this checklist tracks
 classroom-readiness gaps specifically and remains accurate on its own terms.
 
+**Active curriculum objective: Amplify Math 8.** With the Amplify IM1 import
+pipeline generalized into a reusable, documented process
+(`docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`), the active curriculum
+work is now extracting and importing Amplify Math 8 using that same
+canonical workflow. Amplify IM1's own production import is **not yet
+complete** — the `Lessons` schema migration and the importer itself remain
+undeployed (see the Integrated Math 1 checklist below) — but it is no longer
+the sprint-to-sprint focus; it is tracked as deferred, still-open work
+rather than abandoned or considered finished.
+
 Loading the real school means importing and verifying:
 
 - actual student rosters
@@ -127,20 +137,23 @@ now considered classroom-ready.
 
 ## Curriculum
 
-### Math 8
+### Math 8 (active curriculum objective)
 
-- [ ] Import complete curriculum
+- [ ] Extract and import complete curriculum — using the canonical process in
+      `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`, generalized from the
+      Amplify IM1 pipeline built in Sprints 6.1–6.6
 - [ ] Verify units
 - [ ] Verify lessons
 - [ ] Verify required instructional days
 - [ ] Verify learning goals
 
-### Integrated Math 1
+### Integrated Math 1 (deferred, not abandoned)
 
 - [ ] Import complete curriculum — guarded tooling now exists
       (`apps-script-planning/AmplifyIm1Importer.js`, `LessonsSchemaMigration.js`)
       for Amplify Math 1; this item is about running it against production, not
-      building it. **Not yet deployed or executed** — see
+      building it. **Not yet deployed or executed.** No longer the active
+      sprint objective (Math 8 is, above) — see
       `docs/History/SPRINT_HANDOFF_6.6.md`.
 - [ ] Verify units
 - [ ] Verify lessons

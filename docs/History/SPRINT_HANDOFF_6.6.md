@@ -15,6 +15,8 @@ Sprints 6.1–6.6 built the complete Amplify Math 1 curriculum-import pipeline o
 
 **This document also closes a bookkeeping gap**, the same kind Sprint 6.0's handoff called out for the sprint before it: no handoff had been written since Sprint 6.0 (Jul 28). Sprints 6.1–6.6 (Jul 29–30) shipped without individual handoffs; their outcomes are recorded in `docs/Development/AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md`'s "Sprint Progress" log and `docs/WORKFLOW/LESSONS_LEARNED.md`. This handoff covers all of them together, focused on the actual current stopping point.
 
+**Sprint 6.6 closeout: the pipeline is proven; Sprint 6.7 pivots to Math 8.** Sprints 6.1–6.6 proved the shape of a curriculum import pipeline end to end — a real guarded migration (the archival step) ran against production successfully, following the exact preview/execute/verify/lock/backup/revalidation-pass/disarmed-wrapper discipline the other pipeline modules also follow. That shape has now been generalized into a permanent, curriculum-agnostic process document: `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`. With the methodology proven and documented, **Sprint 6.7 intentionally pivots to applying it to a second curriculum, Amplify Math 8**, rather than continuing to chase Amplify IM1's remaining production steps. This is a deliberate scope decision, not a claim that IM1's own import is finished: **the `Lessons` schema migration and the Amplify IM1 importer itself are still undeployed and unexecuted, so no actual IM1 curriculum data exists in production yet.** That work is deferred, not abandoned — see Remaining Priorities, below.
+
 ## Current Repository State
 
 - Branch: `main`
@@ -37,24 +39,25 @@ eb7a37f Archive legacy IM1 curriculum instead of migrating or deleting it
 
 ## Current Stopping Point
 
-The guarded-migration safety fix (Sprint 6.6) is complete, tested, committed, pushed, **deployed, and successfully executed against production**: the `IsArchived` column exists on the live `Units` sheet and the 9 legacy IM1 units are archived, confirmed by `verifyUnitsArchiveMigration()`. The archival migration is done — Sprint 6.7 does not need to repeat it. What remains open: confirming this repository checkout's copy of `UnitsArchiveMigration.js` reflects the restored-placeholder `clasp pull` (see Executive Summary), and deploying/executing the two pipeline modules that are still untouched in production — `AmplifyIm1Importer.js` and `LessonsSchemaMigration.js`.
+The guarded-migration safety fix (Sprint 6.6) is complete, tested, committed, pushed, **deployed, and successfully executed against production**: the `IsArchived` column exists on the live `Units` sheet and the 9 legacy IM1 units are archived, confirmed by `verifyUnitsArchiveMigration()`. The archival migration is done. The proven pipeline shape has since been generalized into `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`, and **Sprint 6.7 pivots to applying it to Amplify Math 8** rather than continuing Amplify IM1's remaining production steps. What remains open, now deferred rather than urgent: confirming this repository checkout's copy of `UnitsArchiveMigration.js` reflects the restored-placeholder `clasp pull` (see Executive Summary), and deploying/executing the two pipeline modules still untouched in production — `AmplifyIm1Importer.js` and `LessonsSchemaMigration.js`.
 
 ## First-Hour Plan for Next Session
 
 1. Read this handoff's Layer 1 only.
-2. Confirm `git status` clean and `origin/main` in sync.
-3. Confirm this checkout's `apps-script-planning/UnitsArchiveMigration.js` matches Apps Script HEAD (run `clasp pull` if it hasn't landed here yet) and that the editor wrapper's placeholder is in place, not the real phrase.
-4. Confirm in the frontend (Units workspace) that the 9 legacy IM1 units are hidden by default and appear correctly under "Show Archived Curriculum" against live production data.
-5. Move to the next pipeline module: the `Lessons` schema migration (`Type`/`PlacementRule`) and/or the Amplify IM1 importer itself — both structurally complete and locally tested, neither deployed. Follow the Guarded Production Migration Execution Procedure in `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md` exactly: preview → execute → verify → restore placeholder → `clasp pull` → verify repository cleanliness.
-6. Consider applying the Sprint 6.6 `success`-boolean-plus-throw pattern to that module's editor wrapper before running it for real, per Remaining Priorities below.
+2. Read `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md` — the canonical process this sprint follows for Amplify Math 8.
+3. Confirm `git status` clean and `origin/main` in sync.
+4. Confirm this checkout's `apps-script-planning/UnitsArchiveMigration.js` matches Apps Script HEAD (run `clasp pull` if it hasn't landed here yet) and that the editor wrapper's placeholder is in place, not the real phrase — a quick housekeeping check, not a repeat of the migration.
+5. Begin Sprint 6.7's actual objective: extract the Amplify Math 8 curriculum into normalized Markdown, following `CURRICULUM_IMPORT_WORKFLOW.md` steps 1–3 (obtain source, extract, validate against source) before writing any staging or import code.
+6. Amplify IM1's own remaining production steps (`Lessons` schema migration, the importer itself) are deferred, not part of this sprint's objective — see Remaining Priorities below if capacity allows revisiting them.
 
 ## Permanent Reference
 
+- `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md` — the canonical curriculum import process (new this session); read before beginning Math 8 extraction
 - `docs/Development/PROJECT_CONTEXT.md` — mission, philosophy, current priority order (updated this session)
 - `docs/Development/CLASSROOM_READINESS.md`, Section A — Real Data / Curriculum, current status (updated this session)
-- `docs/Development/AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md` — full sprint-by-sprint implementation log for the entire import pipeline, including this sprint's fix
+- `docs/Development/AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md` — full sprint-by-sprint implementation log for the entire IM1 import pipeline, including this sprint's fix (IM1-specific; Math 8 follows the generalized workflow document above, not this log)
 - `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md` — now includes the Guarded Production Migration Execution Procedure (new this session)
-- `docs/WORKFLOW/LESSONS_LEARNED.md` — Sprint 6.4/6.5/6.6 entries cover the archival-vs-delete decision, the `Active`→`IsArchived` correction, and the refusal-visibility fix
+- `docs/WORKFLOW/LESSONS_LEARNED.md` — Sprint 6.4/6.5/6.6 entries cover the archival-vs-delete decision, the `Active`→`IsArchived` correction, the refusal-visibility fix, and the generalized curriculum-import lessons
 
 ---
 
@@ -70,26 +73,28 @@ The guarded-migration safety fix (Sprint 6.6) is complete, tested, committed, pu
 
 **Guarded-migration refusal visibility, then a real successful run (Sprint 6.6).** See Executive Summary and `AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md`'s new Sprint 6.6 section for full detail. First: a real production run of the archival migration's editor wrapper refused (most likely at the confirmation check) but "completed with no exception," which the Apps Script editor always reports as success regardless of the returned value. The fix: every execute report now carries a `success` boolean computed once in one place, and the editor wrapper logs through both `Logger.log` and `console.log` and throws on any non-success outcome. Second, with the fix deployed: a real production run through the hardened wrapper succeeded — `writesOccurred: true`, `errorStage: null`, backup `1GNU-kdDsrR6L3SpBtJ8o2_TteuLheOyVCZ1fjzneBcU`, `IsArchived` column added, all 9 legacy IM1 units archived, confirmed by a follow-up `verifyUnitsArchiveMigration()` (`valid: true`, `archivedCount: 9`). The `success`-boolean-plus-throw pattern is not yet applied to the other three guarded migrations' editor wrappers (`AmplifyIm1Importer.js`, `LessonsSchemaMigration.js`, `LegacyIm1CleanupMigration.js`) — apply it to any of them before their next real production run.
 
-## Documentation Updated This Sprint (this session, as part of end-of-sprint closeout)
+## Documentation Updated This Sprint (final state, this closeout)
 
 - `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md` — added "Guarded Production Migration Execution Procedure," generalizing the preview/execute/verify/restore-placeholder/`clasp pull`/verify-repository-cleanliness sequence that was previously only documented per-migration inside each module's own README.
-- `docs/WORKFLOW/START_SPRINT.md` — Sprint 6.7's objective set, then corrected: not a repeat of the archival migration, but the `Lessons` schema migration and importer deployment (see correction note below).
-- `docs/Development/PROJECT_CONTEXT.md` — "Current Project Snapshot" and "Next Major Milestone" updated to describe the Sprint 6.1–6.6 import pipeline, then corrected to reflect the archival migration's actual successful execution.
-- `docs/Development/CLASSROOM_READINESS.md` — Section A's Integrated Math 1 checklist annotated with pipeline status, then corrected to check off the completed archival migration.
-- `docs/Development/AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md` — added the Sprint 6.6 section, then corrected to describe the migration's actual successful production run.
-- `docs/WORKFLOW/LESSONS_LEARNED.md` — **not modified.** Its Sprint 6.4, 6.5, and 6.6 entries were already accurate and needed no correction.
-- `docs/History/SPRINT_HANDOFF_6.6.md` — this document, new, then corrected.
+- `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md` — **new.** The canonical, curriculum-agnostic import process, generalized from the Amplify IM1 pipeline (extract → validate → distinguish publisher/teacher ownership → build a deterministic staged artifact → preview → guarded execute → verify → archive-not-delete → validate in the UI). Governs Math 8 and every future curriculum import.
+- `docs/Development/PROJECT_CONTEXT.md` — Curriculum Philosophy now references the new workflow document; "Current Project Snapshot"/"Next Major Milestone" describe the archival migration's actual successful execution and the Sprint 6.7 pivot to Math 8, while explicitly stating IM1's own import remains unfinished.
+- `docs/Development/CLASSROOM_READINESS.md` — the completed archival migration is checked off; Math 8 is reordered to the active curriculum objective with a reference to the new workflow document; IM1's importer/schema-migration items remain correctly unchecked and are now explicitly labeled deferred rather than active.
+- `docs/Development/AMPLIFY_IM1_IMPORT_IMPLEMENTATION_SPEC.md` — Sprint 6.6 section describes the migration's actual successful production run; its forward-reference to "Sprint 6.7's next objective" updated to note the pivot to Math 8.
+- `docs/WORKFLOW/LESSONS_LEARNED.md` — added five new Sprint 6.6 entries generalizing what emerged from the whole 6.1–6.6 span: extraction as its own deliverable, phase separation, archive-over-migrate-or-delete, reusable guarded-migration infrastructure being more valuable than curriculum-specific code, and never describing a locally-tested-only migration as "complete" in permanent documentation.
+- `docs/WORKFLOW/START_SPRINT.md` — Sprint 6.7's objective changed from "finish IM1 production deployment" to "extract and import Amplify Math 8 using the canonical workflow"; first-hour plan now reads `CURRICULUM_IMPORT_WORKFLOW.md` before any extraction work begins.
+- `docs/History/SPRINT_HANDOFF_6.6.md` — this document.
 
-**Correction note:** the first version of this handoff and the documents above stated `UnitsArchiveMigration.js` had never been deployed or executed against production. That was wrong. The migration was in fact deployed and successfully executed this sprint — see Executive Summary for the corrected account (backup ID, `archivedCount: 9`, `verifyUnitsArchiveMigration()` confirmation) and Known Issues for the one still-open detail (confirming this repository checkout reflects the post-execution `clasp pull`).
+**Correction history, briefly (see git log for full detail — not restated here):** an early draft of this handoff and the documents above incorrectly stated `UnitsArchiveMigration.js` had never been deployed or executed; that was fixed to reflect its actual successful production run (backup ID, `archivedCount: 9`, `verifyUnitsArchiveMigration()` confirmation — see Executive Summary). A later closeout pass then generalized the pipeline into `CURRICULUM_IMPORT_WORKFLOW.md` and set up the Sprint 6.7 pivot to Math 8. One decision made during that pass, worth stating plainly: an instruction for this closeout asked for the IM1 curriculum import to be described as successfully complete. The actual production state doesn't support that — only the archival migration has run; the `Lessons` schema migration and the importer itself haven't. The documentation reflects the intended pivot (Math 8 becomes the active objective) without claiming IM1's import is finished. See `docs/WORKFLOW/LESSONS_LEARNED.md`'s new entry on this exact failure mode.
 
 ## Remaining Priorities (ranked)
 
-1. **Confirm this repository checkout's `UnitsArchiveMigration.js` reflects the restored-placeholder `clasp pull`** — see Executive Summary's open loop. A quick check/`clasp pull`, not a redo of the migration itself.
-2. **Deploy and execute the `Lessons` schema migration and the Amplify IM1 importer itself** (Sprints 4, 6.2A) — structurally complete, locally tested only, never pushed. This is now the next real production step in the pipeline.
-3. **Resolve the Sprint 6.3 legacy-cleanup blocker** — a product decision on what to do with `IM1-U1`'s real `DailyProgress`/`KeyOutcome`/`PlannedDays` data before any legacy-row deletion can proceed; the completed archival migration does not require resolving this.
-4. **Apply the Sprint 6.6 `success`-boolean-plus-throw pattern** to the three other guarded migrations' editor wrappers before their next real production run.
-5. **Remaining Protect Teacher Work phases** (deferred since Sprint 6.0, not abandoned) — concurrency guard, local-save-failure visibility, multi-tab guard, canonical Enactment store, cross-device sync. Full detail: `docs/Architecture/SPRINT_6_0_ARCHITECTURE.md`.
-6. **Classroom validation** (`CLASSROOM_READINESS.md` Section E) and **performance/workflow polish** (Sections B, C, D) — unchanged from prior sprints.
+1. **Extract and import Amplify Math 8** using `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md` — Sprint 6.7's actual objective.
+2. **Confirm this repository checkout's `UnitsArchiveMigration.js` reflects the restored-placeholder `clasp pull`** — see Executive Summary's open loop. A quick check/`clasp pull`, not a redo of the migration itself.
+3. **Finish Amplify IM1's own production import when capacity allows** (deploy and execute the `Lessons` schema migration and the Amplify IM1 importer itself, Sprints 4/6.2A — structurally complete, locally tested only, never pushed) — deferred behind Math 8, not abandoned. No IM1 curriculum data exists in production until this happens.
+4. **Resolve the Sprint 6.3 legacy-cleanup blocker** — a product decision on what to do with `IM1-U1`'s real `DailyProgress`/`KeyOutcome`/`PlannedDays` data before any legacy-row deletion can proceed; the completed archival migration does not require resolving this.
+5. **Apply the Sprint 6.6 `success`-boolean-plus-throw pattern** to the three other guarded migrations' editor wrappers before their next real production run.
+6. **Remaining Protect Teacher Work phases** (deferred since Sprint 6.0, not abandoned) — concurrency guard, local-save-failure visibility, multi-tab guard, canonical Enactment store, cross-device sync. Full detail: `docs/Architecture/SPRINT_6_0_ARCHITECTURE.md`.
+7. **Classroom validation** (`CLASSROOM_READINESS.md` Section E) and **performance/workflow polish** (Sections B, C, D) — unchanged from prior sprints.
 
 ## Known Issues, Limitations, and Non-Goals
 
@@ -102,4 +107,4 @@ The guarded-migration safety fix (Sprint 6.6) is complete, tested, committed, pu
 
 ## Lessons
 
-See `docs/WORKFLOW/LESSONS_LEARNED.md` — Sprint 6.4 (archive rather than force a migration/deletion decision when correspondence isn't proven), Sprint 6.5 (reuse a field convention only when its domain meaning genuinely matches), and Sprint 6.6 (a guarded function returning normally is not a safe enough success signal for a manually-invoked production ceremony) for the narrative lessons from this sprint span. The procedural lesson — every guarded production migration should preview, execute, verify, restore the editor placeholder, `clasp pull`, and verify repository cleanliness, in that order — is now standing practice in `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md` rather than repeated here, per `HANDOFF_PROTOCOL.md`'s permanent-vs-sprint-specific distinction.
+See `docs/WORKFLOW/LESSONS_LEARNED.md` — Sprint 6.4 (archive rather than force a migration/deletion decision when correspondence isn't proven), Sprint 6.5 (reuse a field convention only when its domain meaning genuinely matches), and Sprint 6.6 (a guarded function returning normally is not a safe enough success signal for a manually-invoked production ceremony, plus five entries added during this closeout generalizing the whole 6.1–6.6 span into permanent process lessons — extraction as its own deliverable, phase separation, archive-over-migrate-or-delete, reusable guarded-migration infrastructure, and never rounding "locally tested" up to "complete" in permanent documentation). The procedural lesson — every guarded production migration should preview, execute, verify, restore the editor placeholder, `clasp pull`, and verify repository cleanliness, in that order — is now standing practice in `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md` rather than repeated here, per `HANDOFF_PROTOCOL.md`'s permanent-vs-sprint-specific distinction. The generalized *process itself* (not just individual lessons) now lives in `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`.
