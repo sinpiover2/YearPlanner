@@ -445,6 +445,19 @@ Once a prompt has been generated, treat that prompt as disposable.
 
 ---
 
+# User Decision Points
+
+Whenever ChatGPT or Claude Code needs a user decision to proceed, present it as a short, lettered multiple-choice question rather than an open-ended prompt.
+
+- List options as A, B, C, ... — each answerable with a single letter.
+- Clearly mark the recommended option and give a one-sentence reason why.
+- Always include a final "Other" option for anything not listed.
+- Keep the question itself short — the options carry the detail, not the preamble.
+
+This keeps decision points fast to resolve without losing the option to go off-menu.
+
+---
+
 # Technical Lead Workflow
 
 At the beginning of every sprint:
