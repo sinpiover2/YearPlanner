@@ -479,6 +479,39 @@ This keeps the development process consistent without relying on memory.
 
 ---
 
+# Sprint Startup Project Health Check
+
+Purpose:
+
+Before implementation begins, spend approximately one minute verifying that the project is in the expected state.
+
+### Repository Health
+
+- Correct branch
+- Working tree clean
+- Synchronized with origin/main
+
+### Application Health
+
+- Launch the application
+- Verify it starts successfully
+- Confirm the expected development/production environment
+
+### Documentation Health
+
+- Read Layer 1 of the current sprint handoff
+- Verify the application's observed state matches the handoff
+- Resolve documentation drift before implementation
+
+### Sprint Alignment
+
+- Confirm the sprint objective matches START_SPRINT.md
+- Review any workflow documents referenced by the First Hour Plan
+
+> Never begin implementation while the repository, application, and documentation disagree about the current project state.
+
+---
+
 # Continuous Workflow Improvement
 
 The workflow is part of the project, and it should get better every sprint.
