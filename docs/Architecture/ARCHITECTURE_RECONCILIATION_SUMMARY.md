@@ -29,6 +29,7 @@ The reconciliation effort existed to establish **one coherent architectural mode
 - `CLAUDE_CONTEXT_FULL.md`
 - `SUITE_ARCHITECTURE.md`
 - `INFORMATION_MODEL.md`
+- `CURRICULUM_INFORMATION_MODEL.md`
 
 **Supporting architecture** — how individual workspaces present and use the shared model.
 

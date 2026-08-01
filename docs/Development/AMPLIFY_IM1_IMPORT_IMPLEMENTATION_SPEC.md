@@ -1,6 +1,6 @@
 # Amplify IM1 Import — Implementation Specification
 
-**Document Status:** Implementation Specification — D-1 through D-5 approved; Implementation Sprints 1 and 2 complete (see "Sprint Progress," below)
+**Document Status:** Implementation Specification and Implementation History — D-1 through D-5 approved (see "Sprint Progress," below)
 **Governed by:** `docs/Architecture/CURRICULUM_INFORMATION_MODEL.md` (the architectural decisions this spec implements — read that first)
 **Source data:** `Curriculm/M1/IM1_Curriculum_Extraction.md` (7 units, verified against Amplify's own PDFs)
 **Scope:** How to evolve the current `Units`/`Lessons` schema and its consumers into the documented Instructional Item model, and how to import the completed IM1 extraction — without breaking current classroom use.
@@ -11,7 +11,17 @@
 
 ## Sprint Progress
 
-**Implementation Sprint 1 — complete.** Scope: backward-compatible schema contract and read compatibility only. No importer, no production data, no production writes, no user-visible behavior change. See `docs/Architecture/CURRICULUM_INFORMATION_MODEL.md`, "Sprint 1 Implementation Note," for the architecture-level summary; full detail is in the Sprint 1 handoff/report.
+The sprint-numbered implementation notes formerly appended to the governing architecture standard are maintained here so that the standard remains permanent and implementation-neutral.
+
+The five decisions that governed the first implementation work were approved:
+
+- **D-1:** Optional instructional items do not block Forecast progression.
+- **D-2:** Teacher planning-day entry lives in the Units workspace.
+- **D-3:** Instructional Item Type will be shown subtly in Units and Planning — not initially in Forecast or print.
+- **D-4:** Curriculum import will use a staged intermediate artifact, followed by preview, guarded execution, and verification.
+- **D-5:** `PlannedDays` remains unknown by default. Any initialization requires explicit teacher approval — never a silent system default.
+
+**Implementation Sprint 1 — complete.** Scope: backward-compatible schema contract and read compatibility only. No importer, no production data, no production writes, no user-visible behavior change. Full detail is in the Sprint 1 handoff/report.
 
 Implemented this sprint:
 - `apps-script-planning/Code.js`: `addLesson` now writes `Type` (defaulting to `"Lesson"`) when a `Type` column exists on the sheet — a no-op today, since that column doesn't exist in production yet.
