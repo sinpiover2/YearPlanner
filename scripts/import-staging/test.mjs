@@ -1,4 +1,6 @@
-// Lightweight test suite for the Amplify IM1 staged-importer pipeline.
+// Lightweight test suite for the legacy Amplify IM1 staged-importer pipeline.
+// Math 8's schema-2/profile coverage lives in amplify-m8.test.mjs so these
+// regression assertions remain unchanged in behavior.
 // Uses only Node's built-in test runner and assert module — no new
 // dependency, per this sprint's explicit "no large testing framework" rule.
 //
