@@ -595,3 +595,101 @@ The complete `Curriculm/M8/Unit 6/Unit 6.pdf` was reviewed (18 of 18 pages), and
 | 18 | `Screenshot 2026-07-30 at 10.34.32 PM.png` | Unit Synthesis and Reflection |
 
 The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
+
+## Unit 7 - Exponents and Scientific Notation
+
+- **Source label:** 8.7 Unit Overview
+- **Required Days:** Confirmed absent
+- **Optional Days:** Confirmed absent
+
+**Overview (publisher text):**
+
+Students work with expressions involving exponents. Students look for and make use of structure and they identify and create equivalent expressions involving positive, negative, and zero exponents. They use scientific notation to express and perform operations with very large or very small quantities and make sense of these numbers.
+
+### Unit at a Glance
+
+- **Explore: Creating a Sierpiński Triangle** - `(Optional)` Launch the unit with a non-routine task to investigate the question, “How can we create patterns using triangles?”
+- **Sub-Unit 1: Exponent Properties** `(Lessons 1-6 + Practice Day + Quiz)`
+  - Identify and create equivalent expressions involving positive, negative, and zero exponents.
+  - **Language Goal:** Explain and interpret expressions involving exponents and their properties.
+- **Sub-Unit 2: Scientific Notation** `(Lessons 7-14 + Practice Day)`
+  - Express and perform operations with very large or very small quantities using powers of 10 and scientific notation.
+  - **Language Goal:** Explain and interpret the meaning of numbers and operations using powers of 10 and scientific notation.
+
+The overview does not include the `8.7 Pre-Unit Check`, the `8.7 Performance Task`, or `Unit Synthesis and Reflection` in its sub-unit ranges. Their pages occur in the publisher's fixed Unit 7 sequence, and they are included below without assigning them to a sub-unit that the source does not assign.
+
+### Instructional Items
+
+`Type` preserves the literal Math 8 label visible in the source. All 21 items have fixed publisher placement: each occupies a specific page in the serialized Unit 7 PDF, and no item has publisher-flexible placement language. The complete Unit 7 source contains no `Investigate` item or other overview-only flexible content. This records source sequence, not an inferred instructional-day duration.
+
+| Order | Type | Title | Subtitle | Summary or description | Optionality | Placement | Evidence |
+|---:|---|---|---|---|---|---|---|
+| 1 | Pre-Unit Check | 8.7 Pre-Unit Check | Confirmed absent | Learn more about your students' understanding of foundational concepts and skills that will support them in the upcoming unit. This assessment is intended for students to complete using a four function calculator. | Yes - `OPTIONAL` badge; may be given in its entirety before the unit begins or spread out throughout the unit | Fixed - first instructional-item page after the overview, before the Explore | PDF p. 2; screenshot 02 |
+| 2 | Explore | Creating a Sierpiński Triangle | Explore: Creating a Sierpiński Triangle | How can we create patterns using triangles? | Yes - `OPTIONAL` badge; standards are addressed in other lessons within this course | Fixed - before Lesson 1; also named before Sub-Unit 1 in the overview | PDF p. 3; screenshot 03 |
+| 3 | Lesson | Circles | Lesson 1: Exponent Review | Let's revisit exponents. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 1 | PDF p. 4; screenshot 04 |
+| 4 | Lesson | Combining Exponents | Lesson 2: Equivalent Expressions With Exponents | Let's explore equivalent expressions with exponents. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 2 | PDF p. 5; screenshot 05 |
+| 5 | Lesson | Power Pairs | Lesson 3: Multiplying Powers and Powers of Powers | Let's determine if expressions with exponents are equivalent. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 3 | PDF p. 6; screenshot 06 |
+| 6 | Lesson | Rewriting Powers | Lesson 4: Rewriting Exponential Expressions as a Single Power | Let's rewrite expressions with exponents as a single power. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 4 | PDF p. 7; screenshot 07 |
+| 7 | Lesson | Negative and Zero Exponents | Lesson 5: Using Patterns to Understand Negative and Zero Exponents | Let's explore exponents that are not positive. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 5 | PDF p. 8; screenshot 08 |
+| 8 | Lesson | Write a Rule | Lesson 6: Generalizing Exponent Properties | Let's describe the rules for exponents. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 6 | PDF p. 9; screenshot 09 |
+| 9 | Practice Day | 8.7 Practice Day 1 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-6. Consider using this Practice Day as preparation for the upcoming Sub-Unit Quiz. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, after Lesson 6 and before the Quiz | PDF p. 10; screenshot 10 |
+| 10 | Sub-Unit Quiz | 8.7 Sub-Unit Quiz | Confirmed absent | Learn about your students' understanding of the concepts and skills so far in this unit. This assessment is intended for students to complete using a four function calculator. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 1 | PDF p. 11; screenshot 11 |
+| 11 | Lesson | Scales and Weights, Part 1 | Lesson 7: Describing Large Numbers Using Powers of 10 | Let's explore ways to represent large numbers. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 7 | PDF p. 12; screenshot 12 |
+| 12 | Lesson | Scales and Weights, Part 2 | Lesson 8: Describing Small Numbers Using Powers of 10 | Let's explore ways to represent small numbers using powers of 10. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 8 | PDF p. 13; screenshot 13 |
+| 13 | Lesson | Specific and Scientific | Lesson 9: Definition of Scientific Notation | Let's explore scientific notation. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 9 | PDF p. 14; screenshot 14 |
+| 14 | Lesson | Multiplying and Dividing | Lesson 10: Multiplying and Dividing With Scientific Notation | Let's explore how to multiply and divide with scientific notation. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 10 | PDF p. 15; screenshot 15 |
+| 15 | Lesson | Balance the Scale | Lesson 11: Multiplying, Dividing, and Estimating With Scientific Notation | Let's use multiplication and division to compare large and small numbers in scientific notation. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 11 | PDF p. 16; screenshot 16 |
+| 16 | Lesson | Use Your Powers | Lesson 12: Applications of Arithmetic With Scientific Notation | Let's use scientific notation to help us make calculations with large numbers. | Yes - `OPTIONAL` badge; standards are addressed in other lessons within this course | Fixed - Sub-Unit 2, Lesson 12 | PDF p. 17; screenshot 17 |
+| 17 | Lesson | City Lights | Lesson 13: Adding and Subtracting With Scientific Notation | Let's apply our understanding of place value to add and subtract with scientific notation. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 13 | PDF p. 18; screenshot 18 |
+| 18 | Lesson | Star Power | Lesson 14: Let's Put It to Work | Let's compare the net worths of different celebrities. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 14 | PDF p. 19; screenshot 19 |
+| 19 | Practice Day | 8.7 Practice Day 2 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-14. Consider using this Practice Day as preparation for the upcoming End-of-Unit Assessment. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 2, after Lesson 14 | PDF p. 20; screenshot 20 |
+| 20 | Performance Task | 8.7 Performance Task | Confirmed absent | Assign this summative assessment performance task at the end of the unit to evaluate students' proficiency with the concepts and skills addressed in the unit. | No optional marker or optionality statement; **Confirmed absent** | Fixed - end of unit, after Practice Day 2 | PDF p. 21; screenshot 21 |
+| 21 | Unit Synthesis and Reflection | Unit Synthesis and Reflection | Confirmed absent | Here are six optional activities for students to engage in at the end of a unit to synthesize and/or reflect on their learning from the unit. | The item itself is not marked optional; **Confirmed absent**. Internal activity choice: select one to two tasks before or after the End-of-Unit Assessment. | Fixed - final Unit 7 source page | PDF p. 22; screenshot 22 shows this page only as a thumbnail in a composite unit view |
+
+### Days and Durations
+
+- Unit-level required-day and optional-day totals: **Confirmed absent** from the complete Unit 7 source.
+- Per-item durations or `PlannedDays`: **Confirmed absent** from the complete Unit 7 source.
+- `Practice Day` is a literal publisher Type/title component. It is not treated as evidence that the item has a stated one-day duration.
+- The overview's lesson ranges and `+ Practice Day` / `+ Quiz` structure are preserved as structure, not converted into a day budget.
+- No Unit 7 item has a publisher placement threshold or any other rule that states a duration.
+
+### Material Ambiguities and Unresolved Questions
+
+1. Unit 7 introduces no new literal Type. Its complete Type vocabulary is `Pre-Unit Check`, `Explore`, `Lesson`, `Practice Day`, `Sub-Unit Quiz`, `Performance Task`, and `Unit Synthesis and Reflection`, all previously observed in Math 8 Units 1-6.
+2. No `Investigate` item or other publisher-flexible content appears in the complete Unit 7 source. Therefore Unit 7 adds no flexible-item placement rule or course-level eligibility rule. This does not revise or extend the independent course-level eligibility rules recorded for the Unit 5 and Unit 6 `Investigate` items.
+3. The `8.7 Pre-Unit Check` may be completed before the unit or spread throughout it. This is flexibility in administration, not publisher-flexible sequence placement; the card retains its fixed source position.
+4. `End-of-Unit Assessment` appears in the supporting descriptions for `8.7 Practice Day 2` and `Unit Synthesis and Reflection`. No distinct card or item with that Type/title exists in the complete Unit 7 source. It is therefore not extracted as a separate instructional item. Whether it is publisher shorthand for the visible `8.7 Performance Task` is **not stated** and remains unresolved.
+5. `Unit Synthesis and Reflection` contains six optional internal activities and directs the teacher to select one to two. The source does not mark the enclosing item optional; item-level optionality is therefore **Confirmed absent**, distinct from its internal activity choice.
+6. The PDF contains 22 raster-image pages in publisher order. The screenshot directory also contains 22 PNGs, but they are not 22 one-to-one page captures: screenshots 01-21 match PDF pages 1-21, while screenshot 22 is a composite thumbnail view of the unit rather than a full-page capture of PDF page 22. It visibly includes the final `Unit Synthesis and Reflection` page as a thumbnail; the complete readable evidence for that item is PDF page 22. The curriculum content visible in the screenshot set agrees with the PDF, and no contradictory screenshot evidence was found. The PDF has no reviewable text layer, so transcription was visually validated against both representations.
+
+### Unit 7 Source Coverage
+
+The complete `Curriculm/M8/Unit 7/Unit 7.pdf` was reviewed (22 of 22 pages), and every supplied screenshot was visually inspected (22 of 22 PNGs). Screenshot numbers below are chronological local evidence references used in the item table.
+
+| Ref | Screenshot file | Content verified |
+|---:|---|---|
+| 01 | `Screenshot 2026-07-30 at 10.35.30 PM.png` | Unit overview, exact title and overview, optional Explore, both sub-units and ranges |
+| 02 | `Screenshot 2026-07-30 at 10.35.45 PM.png` | 8.7 Pre-Unit Check |
+| 03 | `Screenshot 2026-07-30 at 10.36.02 PM.png` | Explore: Creating a Sierpiński Triangle and explicit optionality |
+| 04 | `Screenshot 2026-07-30 at 10.36.14 PM.png` | Lesson 1 |
+| 05 | `Screenshot 2026-07-30 at 10.36.30 PM.png` | Lesson 2 |
+| 06 | `Screenshot 2026-07-30 at 10.36.46 PM.png` | Lesson 3 |
+| 07 | `Screenshot 2026-07-30 at 10.36.59 PM.png` | Lesson 4 |
+| 08 | `Screenshot 2026-07-30 at 10.37.11 PM.png` | Lesson 5 |
+| 09 | `Screenshot 2026-07-30 at 10.37.32 PM.png` | Lesson 6 |
+| 10 | `Screenshot 2026-07-30 at 10.37.48 PM.png` | Practice Day 1 |
+| 11 | `Screenshot 2026-07-30 at 10.38.10 PM.png` | Sub-Unit Quiz |
+| 12 | `Screenshot 2026-07-30 at 10.38.29 PM.png` | Lesson 7 |
+| 13 | `Screenshot 2026-07-30 at 10.38.46 PM.png` | Lesson 8 |
+| 14 | `Screenshot 2026-07-30 at 10.39.01 PM.png` | Lesson 9 |
+| 15 | `Screenshot 2026-07-30 at 10.39.15 PM.png` | Lesson 10 |
+| 16 | `Screenshot 2026-07-30 at 10.39.33 PM.png` | Lesson 11 |
+| 17 | `Screenshot 2026-07-30 at 10.39.40 PM.png` | Lesson 12 and explicit optionality |
+| 18 | `Screenshot 2026-07-30 at 10.39.59 PM.png` | Lesson 13 |
+| 19 | `Screenshot 2026-07-30 at 10.40.10 PM.png` | Lesson 14 |
+| 20 | `Screenshot 2026-07-30 at 10.40.23 PM.png` | Practice Day 2 |
+| 21 | `Screenshot 2026-07-30 at 10.40.41 PM.png` | Performance Task |
+| 22 | `Screenshot 2026-07-30 at 10.40.56 PM.png` | Composite thumbnail view of the complete unit; confirms inclusion and relative final position of Unit Synthesis and Reflection, but is not a full-page capture |
+
+The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
