@@ -1,5 +1,17 @@
 # Amplify IM1 Staged Importer
 
+## Math 8 schema-2 payload and guarded core
+
+Math 8 is generated independently from `data/import-staging/amplify-m8.json`:
+
+```bash
+node scripts/import-staging/generate-amplify-m8-apps-script-payload.mjs
+node scripts/import-staging/generate-amplify-m8-apps-script-payload.mjs --check
+node --test scripts/import-staging/amplify-m8.test.mjs scripts/import-staging/amplify-m8-preview.test.mjs scripts/import-staging/amplify-m8-importer.test.mjs
+```
+
+The generated `apps-script-planning/AmplifyM8ImportData.js` preserves schema `2.0.0`, profile `amplify-m8`, artifact/extraction hashes, evidence-bearing nulls, provenance, 8 units, 163 items (161 fixed and 2 flexible), and the artifact-derived confirmation phrase. The core in `apps-script-planning/AmplifyM8Importer.js` is locally dependency-injected and its live spreadsheet entry points explicitly throw `DISARMED`. See `apps-script-planning/AMPLIFY_M8_IMPORTER_README.md`.
+
 Read-only pipeline that turns `Curriculm/M1/IM1_Curriculum_Extraction.md`
 into a machine-readable staging artifact, validates it, and previews what an
 eventual write to Year Planner's `Units`/`Lessons` sheets would do — without

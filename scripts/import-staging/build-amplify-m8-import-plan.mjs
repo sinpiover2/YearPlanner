@@ -10,6 +10,7 @@ const ITEM_VALUE_FIELDS = [
 ];
 
 const blank = (value) => value === null || value === undefined || value === "";
+const TEACHER_OWNED_ITEM_FIELDS = ["PlannedDays", "TeacherNotes", "PrimaryLink"];
 
 function groupBy(rows, key) {
   const result = new Map();
@@ -89,6 +90,12 @@ function planItem(unit, item, rowsById, blockers) {
   }
   const diffs = compareItem(item, row);
   if (diffs.length === 0) return { ...entity, classification: "no-op", reasons: [] };
+  const populatedTeacherFields = TEACHER_OWNED_ITEM_FIELDS.filter((field) => !blank(row[field]));
+  if (populatedTeacherFields.length > 0) {
+    return block(entity, ["preserve-teacher-fields"],
+      `LessonID "${item.itemId}" has publisher-owned changes but also populated teacher-owned fields; automatic update is blocked.`,
+      blockers, { populatedTeacherFields, publisherFieldDiffs: diffs });
+  }
   return {
     ...entity,
     classification: "source-update",

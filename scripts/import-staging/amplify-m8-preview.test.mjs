@@ -41,15 +41,15 @@ test("create rows retain null values beside explicit evidence statuses without i
   assert.equal(u6Practice.evidenceFields.isOptional.status, "not_found_in_reviewable_source");
 });
 
-test("representative fixture proves no-op, narrow source updates, teacher-field preservation, tri-state optionality, and flexible matching", () => {
+test("representative fixture blocks publisher changes on teacher-owned rows while preserving tri-state optionality and flexible matching", () => {
   const plan = buildAmplifyM8ImportPlan(buildArtifact(), fixture("amplify-m8-representative-destination.json"));
   assert.deepEqual(plan.summary.units, { create: 6, "source-update": 1, "no-op": 1, blocked: 0 });
-  assert.deepEqual(plan.summary.items, { create: 155, "source-update": 2, "no-op": 6, blocked: 0 });
+  assert.deepEqual(plan.summary.items, { create: 155, "source-update": 1, "no-op": 6, blocked: 1 });
   assert.equal(findItem(plan, "AMP-M8-U1-I01").classification, "no-op");
   const titleUpdate = findItem(plan, "AMP-M8-U1-I02");
-  assert.equal(titleUpdate.classification, "source-update");
-  assert.deepEqual(titleUpdate.proposedUpdate, { LessonTitle: "8.1 Pre-Unit Check" });
-  assert.deepEqual(titleUpdate.preservedTeacherFields, ["PlannedDays", "TeacherNotes", "PrimaryLink"]);
+  assert.equal(titleUpdate.classification, "blocked");
+  assert.deepEqual(titleUpdate.populatedTeacherFields, ["PlannedDays", "TeacherNotes", "PrimaryLink"]);
+  assert.deepEqual(titleUpdate.publisherFieldDiffs.map((diff) => diff.field), ["LessonTitle"]);
   const trueOptional = findItem(plan, "AMP-M8-U1-I03");
   assert.deepEqual(trueOptional.proposedUpdate, { IsOptional: true });
   assert.equal(findItem(plan, "AMP-M8-U1-I12").classification, "no-op", "null optionality must not compare as false");
@@ -65,7 +65,7 @@ test("legacy M8 rows are counted as protected and never matched by title, order,
   assert.deepEqual(plan.protectedLegacy, { units: 1, items: 1, total: 2 });
   assert.equal(plan.units.some((unit) => unit.unitId === "M8-U1"), false);
   assert.equal(plan.units.flatMap((unit) => unit.items).some((item) => item.itemId === "M8-U1-L1"), false);
-  assert.equal(plan.blockers.some((reason) => reason.includes("M8-U1")), false);
+  assert.equal(plan.blockers.some((reason) => reason.includes('LessonID "M8-U1') || reason.includes('UnitID "M8-U1')), false);
 });
 
 test("duplicate IDs and incompatible exact-ID collisions are blocked with a reason for every blocked classification", () => {

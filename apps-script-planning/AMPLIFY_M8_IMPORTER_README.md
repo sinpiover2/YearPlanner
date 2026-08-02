@@ -1,0 +1,30 @@
+# Amplify Math 8 importer core
+
+This repository contains a deterministic schema-`2.0.0` Apps Script payload and a guarded, locally simulated importer core for the `amplify-m8` profile. It has no armed live spreadsheet entry point: preview, execute, editor-wrapper, and verification entry points explicitly throw `DISARMED`.
+
+## Files
+
+- `AmplifyM8ImportData.js` is generated from `data/import-staging/amplify-m8.json`; never hand-edit it.
+- `AmplifyM8Importer.js` contains pure planning/verification logic plus the dependency-injected local execution sequence.
+- `scripts/import-staging/amplify-m8-importer.test.mjs` runs only against in-memory spreadsheet and lock fakes.
+
+Regenerate and verify the payload with:
+
+```bash
+node scripts/import-staging/generate-amplify-m8-apps-script-payload.mjs
+node scripts/import-staging/generate-amplify-m8-apps-script-payload.mjs --check
+```
+
+## Enforced behavior
+
+- Requires one and only one existing `M8` course in the injected destination context.
+- Matches only exact `AMP-M8-*` IDs; legacy `M8-U*` rows are outside the plan and are never written.
+- Creates serialize supported nulls as blank cells. Updates contain only asserted, changed publisher fields; null and unresolved source fields never clear cells.
+- `PlannedDays`, `TeacherNotes`, and `PrimaryLink` are teacher-owned. Any publisher difference on a row where any of them is populated blocks the import.
+- Duplicate IDs, incompatible ID collisions, and placement changes requiring a structural clear block the import.
+- Fixed items retain numeric `SortOrder` and no asserted placement rule; flexible items retain their exact placement rule and no fixed `SortOrder`.
+- A full backup precedes writes; a lock, second planning pass, narrow field writes, and post-write verification guard the local simulation.
+
+The generated metadata binds the payload to its exact artifact SHA-256, schema, profile, extraction hash, counts, and confirmation phrase. The phrase is `IMPORT_AMPLIFY_M8_<first 12 artifact-hash characters>_<unit count>_<item count>`.
+
+No deployment or spreadsheet access is part of this implementation.
