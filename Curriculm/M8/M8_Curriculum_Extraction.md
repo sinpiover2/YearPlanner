@@ -1,6 +1,6 @@
 # Amplify Math 8 - Curriculum Extraction (Working Draft)
 
-Normalized source document for the Amplify Math 8 to Year Planner curriculum import (Sprint 6.7). Nothing in this file has been imported into Year Planner's `Units`/`Lessons` sheets. This extraction currently contains Units 1-4 only.
+Normalized source document for the Amplify Math 8 to Year Planner curriculum import (Sprint 6.7). Nothing in this file has been imported into Year Planner's `Units`/`Lessons` sheets. This extraction currently contains Units 1-5 only.
 
 Rule followed throughout: **do not infer missing fields.** `Confirmed absent` means the complete relevant unit PDF and all paired screenshots were reviewable and support the absence. `Not found in what was reviewable` is reserved for incomplete or unclear evidence.
 
@@ -382,5 +382,114 @@ The complete `Curriculm/M8/Unit 4/Unit 4.pdf` was reviewed (22 of 22 pages), and
 | 20 | `Screenshot 2026-07-30 at 5.28.53 PM.png` | Practice Day 2 |
 | 21 | `Screenshot 2026-07-30 at 5.29.07 PM.png` | Performance Task |
 | 22 | `Screenshot 2026-07-30 at 5.29.18 PM.png` | Full-unit composite cross-check, including Unit Synthesis and Reflection |
+
+The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
+
+## Unit 5 - Functions and Volume
+
+- **Source label:** 8.5 Unit Overview
+- **Required Days:** Confirmed absent
+- **Optional Days:** Confirmed absent
+
+**Overview (publisher text):**
+
+Students are introduced to the concept of a function as a relationship between inputs and outputs. They examine linear and non-linear functions represented in different ways. Students discover formulas for the volumes of cylinders, cones, and spheres. They determine strategies for calculating unknown dimensions and reason about how the volume of a figure changes as another dimension changes.
+
+### Unit at a Glance
+
+- **Explore: Graphs of Sounds** - `(Optional)` Launch the unit with a non-routine task to investigate the question, "What could a graph of sound look like?"
+- **Investigate: Packing Spheres** - `(Optional)` Invite students to design a container to make sense of how to pack spheres. Use anytime in this course after Unit 5, Lesson 15.
+- **Sub-Unit 1: Introduction to Functions** `(Lessons 1-4)`
+  - Determine whether graphs, tables, or rules represent functions.
+  - **Language Goal:** Describe situations using terms such as *function*, *input*, and *output*.
+- **Sub-Unit 2: Representing and Interpreting Functions** `(Lessons 5-9 + Practice Day + Quiz)`
+  - Create and compare graphs of functions that represent stories.
+  - **Language Goal:** Describe graphs of functions that represent situations.
+- **Sub-Unit 3: Volume** `(Lessons 10-15 + Practice Day)`
+  - Calculate and compare the volumes of cylinders, cones, and spheres.
+  - **Language Goal:** Explain the relationship between the volumes of cylinders, cones, and spheres.
+
+The overview does not include the `8.5 Pre-Unit Check`, the `8.5 Performance Task`, or `Unit Synthesis and Reflection` in its sub-unit ranges. Their pages occur in the publisher's fixed Unit 5 sequence, and they are included below without assigning them to a sub-unit that the source does not assign. `Investigate: Packing Spheres` is overview-only and explicitly publisher-flexible, so it is recorded separately from that fixed sequence.
+
+### Instructional Items
+
+`Type` preserves the literal Math 8 label visible in the source. The 22 items below have fixed publisher placement: each occupies a specific page in the serialized Unit 5 PDF. The separate `Investigate` item has no fixed position and retains the publisher's exact flexible-placement rule rather than receiving an inferred order.
+
+| Order | Type | Title | Subtitle | Summary or description | Optionality | Placement | Evidence |
+|---:|---|---|---|---|---|---|---|
+| 1 | Pre-Unit Check | 8.5 Pre-Unit Check | Confirmed absent | Learn more about your students' understanding of foundational concepts and skills that will support them in the upcoming unit. This pre-unit check is intended for students to complete using a scientific calculator. | Yes - `OPTIONAL` badge; may be given in its entirety before the unit begins or spread out throughout the unit | Fixed - first instructional-item page after the overview, before the Explore | PDF p. 2; screenshot 02 |
+| 2 | Explore | Graphs of Sounds | Explore: Graphs of Sounds | What could a graph of sound look like? | Yes - `OPTIONAL` badge; source says the lesson is optional because the standards are addressed in other lessons within this course | Fixed - before Lesson 1; also named before Sub-Unit 1 in the overview | PDF p. 3; screenshot 03 |
+| 3 | Lesson | Turtle Crossing | Lesson 1: Making Sense of Graphs | Let's make sense of graphs. | Yes - `OPTIONAL` badge; source says the lesson is optional because it addresses standards from a prior course, supporting students in surfacing prior knowledge | Fixed - Sub-Unit 1, Lesson 1 | PDF p. 4; screenshot 04 |
+| 4 | Lesson | Guess My Rule | Lesson 2: Introduction to Functions | Let's explore rules to develop the concept of a function. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 2 | PDF p. 5; screenshot 05 |
+| 5 | Lesson | Function or Not? | Lesson 3: Graphs of Functions and Non-Functions | Let's determine whether a graph represents a function. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 3 | PDF p. 6; screenshot 06 |
+| 6 | Lesson | Dependence Day | Lesson 4: Functions and Equations | Let's explore the relationships between variables of functions. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 4 | PDF p. 7; screenshot 07 |
+| 7 | Lesson | The Tortoise and the Hare | Lesson 5: Interpreting Graphs of Functions | Let's interpret the graph of a function in context. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 5 | PDF p. 8; screenshot 08 |
+| 8 | Lesson | Graphing Stories | Lesson 6: Creating Graphs of Functions | Let's make connections between scenarios and the graphs that represent them. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 6 | PDF p. 9; screenshot 09 |
+| 9 | Lesson | Comparing Linear Functions | Lesson 7: Comparing Representations of Functions | Let's compare linear functions represented in different ways. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 7 | PDF p. 10; screenshot 10 |
+| 10 | Lesson | Charge! | Lesson 8: Modeling With Linear Functions | Let's use linear functions to model a real-world situation. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 8 | PDF p. 11; screenshot 11 |
+| 11 | Lesson | Piecing It Together | Lesson 9: Modeling With Functions | Let's create functions to model data sets. | Yes - `OPTIONAL` badge; source says the lesson is optional because it is an introduction to piecewise functions, which are not formally addressed until Algebra 1 | Fixed - Sub-Unit 2, Lesson 9 | PDF p. 12; screenshot 12 |
+| 12 | Practice Day | 8.5 Practice Day 1 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-9. Consider using this Practice Day as preparation for the upcoming Sub-Unit Quiz. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, after Lesson 9 and before the Quiz | PDF p. 13; screenshot 13 |
+| 13 | Sub-Unit Quiz | 8.5 Sub-Unit Quiz | Confirmed absent | Learn about your students' understanding of the concepts and skills so far in this unit. This assessment is intended for students to complete using a scientific calculator. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 2 | PDF p. 14; screenshot 14 |
+| 14 | Lesson | Volume Lab | Lesson 10: Exploring Volume | Let's estimate volumes of three-dimensional solids. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 10 | PDF p. 15; screenshot 15 |
+| 15 | Lesson | Cylinders | Lesson 11: Volumes of Cylinders | Let's calculate the volumes of cylinders. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 11 | PDF p. 16; screenshot 16 |
+| 16 | Lesson | Scaling Cylinders | Lesson 12: Scaling Cylinders Using Functions | Let's see how changing a cylinder's radius or height impacts its volume. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 12 | PDF p. 17; screenshot 17 |
+| 17 | Lesson | Cones | Lesson 13: Volumes of Cones | Let's explore cones and their volumes. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 13 | PDF p. 18; screenshot 18 |
+| 18 | Lesson | Unknown Dimensions | Lesson 14: Determining Cylinder and Cone Dimensions | Let's determine unknown dimensions. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 14 | PDF p. 19; screenshot 19 |
+| 19 | Lesson | Spheres | Lesson 15: Volumes of Spheres | Let's develop a formula for the volume of a sphere. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 15 | PDF p. 20; screenshot 20 |
+| 20 | Practice Day | 8.5 Practice Day 2 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-15. Consider using this Practice Day as preparation for the upcoming End-of-Unit Assessment. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 3, after Lesson 15 | PDF p. 21; screenshot 21 |
+| 21 | Performance Task | 8.5 Performance Task | Confirmed absent | Assign this summative assessment performance task at the end of the unit to evaluate students' proficiency with the concepts and skills addressed in the unit. | No optional marker or optionality statement; **Confirmed absent** | Fixed - end of unit, after Practice Day 2 | PDF p. 22; screenshot 22 |
+| 22 | Unit Synthesis and Reflection | Unit Synthesis and Reflection | Confirmed absent | Here are six optional activities for students to engage in at the end of a unit to synthesize and/or reflect on their learning from the unit. | The item itself is not marked optional; **Confirmed absent**. Internal activity choice: select one to two tasks before or after the End-of-Unit Assessment. | Fixed - final Unit 5 source page | PDF p. 23; screenshot 23 |
+
+**Flexible-placement item (not part of the fixed sequence above):**
+
+| Order | Type | Title | Subtitle | Summary or description | Optionality | Placement | Evidence |
+|---|---|---|---|---|---|---|---|
+| Confirmed absent - publisher assigns no fixed order | Investigate | Packing Spheres | Investigate: Packing Spheres | Invite students to design a container to make sense of how to pack spheres. | Yes - `(Optional)` in the Unit at a Glance | Publisher-flexible - `Use anytime in this course after Unit 5, Lesson 15.` | PDF p. 1; screenshot 01; no dedicated item page in the complete source |
+
+### Days and Durations
+
+- Unit-level required-day and optional-day totals: **Confirmed absent** from the complete Unit 5 source.
+- Per-item durations or `PlannedDays`: **Confirmed absent** from the complete Unit 5 source.
+- `Practice Day` is a literal publisher Type/title component. It is not treated as evidence that the item has a stated one-day duration.
+- The overview's lesson ranges and `+ Practice Day` / `+ Quiz` structure are preserved as structure, not converted into a day budget.
+- The publisher gives `Investigate: Packing Spheres` a placement threshold after Lesson 15, not a duration.
+
+### Material Ambiguities and Unresolved Questions
+
+1. `Investigate: Packing Spheres` is a newly observed literal Math 8 Type. It appears only in the Unit at a Glance, has no dedicated page, and is explicitly optional and publisher-flexible. The source says to use it anytime in the course after Unit 5, Lesson 15; no fixed order is assigned or inferred.
+2. The `8.5 Pre-Unit Check` may be completed before the unit or spread throughout it. This is flexibility in administration, not publisher-flexible sequence placement; the card retains its fixed source position.
+3. `End-of-Unit Assessment` appears in the supporting descriptions for `8.5 Practice Day 2` and `Unit Synthesis and Reflection`. No distinct card or item with that Type/title exists in the complete Unit 5 source. It is therefore not extracted as a separate instructional item. Whether it is publisher shorthand for the visible `8.5 Performance Task` is **not stated** and remains unresolved.
+4. `Unit Synthesis and Reflection` contains six optional internal activities and directs the teacher to select one to two. The source does not mark the enclosing item optional; item-level optionality is therefore **Confirmed absent**, distinct from its internal activity choice.
+5. The PDF contains 23 raster-image pages in publisher order. The 23 screenshots are individual page captures in the same order. The curriculum content agrees between the PDF and screenshots. The PDF has no reviewable text layer, so transcription was visually validated against both representations.
+
+### Unit 5 Source Coverage
+
+The complete `Curriculm/M8/Unit 5/Unit 5.pdf` was reviewed (23 of 23 pages), and every paired screenshot was visually inspected (23 of 23 PNGs). Screenshot numbers below are local evidence references used in the item tables.
+
+| Ref | Screenshot file | Content verified |
+|---:|---|---|
+| 01 | `Screenshot 2026-07-30 at 5.29.57 PM.png` | Unit overview, exact title and overview, Explore, flexible Investigate, all three sub-units and ranges |
+| 02 | `Screenshot 2026-07-30 at 5.30.09 PM.png` | 8.5 Pre-Unit Check |
+| 03 | `Screenshot 2026-07-30 at 5.30.19 PM.png` | Explore: Graphs of Sounds |
+| 04 | `Screenshot 2026-07-30 at 5.30.28 PM.png` | Lesson 1 and explicit optionality |
+| 05 | `Screenshot 2026-07-30 at 5.30.38 PM.png` | Lesson 2 |
+| 06 | `Screenshot 2026-07-30 at 5.30.58 PM.png` | Lesson 3 |
+| 07 | `Screenshot 2026-07-30 at 5.31.07 PM.png` | Lesson 4 |
+| 08 | `Screenshot 2026-07-30 at 5.31.20 PM.png` | Lesson 5 |
+| 09 | `Screenshot 2026-07-30 at 5.31.32 PM.png` | Lesson 6 |
+| 10 | `Screenshot 2026-07-30 at 5.31.45 PM.png` | Lesson 7 |
+| 11 | `Screenshot 2026-07-30 at 5.31.56 PM.png` | Lesson 8 |
+| 12 | `Screenshot 2026-07-30 at 5.32.06 PM.png` | Lesson 9 and explicit optionality |
+| 13 | `Screenshot 2026-07-30 at 5.32.15 PM.png` | Practice Day 1 |
+| 14 | `Screenshot 2026-07-30 at 5.32.24 PM.png` | Sub-Unit Quiz |
+| 15 | `Screenshot 2026-07-30 at 5.32.34 PM.png` | Lesson 10 |
+| 16 | `Screenshot 2026-07-30 at 5.32.46 PM.png` | Lesson 11 |
+| 17 | `Screenshot 2026-07-30 at 5.32.56 PM.png` | Lesson 12 |
+| 18 | `Screenshot 2026-07-30 at 5.33.05 PM.png` | Lesson 13 |
+| 19 | `Screenshot 2026-07-30 at 5.33.13 PM.png` | Lesson 14 |
+| 20 | `Screenshot 2026-07-30 at 5.33.26 PM.png` | Lesson 15 |
+| 21 | `Screenshot 2026-07-30 at 5.33.46 PM.png` | Practice Day 2 |
+| 22 | `Screenshot 2026-07-30 at 5.33.58 PM.png` | Performance Task |
+| 23 | `Screenshot 2026-07-30 at 5.34.10 PM.png` | Unit Synthesis and Reflection |
 
 The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
