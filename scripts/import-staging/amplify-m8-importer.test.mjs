@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import { buildArtifact } from "./generate-amplify-m8-artifact.mjs";
 import { buildAmplifyM8ImportPlan } from "./build-amplify-m8-import-plan.mjs";
-import { createFakeSpreadsheetFromFixture, createFakeSpreadsheetApp, createFakeLockService } from "./fake-spreadsheet.mjs";
+import { createFakeSpreadsheetFromFixture, createFakeSpreadsheetFromRawSheets, createFakeSpreadsheetApp, createFakeLockService } from "./fake-spreadsheet.mjs";
 
 const require = createRequire(import.meta.url);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -16,6 +16,7 @@ const data = require(path.join(HERE, "../../apps-script-planning/AmplifyM8Import
 const sha256 = (text) => createHash("sha256").update(text).digest("hex");
 const UNIT_HEADERS = importer.AMPLIFY_M8_REQUIRED_UNIT_HEADERS;
 const LESSON_HEADERS = importer.AMPLIFY_M8_REQUIRED_LESSON_HEADERS;
+const COURSE_HEADERS = importer.AMPLIFY_M8_REQUIRED_COURSE_HEADERS;
 
 function metadata(payload, overrides = {}) {
   const bytes = JSON.stringify(payload, null, 2) + "\n";
@@ -47,11 +48,25 @@ function payload() {
 function spreadsheet(destination = { units: [], lessons: [] }) {
   return createFakeSpreadsheetFromFixture(destination, { units: UNIT_HEADERS, lessons: LESSON_HEADERS });
 }
+function previewSpreadsheet({ courses = [{ CourseID: "M8", "Course Name": "Math 8" }], units = [], lessons = [],
+  courseHeaders = COURSE_HEADERS, unitHeaders = UNIT_HEADERS, lessonHeaders = LESSON_HEADERS, omit = [] } = {}) {
+  const rows = {};
+  const values = (headers, objects) => [headers, ...objects.map((object) => headers.map((header) => object[header] ?? ""))];
+  if (!omit.includes("Courses")) rows.Courses = values(courseHeaders, courses);
+  if (!omit.includes("Units")) rows.Units = values(unitHeaders, units);
+  if (!omit.includes("Lessons")) rows.Lessons = values(lessonHeaders, lessons);
+  return createFakeSpreadsheetFromRawSheets(rows);
+}
+function previewDeps(overrides = {}) {
+  const p = overrides.payload || payload();
+  return { spreadsheetApp: createFakeSpreadsheetApp(overrides.spreadsheet || previewSpreadsheet()), sheetId: "local-preview",
+    computeSha256Hex: sha256, payload: p, metadata: overrides.metadata || metadata(p), ...overrides };
+}
 function deps(overrides = {}) {
   const p = overrides.payload || payload();
   return { spreadsheetApp: createFakeSpreadsheetApp(overrides.spreadsheet || spreadsheet()), lockService: createFakeLockService(),
     sheetId: "local-only", computeSha256Hex: sha256, payload: p, metadata: overrides.metadata || metadata(p),
-    courses: [{ CourseID: "M8", CourseName: "Math 8" }], formatTimestamp: () => "2026-08-02 000000", ...overrides };
+    courses: [{ CourseID: "M8", "Course Name": "Math 8" }], formatTimestamp: () => "2026-08-02 000000", ...overrides };
 }
 
 test("generated payload preserves schema/profile/hash/counts and exact confirmation phrase", () => {
@@ -116,8 +131,82 @@ test("duplicate IDs, incompatible collisions, and structural clears block", () =
 
 test("requires exactly one existing compatible M8 course", () => {
   assert.equal(importer.amplifyM8ValidateCourse_([]).valid, false);
-  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8" }]).valid, true);
-  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8" }, { CourseID: "M8" }]).valid, false);
+  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8", "Course Name": "Math 8" }]).valid, true);
+  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8", "Course Name": "Math 8" }, { CourseID: "M8", "Course Name": "Math 8" }]).valid, false);
+  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8", "Course Name": "Mathematics 8" }]).valid, false);
+});
+
+test("read-only preview allows exactly one compatible M8 course and always reports zero writes", () => {
+  const report = importer.amplifyM8BuildPreviewReport_(previewDeps(), new Date("2026-08-02T00:00:00.000Z"));
+  assert.equal(report.courseValidation.valid, true);
+  assert.equal(report.destinationSchema.valid, true);
+  assert.ok(report.plan);
+  assert.deepEqual(report.plan.summary, { units: { create: 1, "source-update": 0, "no-op": 0, blocked: 0 },
+    items: { create: 2, "source-update": 0, "no-op": 0, blocked: 0 } });
+  assert.equal(report.writesOccurred, false);
+});
+
+test("read-only preview blocks missing, duplicate, or incompatible M8 course identity", () => {
+  for (const courses of [[],
+    [{ CourseID: "M8", "Course Name": "Math 8" }, { CourseID: "M8", "Course Name": "Math 8" }],
+    [{ CourseID: "M8", "Course Name": "Wrong" }],
+    [{ CourseID: "MATH8", "Course Name": "Math 8" }]]) {
+    const report = importer.amplifyM8BuildPreviewReport_(previewDeps({ spreadsheet: previewSpreadsheet({ courses }) }), new Date(0));
+    assert.equal(report.courseValidation.valid, false);
+    assert.equal(report.plan, null);
+    assert.equal(report.writesOccurred, false);
+  }
+});
+
+test("read-only preview requires all three sheets and required headers before classification", () => {
+  for (const name of ["Courses", "Units", "Lessons"]) {
+    const report = importer.amplifyM8BuildPreviewReport_(previewDeps({ spreadsheet: previewSpreadsheet({ omit: [name] }) }), new Date(0));
+    assert.equal(report.destinationSchema.valid, false);
+    assert.equal(report.plan, null);
+    assert.match(report.destinationSchema.errors.join(" "), new RegExp(name));
+  }
+  for (const [kind, headers] of [["courseHeaders", COURSE_HEADERS], ["unitHeaders", UNIT_HEADERS], ["lessonHeaders", LESSON_HEADERS]]) {
+    for (const header of headers) {
+      const options = { [kind]: headers.filter((value) => value !== header) };
+      const report = importer.amplifyM8BuildPreviewReport_(previewDeps({ spreadsheet: previewSpreadsheet(options) }), new Date(0));
+      assert.equal(report.destinationSchema.valid, false);
+      assert.equal(report.plan, null);
+      assert.match(report.destinationSchema.errors.join(" "), new RegExp(header.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    }
+  }
+});
+
+test("read-only preview reads only approved sheets and fields and cannot mutate fake state", () => {
+  const s = previewSpreadsheet();
+  for (const name of ["Courses", "Units", "Lessons"]) {
+    s.sheetsByName[name].values[0].push("NotApprovedForPreview");
+    for (let index = 1; index < s.sheetsByName[name].values.length; index += 1) s.sheetsByName[name].values[index].push("secret");
+  }
+  s.sheetsByName.Unrelated = s.sheetsByName.Units.clone();
+  const before = JSON.stringify(s.sheetsByName);
+  const requestedSheets = [];
+  const originalGetSheet = s.getSheetByName.bind(s);
+  s.getSheetByName = (name) => { requestedSheets.push(name); return originalGetSheet(name); };
+  for (const sheet of Object.values(s.sheetsByName)) {
+    for (const method of ["appendRow", "deleteRow", "insertColumnsAfter"]) sheet[method] = () => { throw new Error(`write method called: ${method}`); };
+    const originalRange = sheet.getRange.bind(sheet);
+    const readRanges = [];
+    Object.defineProperty(sheet, "readRanges", { value: readRanges, enumerable: false });
+    sheet.getRange = (...args) => { readRanges.push(args); const range = originalRange(...args); range.setValue = range.setValues = () => { throw new Error("range write called"); }; return range; };
+  }
+  s.copy = () => { throw new Error("backup called"); };
+  const fixtureBefore = JSON.stringify(payload());
+  const d = previewDeps({ spreadsheet: s });
+  const report = importer.amplifyM8BuildPreviewReport_(d, new Date(0));
+  assert.deepEqual(requestedSheets, ["Courses", "Units", "Lessons"]);
+  for (const name of ["Courses", "Units", "Lessons"]) {
+    const sheet = s.sheetsByName[name];
+    const forbiddenColumn = sheet.values[0].indexOf("NotApprovedForPreview") + 1;
+    assert.equal(sheet.readRanges.some((args) => args[0] > 1 && args[1] === forbiddenColumn), false);
+  }
+  assert.equal(report.writesOccurred, false);
+  assert.equal(JSON.stringify(d.payload), fixtureBefore);
+  assert.equal(JSON.stringify(s.sheetsByName), before);
 });
 
 test("confirmation, lock, and backup guards fail before writes", () => {

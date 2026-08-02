@@ -18,6 +18,8 @@ node scripts/import-staging/generate-amplify-m8-apps-script-payload.mjs --check
 ## Enforced behavior
 
 - Requires one and only one existing `M8` course in the injected destination context.
+- The future preview is still behind the unconditional `DISARMED` wrappers. Its dependency-injected core reads only `Courses`, `Units`, and `Lessons`; requires exactly one `Courses` row with `CourseID` `M8` and `Course Name` `Math 8`; validates required headers before classification; and projects only the fields needed for identity, collision, protection, ownership, and plan classification.
+- Preview performs no lock, backup, version, deployment, or spreadsheet mutation and always reports `writesOccurred: false`. Local tests—not live authorization—are the only supported way to invoke this core today.
 - Matches only exact `AMP-M8-*` IDs; legacy `M8-U*` rows are outside the plan and are never written.
 - Creates serialize supported nulls as blank cells. Updates contain only asserted, changed publisher fields; null and unresolved source fields never clear cells.
 - `PlannedDays`, `TeacherNotes`, and `PrimaryLink` are teacher-owned. Any publisher difference on a row where any of them is populated blocks the import.

@@ -36,6 +36,8 @@
 
 const AMPLIFY_M8_IMPORTER_SUPPORTED_SCHEMA_VERSION = "2.0.0";
 
+const AMPLIFY_M8_REQUIRED_COURSE_HEADERS = ["CourseID", "Course Name"];
+
 // Corrected per the Sprint 5 read-only production audit (see
 // AMPLIFY_M8_IMPORT_IMPLEMENTATION_SPEC.md's Sprint 6.1 section): the real
 // column is UnitTitle, not UnitName, and the real sheet also carries a
@@ -217,6 +219,10 @@ function amplifyM8ValidatePayloadStructure_(payload) {
 
 // headers = { units: [...headerNames], lessons: [...headerNames] }
 function amplifyM8ValidateDestinationSchema_(headers) {
+  const validateCourses = Object.prototype.hasOwnProperty.call(headers, "courses");
+  const missingCourseHeaders = validateCourses ? AMPLIFY_M8_REQUIRED_COURSE_HEADERS.filter(function (h) {
+    return (headers.courses || []).indexOf(h) === -1;
+  }) : [];
   const missingUnitHeaders = AMPLIFY_M8_REQUIRED_UNIT_HEADERS.filter(function (h) {
     return (headers.units || []).indexOf(h) === -1;
   });
@@ -225,6 +231,9 @@ function amplifyM8ValidateDestinationSchema_(headers) {
   });
 
   const errors = [];
+  if (missingCourseHeaders.length > 0) {
+    errors.push(`Courses sheet is missing required column(s): ${missingCourseHeaders.join(", ")}.`);
+  }
   if (missingUnitHeaders.length > 0) {
     errors.push(`Units sheet is missing required column(s): ${missingUnitHeaders.join(", ")}.`);
   }
@@ -232,7 +241,7 @@ function amplifyM8ValidateDestinationSchema_(headers) {
     errors.push(`Lessons sheet is missing required column(s): ${missingLessonHeaders.join(", ")}.`);
   }
 
-  return { valid: errors.length === 0, errors, missingUnitHeaders, missingLessonHeaders };
+  return { valid: errors.length === 0, errors, missingCourseHeaders, missingUnitHeaders, missingLessonHeaders };
 }
 
 // --- Import plan (ports the exact decision table already proven in
@@ -518,6 +527,12 @@ function amplifyM8ValidateCourse_(courses) {
   if (matches.length !== 1) {
     return { valid: false, errors: [`Expected exactly one existing M8 course; found ${matches.length}.`] };
   }
+  if (matches[0]["Course Name"] !== "Math 8") {
+    return {
+      valid: false,
+      errors: [`CourseID "M8" must have course label "Math 8"; found ${JSON.stringify(matches[0]["Course Name"])}.`],
+    };
+  }
   return { valid: true, errors: [], course: matches[0] };
 }
 
@@ -710,6 +725,7 @@ function amplifyM8BuildPreviewSummary_(fullReport) {
     .concat(fullReport.payloadIntegrity ? fullReport.payloadIntegrity.errors || [] : [])
     .concat(fullReport.payloadStructure ? fullReport.payloadStructure.errors || [] : [])
     .concat(fullReport.destinationSchema ? fullReport.destinationSchema.errors || [] : [])
+    .concat(fullReport.courseValidation ? fullReport.courseValidation.errors || [] : [])
     .concat(plan ? plan.blockers || [] : []);
 
   const safeToAuthorizeExecute =
@@ -718,6 +734,7 @@ function amplifyM8BuildPreviewSummary_(fullReport) {
     !!fullReport.payloadIntegrity && fullReport.payloadIntegrity.valid === true &&
     !!fullReport.payloadStructure && fullReport.payloadStructure.valid === true &&
     !!fullReport.destinationSchema && fullReport.destinationSchema.valid === true &&
+    !!fullReport.courseValidation && fullReport.courseValidation.valid === true &&
     !!plan && plan.blocked === false &&
     trueConflictCount === 0 &&
     collectedErrors.length === 0;
@@ -750,6 +767,9 @@ function amplifyM8BuildPreviewSummary_(fullReport) {
           missingUnitHeaders: fullReport.destinationSchema.missingUnitHeaders || [],
           missingLessonHeaders: fullReport.destinationSchema.missingLessonHeaders || [],
         }
+      : null,
+    courseValidation: fullReport.courseValidation
+      ? { valid: fullReport.courseValidation.valid, errors: fullReport.courseValidation.errors || [] }
       : null,
     plan: plan ? { blocked: plan.blocked, blockers: plan.blockers || [] } : null,
     unitClassificationCounts: unitCounts,
@@ -823,6 +843,35 @@ function amplifyM8ReadSheet_(spreadsheet, sheetName) {
   return { present: true, name: sheetName, headers: headers, rawRows: rawRows, objects: objects, rowCount: objects.length };
 }
 
+// Read-only projection used only by the future preview. The header row is
+// read first so schema validation can happen before classification; data is
+// then fetched only for explicitly approved fields. No range is ever written.
+function amplifyM8ReadProjectedSheet_(spreadsheet, sheetName, requiredFields) {
+  const sheet = spreadsheet.getSheetByName(sheetName);
+  if (!sheet) return { present: false, name: sheetName };
+
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  if (lastRow === 0 || lastColumn === 0) {
+    return { present: true, name: sheetName, headers: [], objects: [], rowCount: 0 };
+  }
+
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(function (h) { return String(h); });
+  const rowCount = Math.max(0, lastRow - 1);
+  const objects = Array.from({ length: rowCount }, function (_, index) { return { _rowNumber: index + 2 }; });
+
+  if (rowCount > 0) {
+    requiredFields.forEach(function (field) {
+      const columnIndex = headers.indexOf(field);
+      if (columnIndex === -1) return;
+      const values = sheet.getRange(2, columnIndex + 1, rowCount, 1).getValues();
+      values.forEach(function (row, index) { objects[index][field] = row[0]; });
+    });
+  }
+
+  return { present: true, name: sheetName, headers: headers, objects: objects, rowCount: rowCount };
+}
+
 function amplifyM8RealSha256Hex_(text) {
   const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8);
   return bytes
@@ -866,16 +915,21 @@ function amplifyM8BuildPreviewReport_(deps, startedAt) {
   const structure = amplifyM8ValidatePayloadStructure_(payload);
 
   const spreadsheet = deps.spreadsheetApp.openById(deps.sheetId);
-  const unitsSheet = amplifyM8ReadSheet_(spreadsheet, "Units");
-  const lessonsSheet = amplifyM8ReadSheet_(spreadsheet, "Lessons");
+  const coursesSheet = amplifyM8ReadProjectedSheet_(spreadsheet, "Courses", AMPLIFY_M8_REQUIRED_COURSE_HEADERS);
+  const unitsSheet = amplifyM8ReadProjectedSheet_(spreadsheet, "Units", AMPLIFY_M8_REQUIRED_UNIT_HEADERS);
+  const lessonsSheet = amplifyM8ReadProjectedSheet_(spreadsheet, "Lessons", AMPLIFY_M8_REQUIRED_LESSON_HEADERS);
 
-  const sheetsPresent = { units: unitsSheet.present, lessons: lessonsSheet.present };
+  const sheetsPresent = { courses: coursesSheet.present, units: unitsSheet.present, lessons: lessonsSheet.present };
+  const missingSheets = [coursesSheet, unitsSheet, lessonsSheet].filter(function (sheet) { return !sheet.present; }).map(function (sheet) { return sheet.name; });
   const schema =
-    unitsSheet.present && lessonsSheet.present
-      ? amplifyM8ValidateDestinationSchema_({ units: unitsSheet.headers, lessons: lessonsSheet.headers })
-      : { valid: false, errors: ["Units and/or Lessons sheet not found."] };
+    missingSheets.length === 0
+      ? amplifyM8ValidateDestinationSchema_({ courses: coursesSheet.headers, units: unitsSheet.headers, lessons: lessonsSheet.headers })
+      : { valid: false, errors: [`Required sheet(s) not found: ${missingSheets.join(", ")}.`], missingCourseHeaders: [], missingUnitHeaders: [], missingLessonHeaders: [] };
+  const courseValidation = schema.valid
+    ? amplifyM8ValidateCourse_(coursesSheet.objects)
+    : { valid: false, errors: ["Course identity was not evaluated because required sheet schema validation failed."] };
 
-  const canBuildPlan = integrity.valid && structure.valid && schema.valid;
+  const canBuildPlan = integrity.valid && structure.valid && schema.valid && courseValidation.valid;
   const plan = canBuildPlan
     ? amplifyM8BuildImportPlan_(payload, { units: unitsSheet.objects, lessons: lessonsSheet.objects })
     : null;
@@ -890,6 +944,7 @@ function amplifyM8BuildPreviewReport_(deps, startedAt) {
     payloadIntegrity: integrity,
     payloadStructure: structure,
     destinationSchema: schema,
+    courseValidation: courseValidation,
     plan: plan,
     writesOccurred: false,
     note: "This preview performed zero writes. No spreadsheet was modified.",
@@ -1297,6 +1352,7 @@ function verifyAmplifyM8Import() {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     AMPLIFY_M8_IMPORTER_SUPPORTED_SCHEMA_VERSION,
+    AMPLIFY_M8_REQUIRED_COURSE_HEADERS,
     AMPLIFY_M8_REQUIRED_UNIT_HEADERS,
     AMPLIFY_M8_REQUIRED_LESSON_HEADERS,
     AMPLIFY_M8_TEACHER_OWNED_LESSON_FIELDS,
@@ -1313,6 +1369,7 @@ if (typeof module !== "undefined" && module.exports) {
     amplifyM8EmptyClassificationCounts_,
     amplifyM8BuildPreviewSummary_,
     amplifyM8ReadSheet_,
+    amplifyM8ReadProjectedSheet_,
     amplifyM8CreateBackup_,
     amplifyM8ApplyPlan_,
     amplifyM8PlansEqual_,
