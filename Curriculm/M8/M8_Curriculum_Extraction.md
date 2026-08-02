@@ -1,6 +1,6 @@
 # Amplify Math 8 - Curriculum Extraction (Working Draft)
 
-Normalized source document for the Amplify Math 8 to Year Planner curriculum import (Sprint 6.7). Nothing in this file has been imported into Year Planner's `Units`/`Lessons` sheets. This extraction currently contains Units 1-3 only.
+Normalized source document for the Amplify Math 8 to Year Planner curriculum import (Sprint 6.7). Nothing in this file has been imported into Year Planner's `Units`/`Lessons` sheets. This extraction currently contains Units 1-4 only.
 
 Rule followed throughout: **do not infer missing fields.** `Confirmed absent` means the complete relevant unit PDF and all paired screenshots were reviewable and support the absence. `Not found in what was reviewable` is reserved for incomplete or unclear evidence.
 
@@ -285,5 +285,102 @@ The complete `Curriculm/M8/Unit 3/Unit 3.pdf` was reviewed (21 of 21 pages), and
 | 19 | `Screenshot 2026-07-30 at 5.09.06 PM.png` | Practice Day 2 |
 | 20 | `Screenshot 2026-07-30 at 5.09.16 PM.png` | Performance Task |
 | 21 | `Screenshot 2026-07-30 at 5.09.28 PM.png` | Unit Synthesis and Reflection |
+
+The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
+
+## Unit 4 - Linear Equations and Linear Systems
+
+- **Source label:** 8.4 Unit Overview
+- **Required Days:** Confirmed absent
+- **Optional Days:** Confirmed absent
+
+**Overview (publisher text):**
+
+Students solve linear equations and determine the number of possible solutions. They also solve systems of two linear equations algebraically and graphically.
+
+### Unit at a Glance
+
+- **Explore: Equation Puzzles** - `(Optional)` Launch the unit with a non-routine task to investigate the question, "How is an equation like a puzzle?"
+- **Sub-Unit 1: Solving Linear Equations** `(Lessons 1-8 + Practice Day + Quiz)`
+  - Write and solve equations with variables on both sides of the equal sign.
+  - Determine the number of solutions to a linear equation.
+  - **Language Goal:** Analyze strategies for solving linear equations in one variable.
+- **Sub-Unit 2: Solve Systems of Equations** `(Lessons 9-14 + Practice Day)`
+  - Solve systems of linear equations in two variables graphically and algebraically.
+  - **Language Goal:** Interpret the intersection point of two linear relationships in context given their graphs or equations.
+  - **Language Goal:** Describe strategies for solving systems of linear equations.
+
+The overview does not include the `8.4 Pre-Unit Check`, the `8.4 Performance Task`, or `Unit Synthesis and Reflection` in its sub-unit ranges. Their pages occur in the publisher's Unit 4 sequence, and they are included below without assigning them to a sub-unit that the source does not assign.
+
+### Instructional Items
+
+`Type` preserves the literal Math 8 label visible in the source. All items have fixed publisher placement in this source: each occupies a specific page in the serialized Unit 4 PDF, and no item has publisher-flexible placement language. This records source sequence, not an inferred instructional-day duration.
+
+| Order | Type | Title | Subtitle | Summary or description | Optionality | Placement | Evidence |
+|---:|---|---|---|---|---|---|---|
+| 1 | Pre-Unit Check | 8.4 Pre-Unit Check | Confirmed absent | Learn more about your students' understanding of foundational concepts and skills that will support them in the upcoming unit. This pre-unit check is intended for students to complete using a scientific calculator. | Yes - `OPTIONAL` badge; may be given in its entirety before the unit begins or spread out throughout the unit | Fixed - first instructional-item page after the overview, before the Explore | PDF p. 2; screenshot 02 |
+| 2 | Explore | Equation Puzzles | Explore: Equation Puzzles | How is an equation like a puzzle? | Yes - `OPTIONAL` badge; source says the lesson is optional because the standards are addressed in other lessons within this course | Fixed - before Lesson 1; also named before Sub-Unit 1 in the overview | PDF p. 3; screenshot 03 |
+| 3 | Lesson | Number Machines | Lesson 1: Exploring Inputs and Outputs | Let's investigate some number machines. | Yes - `OPTIONAL` badge; source says the lesson is optional because it addresses standards from a prior course, supporting students in drawing out prior knowledge | Fixed - Sub-Unit 1, Lesson 1 | PDF p. 4; screenshot 04 |
+| 4 | Lesson | Keep It Balanced | Lesson 2: Creating Equivalent Equations | Let's balance hanger diagrams. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 2 | PDF p. 5; screenshot 05 |
+| 5 | Lesson | Balanced Moves | Lesson 3: Creating More Equivalent Equations | Let's rewrite equations while keeping the same solutions. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 3 | PDF p. 6; screenshot 06 |
+| 6 | Lesson | More Balanced Moves | Lesson 4: Solving Equations | Let's solve some equations. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 4 | PDF p. 7; screenshot 07 |
+| 7 | Lesson | Equation Roundtable | Lesson 5: Analyzing Unbalanced Equations | Let's analyze balanced and unbalanced equation moves. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 5 | PDF p. 8; screenshot 08 |
+| 8 | Lesson | All, Some, or None? Part 1 | Lesson 6: How Many Solutions? | Let's think about how many solutions an equation can have. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 6 | PDF p. 9; screenshot 09 |
+| 9 | Lesson | Strategic Solving, Part 1 | Lesson 7: Solving Many Types of Equations | Let's solve linear equations with no solution, one solution, and infinitely many solutions. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 7 | PDF p. 10; screenshot 10 |
+| 10 | Lesson | When Will They Meet? | Lesson 8: Solving Linear Equations in Context | Let's use equations to think about situations. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 8 | PDF p. 11; screenshot 11 |
+| 11 | Practice Day | 8.4 Practice Day 1 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-8. Consider using this Practice Day as preparation for the upcoming Sub-Unit Quiz. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, after Lesson 8 and before the Quiz | PDF p. 12; screenshot 12 |
+| 12 | Sub-Unit Quiz | 8.4 Sub-Unit Quiz | Confirmed absent | Learn about your students' understanding of the concepts and skills so far in this unit. This assessment is intended for students to complete using a scientific calculator. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 1 | PDF p. 13; screenshot 13 |
+| 13 | Lesson | On or Off the Line? | Lesson 9: Interpreting Points On or Off the Line | Let's interpret the meaning of points on and off lines. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 9 | PDF p. 14; screenshot 14 |
+| 14 | Lesson | On Both Lines | Lesson 10: Representing Systems of Linear Equations | Let's use lines to analyze real-world situations. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 10 | PDF p. 15; screenshot 15 |
+| 15 | Lesson | Make Them Balance | Lesson 11: Graphing Systems of Linear Equations | Let's explore solutions to more than one linear relationship. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 11 | PDF p. 16; screenshot 16 |
+| 16 | Lesson | Line Zapper | Lesson 12: Solving Systems of Linear Equations | Let's solve systems of linear equations. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 12 | PDF p. 17; screenshot 17 |
+| 17 | Lesson | All, Some, or None? Part 2 | Lesson 13: Systems of Equations with No, One, or Many Solutions | Let's solve systems with no solution and infinitely many solutions. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 13 | PDF p. 18; screenshot 18 |
+| 18 | Lesson | Strategic Solving, Part 2 | Lesson 14: Solving More Systems of Equations | Let's explore strategies for solving systems of equations. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 14 | PDF p. 19; screenshot 19 |
+| 19 | Practice Day | 8.4 Practice Day 2 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-14. Consider using this Practice Day as preparation for the upcoming End-of-Unit Assessment. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 2, after Lesson 14 | PDF p. 20; screenshot 20 |
+| 20 | Performance Task | 8.4 Performance Task | Confirmed absent | Assign this summative assessment performance task at the end of the unit to evaluate students' proficiency with the concepts and skills addressed in the unit. | No optional marker or optionality statement; **Confirmed absent** | Fixed - end of unit, after Practice Day 2 | PDF p. 21; screenshot 21 |
+| 21 | Unit Synthesis and Reflection | Unit Synthesis and Reflection | Confirmed absent | Here are six optional activities for students to engage in at the end of a unit to synthesize and/or reflect on their learning from the unit. | The item itself is not marked optional; **Confirmed absent**. Internal activity choice: select one to two tasks before or after the End-of-Unit Assessment. | Fixed - final Unit 4 source page | PDF p. 22; screenshot 22 |
+
+### Days and Durations
+
+- Unit-level required-day and optional-day totals: **Confirmed absent** from the complete Unit 4 source.
+- Per-item durations or `PlannedDays`: **Confirmed absent** from the complete Unit 4 source.
+- `Practice Day` is a literal publisher Type/title component. It is not treated as evidence that the item has a stated one-day duration.
+- The overview's lesson ranges and `+ Practice Day` / `+ Quiz` structure are preserved as structure, not converted into a day budget.
+
+### Material Ambiguities and Unresolved Questions
+
+1. The `8.4 Pre-Unit Check` may be completed before the unit or spread throughout it. This is flexibility in administration, not a publisher-flexible sequence item comparable to a source that explicitly has no fixed position; the card retains its fixed source position.
+2. `End-of-Unit Assessment` appears in the supporting descriptions for `8.4 Practice Day 2` and `Unit Synthesis and Reflection`. No distinct card or item with that Type/title exists in the complete Unit 4 source. It is therefore not extracted as a separate instructional item. Whether it is publisher shorthand for the visible `8.4 Performance Task` is **not stated** and remains unresolved.
+3. `Unit Synthesis and Reflection` contains six optional internal activities and directs the teacher to select one to two. The source does not mark the enclosing item optional; item-level optionality is therefore **Confirmed absent**, distinct from its internal activity choice.
+4. The PDF contains 22 raster-image pages in publisher order. The 22 screenshots include 21 individual page captures plus one full-unit composite capture; the composite includes the final `Unit Synthesis and Reflection` page and duplicates the other pages for cross-checking. The curriculum content agrees between the PDF and screenshots. The PDF has no reviewable text layer, so transcription was visually validated against both representations.
+
+### Unit 4 Source Coverage
+
+The complete `Curriculm/M8/Unit 4/Unit 4.pdf` was reviewed (22 of 22 pages), and every screenshot was visually inspected (22 of 22 PNGs). Screenshot numbers below are local evidence references used in the item table.
+
+| Ref | Screenshot file | Content verified |
+|---:|---|---|
+| 01 | `Screenshot 2026-07-30 at 5.16.34 PM.png` | Unit overview, exact title and overview, Explore, both sub-units and ranges |
+| 02 | `Screenshot 2026-07-30 at 5.16.49 PM.png` | 8.4 Pre-Unit Check |
+| 03 | `Screenshot 2026-07-30 at 5.23.11 PM.png` | Explore: Equation Puzzles |
+| 04 | `Screenshot 2026-07-30 at 5.23.20 PM.png` | Lesson 1 and explicit optionality |
+| 05 | `Screenshot 2026-07-30 at 5.23.31 PM.png` | Lesson 2 |
+| 06 | `Screenshot 2026-07-30 at 5.24.47 PM.png` | Lesson 3 |
+| 07 | `Screenshot 2026-07-30 at 5.24.56 PM.png` | Lesson 4 |
+| 08 | `Screenshot 2026-07-30 at 5.25.08 PM.png` | Lesson 5 |
+| 09 | `Screenshot 2026-07-30 at 5.25.36 PM.png` | Lesson 6 |
+| 10 | `Screenshot 2026-07-30 at 5.25.53 PM.png` | Lesson 7 |
+| 11 | `Screenshot 2026-07-30 at 5.26.06 PM.png` | Lesson 8 |
+| 12 | `Screenshot 2026-07-30 at 5.26.24 PM.png` | Practice Day 1 |
+| 13 | `Screenshot 2026-07-30 at 5.26.36 PM.png` | Sub-Unit Quiz |
+| 14 | `Screenshot 2026-07-30 at 5.27.04 PM.png` | Lesson 9 |
+| 15 | `Screenshot 2026-07-30 at 5.27.16 PM.png` | Lesson 10 |
+| 16 | `Screenshot 2026-07-30 at 5.27.32 PM.png` | Lesson 11 |
+| 17 | `Screenshot 2026-07-30 at 5.27.44 PM.png` | Lesson 12 |
+| 18 | `Screenshot 2026-07-30 at 5.27.56 PM.png` | Lesson 13 |
+| 19 | `Screenshot 2026-07-30 at 5.28.09 PM.png` | Lesson 14 |
+| 20 | `Screenshot 2026-07-30 at 5.28.53 PM.png` | Practice Day 2 |
+| 21 | `Screenshot 2026-07-30 at 5.29.07 PM.png` | Performance Task |
+| 22 | `Screenshot 2026-07-30 at 5.29.18 PM.png` | Full-unit composite cross-check, including Unit Synthesis and Reflection |
 
 The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
