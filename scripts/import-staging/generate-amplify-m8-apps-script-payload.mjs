@@ -44,14 +44,20 @@ export function buildGeneratedFile() {
   ].join("\n");
 }
 
-const generated = buildGeneratedFile();
-if (process.argv.includes("--check")) {
-  if (!existsSync(OUTPUT_PATH) || readFileSync(OUTPUT_PATH, "utf8") !== generated) {
-    console.error("FAIL: AmplifyM8ImportData.js differs from deterministic generation.");
-    process.exit(1);
+export function runCli(args = process.argv.slice(2)) {
+  const generated = buildGeneratedFile();
+  if (args.includes("--check")) {
+    if (!existsSync(OUTPUT_PATH) || readFileSync(OUTPUT_PATH, "utf8") !== generated) {
+      console.error("FAIL: AmplifyM8ImportData.js differs from deterministic generation.");
+      process.exitCode = 1;
+      return;
+    }
+    console.log("OK: AmplifyM8ImportData.js matches deterministic generation.");
+  } else {
+    writeFileSync(OUTPUT_PATH, generated, "utf8");
+    console.log(`Wrote ${OUTPUT_PATH} (${generated.length} bytes).`);
   }
-  console.log("OK: AmplifyM8ImportData.js matches deterministic generation.");
-} else {
-  writeFileSync(OUTPUT_PATH, generated, "utf8");
-  console.log(`Wrote ${OUTPUT_PATH} (${generated.length} bytes).`);
 }
+
+const isDirectExecution = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isDirectExecution) runCli();

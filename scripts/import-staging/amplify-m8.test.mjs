@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,6 +12,18 @@ import { M8_EXPECTED_UNIT_COUNTS, M8_TYPES, validateArtifact } from "./validate-
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const clone = (value) => structuredClone(value);
 const unit = (artifact, number) => artifact.units.find((entry) => entry.unitNumber === number);
+
+test("importing the Apps Script payload generator performs no CLI generation or payload write", () => {
+  const output = path.join(ROOT, "apps-script-planning/AmplifyM8ImportData.js");
+  const generator = path.join(ROOT, "scripts/import-staging/generate-amplify-m8-apps-script-payload.mjs");
+  const beforeBytes = readFileSync(output);
+  const beforeMtime = statSync(output, { bigint: true }).mtimeNs;
+  const child = spawnSync(process.execPath, ["--input-type=module", "--eval", `await import(${JSON.stringify(`${generator}?import-side-effect-test=${Date.now()}`)})`], { encoding: "utf8" });
+  assert.equal(child.status, 0, child.stderr);
+  assert.equal(child.stdout, "");
+  assert.deepEqual(readFileSync(output), beforeBytes);
+  assert.equal(statSync(output, { bigint: true }).mtimeNs, beforeMtime);
+});
 
 test("two in-memory Math 8 builds are byte-identical", () => {
   assert.equal(serializeArtifact(buildArtifact()), serializeArtifact(buildArtifact()));

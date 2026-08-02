@@ -1117,6 +1117,7 @@ function amplifyM8ExecuteLocked_(confirmation, deps) {
   const payload = deps.payload;
   const report = {
     mode: "execute",
+    success: false,
     timestamp: startedAt.toISOString(),
     artifact: { schemaVersion: metadata.schemaVersion, sha256: metadata.artifactSha256, unitCount: metadata.unitCount, itemCount: metadata.itemCount },
     confirmationAccepted: false,
@@ -1252,6 +1253,7 @@ function amplifyM8ExecuteLocked_(confirmation, deps) {
 
     report.errorStage = null;
     report.errorMessage = null;
+    report.success = true;
     return report;
   } catch (error) {
     report.errorStage = report.errorStage || "exception";

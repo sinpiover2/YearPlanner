@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 import { buildArtifact } from "./generate-amplify-m8-artifact.mjs";
 import { buildAmplifyM8ImportPlan } from "./build-amplify-m8-import-plan.mjs";
 import { createFakeSpreadsheetFromFixture, createFakeSpreadsheetApp, createFakeLockService } from "./fake-spreadsheet.mjs";
@@ -90,14 +91,19 @@ test("publisher difference on any teacher-owned row is blocked", () => {
   assert.deepEqual(item.populatedTeacherFields, ["PlannedDays"]);
 });
 
-test("exact IDs only; legacy M8 rows are untouched", () => {
+test("exact IDs only; simulated execution leaves internal legacy M8 rows byte-for-byte untouched", () => {
   const p = payload();
   const destination = { units: [{ UnitID: "M8-U1", CourseID: "M8", UnitTitle: "Legacy" }], lessons: [{ LessonID: "M8-U1-L1", UnitID: "M8-U1", CourseID: "M8" }] };
-  const before = structuredClone(destination);
-  const plan = importer.amplifyM8BuildImportPlan_(p, destination);
-  assert.equal(plan.units[0].classification, "create");
-  importer.amplifyM8ApplyPlan_(spreadsheet(destination), plan);
-  assert.deepEqual(destination, before);
+  const s = spreadsheet(destination);
+  const legacyRows = () => ({
+    units: s.getSheetByName("Units").values.filter((row) => /^M8-U/.test(String(row[UNIT_HEADERS.indexOf("UnitID")]))),
+    lessons: s.getSheetByName("Lessons").values.filter((row) => /^M8-U/.test(String(row[LESSON_HEADERS.indexOf("LessonID")]))),
+  });
+  const beforeBytes = JSON.stringify(legacyRows());
+  const d = deps({ spreadsheet: s, payload: p });
+  const report = importer.amplifyM8ExecuteLocked_(d.metadata.confirmationPhrase, d);
+  assert.equal(report.success, true, report.errorMessage);
+  assert.equal(JSON.stringify(legacyRows()), beforeBytes);
 });
 
 test("duplicate IDs, incompatible collisions, and structural clears block", () => {
@@ -134,7 +140,7 @@ test("full simulation performs narrow writes, verifies, and is idempotent", () =
   assert.deepEqual(second.writeCounts, { unitsCreated: 0, unitsUpdated: 0, itemsCreated: 0, itemsUpdated: 0 });
 });
 
-test("revalidation change and simulated write failure are reported", () => {
+test("revalidation change is reported before mutation", () => {
   const s = spreadsheet();
   const lessons = s.getSheetByName("Lessons");
   const original = lessons.getRange.bind(lessons); let reads = 0;
@@ -142,14 +148,59 @@ test("revalidation change and simulated write failure are reported", () => {
     const values = get(); reads += 1; if (reads === 2 && values[0] && values[0][0] === "LessonID") return [...values, LESSON_HEADERS.map((h) => h === "LessonID" ? "AMP-M8-U1-I01" : h === "UnitID" ? "AMP-M8-U1" : h === "CourseID" ? "M8" : "")]; return values; }; return range; };
   const d = deps({ spreadsheet: s });
   assert.equal(importer.amplifyM8ExecuteLocked_(d.metadata.confirmationPhrase, d).errorStage, "revalidation");
-  const broken = spreadsheet(); broken.getSheetByName("Units").getRange = () => { throw new Error("simulated failure"); };
-  const bd = deps({ spreadsheet: broken });
-  assert.ok(["schema", "exception"].includes(importer.amplifyM8ExecuteLocked_(bd.metadata.confirmationPhrase, bd).errorStage));
 });
 
-test("live spreadsheet entry points are explicitly DISARMED", () => {
-  for (const name of ["previewAmplifyM8Import", "executeAmplifyM8Import", "verifyAmplifyM8Import"]) {
-    const source = require("node:fs").readFileSync(path.join(HERE, "../../apps-script-planning/AmplifyM8Importer.js"), "utf8");
-    assert.match(source, new RegExp(`function ${name}\\([^)]*\\) \\{\\n  throw new Error\\(\"DISARMED:`));
+test("an actual second write failure reports partial state without retry, rollback, or second backup", () => {
+  const s = spreadsheet();
+  let backupCount = 0;
+  let writeAttempts = 0;
+  const realCopy = s.copy.bind(s);
+  s.copy = (...args) => { backupCount += 1; return realCopy(...args); };
+  for (const sheetName of ["Units", "Lessons"]) {
+    const sheet = s.getSheetByName(sheetName);
+    const realGetRange = sheet.getRange.bind(sheet);
+    sheet.getRange = function (...args) {
+      const range = realGetRange(...args);
+      if (args[0] > 1) {
+        const realSetValues = range.setValues.bind(range);
+        range.setValues = (values) => {
+          writeAttempts += 1;
+          if (sheetName === "Lessons") throw new Error("Simulated second-write failure");
+          return realSetValues(values);
+        };
+      }
+      return range;
+    };
   }
+  const d = deps({ spreadsheet: s });
+  const report = importer.amplifyM8ExecuteLocked_(d.metadata.confirmationPhrase, d);
+  const unitValues = s.getSheetByName("Units").values;
+  const lessonValues = s.getSheetByName("Lessons").values;
+
+  assert.equal(report.success, false);
+  assert.equal(report.errorStage, "exception");
+  assert.notEqual(report.errorStage, "schema");
+  assert.match(report.errorMessage, /partially applied/);
+  assert.match(report.errorMessage, /Manual recovery may be required/);
+  assert.match(report.errorMessage, /No automatic rollback was performed/);
+  assert.ok(report.backup && report.backup.id);
+  assert.equal(backupCount, 1, "the failed execution must create exactly one backup");
+  assert.equal(writeAttempts, 2, "one successful write plus one failed write; no retry");
+  assert.ok(unitValues.some((row) => row[UNIT_HEADERS.indexOf("UnitID")] === "AMP-M8-U1"), "first write remains applied");
+  assert.equal(lessonValues.some((row) => row[LESSON_HEADERS.indexOf("LessonID")] === "AMP-M8-U1-I01"), false, "failed second write remains absent");
+  assert.equal(report.writesOccurred, false, "write batch was not confirmed complete");
+});
+
+test("all five live-facing functions throw DISARMED before global access or side effects", () => {
+  const source = require("node:fs").readFileSync(path.join(HERE, "../../apps-script-planning/AmplifyM8Importer.js"), "utf8");
+  let sideEffects = 0;
+  const context = { module: { exports: {} }, exports: {} };
+  for (const name of ["SpreadsheetApp", "LockService", "Utilities", "Session", "Logger", "SHEET_ID", "AMPLIFY_M8_IMPORT_PAYLOAD", "AMPLIFY_M8_IMPORT_METADATA"]) {
+    Object.defineProperty(context, name, { get() { sideEffects += 1; throw new Error(`unexpected access: ${name}`); } });
+  }
+  vm.runInNewContext(`${source}\nthis.__liveFunctions = { previewAmplifyM8Import, previewAmplifyM8ImportSummary, executeAmplifyM8Import, executeAmplifyM8ImportFromEditor, verifyAmplifyM8Import };`, context);
+  for (const name of ["previewAmplifyM8Import", "previewAmplifyM8ImportSummary", "executeAmplifyM8Import", "executeAmplifyM8ImportFromEditor", "verifyAmplifyM8Import"]) {
+    assert.throws(() => context.__liveFunctions[name]("anything"), /^Error: DISARMED:/, name);
+  }
+  assert.equal(sideEffects, 0);
 });
