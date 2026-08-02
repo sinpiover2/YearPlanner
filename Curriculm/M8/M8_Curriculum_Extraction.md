@@ -1,6 +1,6 @@
 # Amplify Math 8 - Curriculum Extraction (Working Draft)
 
-Normalized source document for the Amplify Math 8 to Year Planner curriculum import (Sprint 6.7). Nothing in this file has been imported into Year Planner's `Units`/`Lessons` sheets. This extraction currently contains Units 1-6 only.
+Normalized source document for the Amplify Math 8 to Year Planner curriculum import (Sprint 6.7). Nothing in this file has been imported into Year Planner's `Units`/`Lessons` sheets. The supplied sources for Units 1-8 have been fully extracted. These supplied units are not claimed to be the complete authoritative course because no course overview, index, or equivalent publisher evidence was supplied to establish course completeness.
 
 Rule followed throughout: **do not infer missing fields.** `Confirmed absent` means the complete relevant unit PDF and all paired screenshots were reviewable and support the absence. `Not found in what was reviewable` is reserved for incomplete or unclear evidence.
 
@@ -693,3 +693,149 @@ The complete `Curriculm/M8/Unit 7/Unit 7.pdf` was reviewed (22 of 22 pages), and
 | 22 | `Screenshot 2026-07-30 at 10.40.56 PM.png` | Composite thumbnail view of the complete unit; confirms inclusion and relative final position of Unit Synthesis and Reflection, but is not a full-page capture |
 
 The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
+
+## Unit 8 - The Pythagorean Theorem and Irrational Numbers
+
+- **Source label:** 8.8 Unit Overview
+- **Required Days:** Confirmed absent
+- **Optional Days:** Confirmed absent
+
+**Overview (publisher text):**
+
+Students approximate the values of square roots and cube roots and identify perfect squares and perfect cubes. Students apply the Pythagorean theorem to reason about right triangles and calculate unknown measurements. They justify whether a triangle is a right triangle using the converse of the Pythagorean theorem. Students express rational numbers and irrational numbers as fractions and decimal approximations.
+
+### Unit at a Glance
+
+- **Explore: The Longest Cut** - `(Optional)` Launch the unit with a non-routine task to investigate the question, "What's the longest length in a rectangle or rectangular prism?"
+- **Sub-Unit 1: Square Roots and Cube Roots** `(Lessons 1-5 + Practice Day + Quiz)`
+  - Approximate the value of square roots and cube roots.
+  - **Language Goal:** Describe the relationship between a square's side length and area using the term *square root*, and the relationship between a cube's edge length and volume using the term *cube root*.
+- **Sub-Unit 2: The Pythagorean Theorem** `(Lessons 6-11)`
+  - Use the Pythagorean theorem and its converse to reason about right triangles and calculate unknown measurements.
+  - **Language Goal:** Explain a proof of the Pythagorean theorem and its converse.
+- **Sub-Unit 3: Rational and Irrational Numbers** `(Lessons 12-14 + Practice Day)`
+  - Express rational and irrational numbers as fractions and decimal approximations.
+  - **Language Goal:** Describe what an irrational number is and give an example.
+
+The overview does not include the `8.8 Pre-Unit Check`, the `8.8 Performance Task`, or `Unit Synthesis and Reflection` in its sub-unit ranges. Their pages occur in the publisher's fixed Unit 8 sequence, and they are included below without assigning them to a sub-unit that the source does not assign.
+
+### Instructional Items
+
+`Type` preserves the literal Math 8 label visible in the source. All 21 distinct items have fixed publisher placement, and no item has publisher-flexible placement language. Lesson 9 and Lesson 14 each appear twice as identical consecutive pages in both the PDF and screenshot set; each duplicated card is extracted once because the repeated source pages identify the same lesson number, title, subtitle, description, and evidence. This records source sequence, not an inferred instructional-day duration.
+
+| Order | Type | Title | Subtitle | Summary or description | Optionality | Placement | Evidence |
+|---:|---|---|---|---|---|---|---|
+| 1 | Pre-Unit Check | 8.8 Pre-Unit Check | Confirmed absent | Learn more about your students' understanding of foundational concepts and skills that will support them in the upcoming unit. This pre-unit check is intended for students to complete without a calculator. | Yes - `OPTIONAL` badge; may be given in its entirety before the unit begins or spread out throughout the unit | Fixed - first instructional-item page after the overview, before the Explore | PDF p. 2; screenshot 02 |
+| 2 | Explore | The Longest Cut | Explore: The Longest Cut | What's the longest length in a rectangle or rectangular prism? | Yes - `OPTIONAL` badge; source says the lesson is optional because the standards are addressed in other lessons within this course | Fixed - before Lesson 1; also named before Sub-Unit 1 in the overview | PDF p. 3; screenshot 03 |
+| 3 | Lesson | Tilted Squares | Lesson 1: The Areas of Tilted Squares | Let's explore finding the areas of tilted squares. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 1 | PDF p. 4; screenshot 04 |
+| 4 | Lesson | From Squares to Roots | Lesson 2: Side Lengths and Areas | Let's explore the connection between the area and side length of a square. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 2 | PDF p. 5; screenshot 05 |
+| 5 | Lesson | Between Squares | Lesson 3: Approximating Square Roots | Let's approximate the value of square roots. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 3 | PDF p. 6; screenshot 06 |
+| 6 | Lesson | Root Down | Lesson 4: Reasoning About Square Roots | Let's estimate the value of square roots and represent them on a number line. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 4 | PDF p. 7; screenshot 07 |
+| 7 | Lesson | Filling Cubes | Lesson 5: Edge Lengths, Volumes, and Cube Roots | Let's explore the relationship between the edge length and the volume of a cube. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 5 | PDF p. 8; screenshot 08 |
+| 8 | Practice Day | 8.8 Practice Day 1 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-5. Consider using this Practice Day as preparation for the upcoming Sub-Unit Quiz. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, after Lesson 5 and before the Quiz | PDF p. 9; screenshot 09 |
+| 9 | Sub-Unit Quiz | 8.8 Sub-Unit Quiz | Confirmed absent | Learn about your students' understanding of the concepts and skills so far in this unit. This assessment is intended for students to complete without a calculator. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 1 | PDF p. 10; screenshot 10 |
+| 10 | Lesson | The Pythagorean Theorem | Lesson 6: Squares of Side Lengths | Let's explore the relationship between the squares of side lengths in triangles. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 6 | PDF p. 11; screenshot 11 |
+| 11 | Lesson | Pictures to Prove It | Lesson 7: A Proof of the Pythagorean Theorem | Let's prove the Pythagorean theorem. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 7 | PDF p. 12; screenshot 12 |
+| 12 | Lesson | Triangle-Tracing Turtle | Lesson 8: Finding Unknown Side Lengths | Let's calculate missing side lengths in right triangles. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 8 | PDF p. 13; screenshot 13 |
+| 13 | Lesson | Make It Right | Lesson 9: The Converse of the Pythagorean Theorem | Let's determine if a triangle is a right triangle. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 9; identical card is duplicated consecutively in the supplied source | PDF pp. 14-15; screenshots 14-15 |
+| 14 | Lesson | Taco Truck | Lesson 10: Applications of the Pythagorean Theorem | Let's solve problems with the Pythagorean theorem. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 10 | PDF p. 16; screenshot 16 |
+| 15 | Lesson | Pond Hopper | Lesson 11: Finding Distances on the Coordinate Plane | Let's calculate distances between points on the coordinate plane. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 11 | PDF p. 17; screenshot 17 |
+| 16 | Lesson | Fractions to Decimals | Lesson 12: Decimal Representations of Rational Numbers | Let's explore connections between fractions and their decimal representations. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 12 | PDF p. 18; screenshot 18 |
+| 17 | Lesson | Decimals to Fractions | Lesson 13: Infinite Decimal Expansions | Let's develop a strategy for rewriting repeating decimals as fractions. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 13 | PDF p. 19; screenshot 19 |
+| 18 | Lesson | Hit the Target | Lesson 14: Rational and Irrational Numbers | Let's build an understanding of two new types of numbers. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 14; identical card is duplicated consecutively in the supplied source | PDF pp. 20-21; screenshots 20-21 |
+| 19 | Practice Day | 8.8 Practice Day 2 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-14. Consider using this Practice Day as preparation for the upcoming End-of-Unit Assessment. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 3, after Lesson 14 | PDF p. 22; screenshot 22 |
+| 20 | Performance Task | 8.8 Performance Task | Confirmed absent | Assign this summative assessment performance task at the end of the unit to evaluate students' proficiency with the concepts and skills addressed in the unit. | No optional marker or optionality statement; **Confirmed absent** | Fixed - end of unit, after Practice Day 2 | PDF p. 23; screenshot 23 |
+| 21 | Unit Synthesis and Reflection | Unit Synthesis and Reflection | Confirmed absent | Here are six optional activities for students to engage in at the end of a unit to synthesize and/or reflect on their learning from the unit. | The item itself is not marked optional; **Confirmed absent**. Internal activity choice: select one to two tasks before or after the End-of-Unit Assessment. | Fixed - final Unit 8 source page | PDF p. 24; screenshot 24 |
+
+### Days and Durations
+
+- Unit-level required-day and optional-day totals: **Confirmed absent** from the complete Unit 8 source.
+- Per-item durations or `PlannedDays`: **Confirmed absent** from the complete Unit 8 source.
+- `Practice Day` is a literal publisher Type/title component. It is not treated as evidence that the item has a stated one-day duration.
+- The overview's lesson ranges and `+ Practice Day` / `+ Quiz` structure are preserved as structure, not converted into a day budget.
+- Unit 8 contains no publisher-flexible item and therefore no placement threshold that could be mistaken for a duration.
+
+### Material Ambiguities and Unresolved Questions
+
+1. Lesson 9 (`Make It Right`) is duplicated identically on PDF pages 14-15 and screenshots 14-15. Lesson 14 (`Hit the Target`) is duplicated identically on PDF pages 20-21 and screenshots 20-21. The overview specifies Lessons 6-11 and Lessons 12-14, and each repeated pair carries the same lesson number, title, subtitle, description, and supporting content. Each pair is therefore recorded as one distinct instructional item, while both source occurrences remain cited. Whether the duplicate captures originated in the publisher page sequence or source collection process is not stated.
+2. The `8.8 Pre-Unit Check` may be completed before the unit or spread throughout it. This is flexibility in administration, not publisher-flexible sequence placement; the card retains its fixed source position.
+3. `End-of-Unit Assessment` appears in the supporting descriptions for `8.8 Practice Day 2` and `Unit Synthesis and Reflection`. No distinct card or item with that Type/title exists in the complete Unit 8 source. It is therefore not extracted as a separate instructional item. Whether it is publisher shorthand for the visible `8.8 Performance Task` is **not stated** and remains unresolved.
+4. `Unit Synthesis and Reflection` contains six optional internal activities and directs the teacher to select one to two. The source does not mark the enclosing item optional; item-level optionality is therefore **Confirmed absent**, distinct from its internal activity choice.
+5. The PDF contains 24 raster-image pages in publisher order, and the screenshot directory contains 24 individual PNGs in the same order. There is no page-count discrepancy. The two representations agree, including the duplicated Lesson 9 and Lesson 14 cards. The PDF has no reviewable text layer, so transcription was visually validated against both representations.
+
+### Unit 8 Source Coverage
+
+The complete `Curriculm/M8/Unit 8/Unit 8.pdf` was reviewed (24 of 24 pages), and every supplied screenshot was visually inspected (24 of 24 PNGs). Screenshot numbers below are chronological local evidence references used in the item table.
+
+| Ref | Screenshot file | Content verified |
+|---:|---|---|
+| 01 | `Screenshot 2026-07-30 at 10.41.45 PM.png` | Unit overview, exact title and overview, optional Explore, all three sub-units and ranges |
+| 02 | `Screenshot 2026-07-30 at 10.41.58 PM.png` | 8.8 Pre-Unit Check |
+| 03 | `Screenshot 2026-07-30 at 10.42.11 PM.png` | Explore: The Longest Cut and explicit optionality |
+| 04 | `Screenshot 2026-07-30 at 10.42.28 PM.png` | Lesson 1 |
+| 05 | `Screenshot 2026-07-30 at 10.42.43 PM.png` | Lesson 2 |
+| 06 | `Screenshot 2026-07-30 at 10.43.01 PM.png` | Lesson 3 |
+| 07 | `Screenshot 2026-07-30 at 10.43.19 PM.png` | Lesson 4 |
+| 08 | `Screenshot 2026-07-30 at 10.43.40 PM.png` | Lesson 5 |
+| 09 | `Screenshot 2026-07-30 at 10.43.53 PM.png` | Practice Day 1 |
+| 10 | `Screenshot 2026-07-30 at 10.44.05 PM.png` | Sub-Unit Quiz |
+| 11 | `Screenshot 2026-07-30 at 10.44.17 PM.png` | Lesson 6 |
+| 12 | `Screenshot 2026-07-30 at 10.44.36 PM.png` | Lesson 7 |
+| 13 | `Screenshot 2026-07-30 at 10.44.50 PM.png` | Lesson 8 |
+| 14 | `Screenshot 2026-07-30 at 10.45.09 PM.png` | Lesson 9, first identical occurrence |
+| 15 | `Screenshot 2026-07-30 at 10.45.43 PM.png` | Lesson 9, second identical occurrence |
+| 16 | `Screenshot 2026-07-30 at 10.45.58 PM.png` | Lesson 10 |
+| 17 | `Screenshot 2026-07-30 at 10.46.10 PM.png` | Lesson 11 |
+| 18 | `Screenshot 2026-07-30 at 10.46.21 PM.png` | Lesson 12 |
+| 19 | `Screenshot 2026-07-30 at 10.46.38 PM.png` | Lesson 13 |
+| 20 | `Screenshot 2026-07-30 at 10.46.49 PM.png` | Lesson 14, first identical occurrence |
+| 21 | `Screenshot 2026-07-30 at 10.47.04 PM.png` | Lesson 14, second identical occurrence |
+| 22 | `Screenshot 2026-07-30 at 10.47.24 PM.png` | Practice Day 2 |
+| 23 | `Screenshot 2026-07-30 at 10.47.41 PM.png` | Performance Task |
+| 24 | `Screenshot 2026-07-30 at 10.47.53 PM.png` | Unit Synthesis and Reflection |
+
+The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
+
+## Units 1-8 Consistency Audit
+
+This audit covers the eight supplied unit PDFs and their supplied screenshot sets. It establishes completeness of the extraction against those supplied sources only. It does **not** establish that Units 1-8 are the complete authoritative Math 8 course because no course overview, course index, or equivalent publisher evidence was supplied.
+
+### Audit Results
+
+- **Continuous ordering:** Every fixed-sequence table uses continuous item order beginning at 1. Flexible `Investigate` items in Units 5 and 6 correctly have no fabricated order. Unit 6's overview-supported missing Practice Day remains order 12 so the fixed sequence agrees with the overview and the following Quiz remains order 13. Unit 8's duplicate source captures do not create duplicate instructional-item orders.
+- **Unit and sub-unit structure:** Unit headings, exact overview text, Unit at a Glance entries, sub-unit titles, lesson ranges, Practice Day/Quiz structure, and language goals are preserved from each unit overview. Items outside publisher-assigned sub-unit ranges are not assigned to a sub-unit by inference.
+- **Column and evidence conventions:** Every fixed and flexible item table uses `Order`, `Type`, `Title`, `Subtitle`, `Summary or description`, `Optionality`, `Placement`, and `Evidence`. `Confirmed absent` is used only where the complete relevant source supports absence. Unit 6's unavailable Practice Day card fields use `Not found in what was reviewable` because the overview proves the item but the dedicated card is missing.
+- **Literal Type vocabulary:** Literal publisher labels are preserved without IM1 normalization. The consolidated observed vocabulary is `Pre-Unit Check`, `Explore`, `Lesson`, `Practice Day`, `Sub-Unit Quiz`, `Performance Task`, `Unit Synthesis and Reflection`, and `Investigate`. Unit 1's `Getting to Know Each Other` has no separate Type label and remains `Confirmed absent`; that absence is not a Type value.
+- **Optionality:** Item-level optionality is separated from unit-day budgets and from internal activity choice. Optional badges and supporting statements are recorded literally. Absence of optionality is not inferred from sibling units. The enclosing `Unit Synthesis and Reflection` item is not marked optional even though it contains six optional activities.
+- **Placement:** The audit found 161 fixed-sequence items and 2 publisher-flexible items, for 163 distinct instructional items total. Fixed source placement is distinguished from administration flexibility in Pre-Unit Checks. No false `SortOrder` is assigned to either flexible item.
+- **Publisher-flexible items:** Unit 5 `Investigate: Packing Spheres` is optional and has the exact rule `Use anytime in this course after Unit 5, Lesson 15.` Unit 6 `Investigate: The Ozone Layer Over Time` is optional and has the exact rule `Use anytime in this grade after Unit 6, Lesson 9.` No other supplied unit contains publisher-flexible content.
+- **Days and durations:** Unit-level required-day totals, optional-day totals, and per-item durations/`PlannedDays` are confirmed absent for Units 1-5 and 7-8. Unit 6 has the same complete-source absence except that the missing Practice Day card makes that item's duration `Not found in what was reviewable`. No `Practice Day` label, lesson range, or flexible-placement threshold is converted into a day count.
+- **Source coverage:** All eight supplied PDFs were reviewed completely and all supplied screenshots were visually inspected. Each unit records its actual PDF-page and screenshot counts plus any coverage nuance. Unit 7 has a composite final screenshot rather than a full-page final capture. Unit 8 has two duplicated cards in both representations. No contradictory evidence was found.
+- **Known unresolved source issue:** Unit 6's Unit at a Glance specifies a Practice Day after Lessons 4-9 and before the Sub-Unit Quiz, but the complete PDF and screenshot set contain no dedicated Practice Day card. Its exact title, subtitle, description, optionality, and duration remain `Not found in what was reviewable`.
+- **Course completeness:** The extraction does not claim that Units 1-8 are the complete authoritative course. The supplied Units 1-8 are fully extracted; authoritative course completeness remains unconfirmed.
+
+### Instructional-Item Totals
+
+| Unit | Fixed items | Publisher-flexible items | Total distinct items |
+|---:|---:|---:|---:|
+| 1 | 21 | 0 | 21 |
+| 2 | 17 | 0 | 17 |
+| 3 | 20 | 0 | 20 |
+| 4 | 21 | 0 | 21 |
+| 5 | 22 | 1 | 23 |
+| 6 | 18 | 1 | 19 |
+| 7 | 21 | 0 | 21 |
+| 8 | 21 | 0 | 21 |
+| **Supplied Units 1-8** | **161** | **2** | **163** |
+
+### Remaining Course-Wide Unresolved Questions
+
+1. Do Units 1-8 constitute the publisher's complete authoritative Math 8 course? The supplied unit sources do not establish this; a course overview, index, or equivalent publisher evidence is still required.
+2. Is a dedicated Unit 6 Sub-Unit 2 Practice Day card missing from the supplied source collection? The overview proves the item's structural position, but its exact card fields remain unavailable.
+3. Is `End-of-Unit Assessment` publisher shorthand for each visible unit `Performance Task`, or does it refer to separate unsupplied content? The supplied sources do not state the relationship.
+4. What publisher-authored unit day totals or item durations apply, if any? None are supplied, and no values may be inferred from names or lesson ranges.
+5. What caused Unit 8's identical duplicate captures of Lessons 9 and 14? Both representations contain the duplicates, but the supplied sources do not identify whether they originated in the publisher sequence or collection process.
+
+### Prior-Unit Corrections
+
+No factual or structural correction to Units 1-7 was justified by the audit. Their established content and evidence conventions were preserved. The only prior-unit edit is the document-level scope statement at the top, updated from the stale `Units 1-6 only` wording to distinguish fully extracted supplied Units 1-8 from unconfirmed authoritative course completeness.
