@@ -1,0 +1,6 @@
+{
+  "identity": "local-fixture:amplify-m8-empty-destination",
+  "description": "Local-only empty destination for the Amplify Math 8 read-only preview.",
+  "units": [],
+  "lessons": []
+}

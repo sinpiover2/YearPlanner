@@ -1,0 +1,140 @@
+{
+  "identity": "local-fixture:amplify-m8-representative-destination",
+  "description": "Fictional local-only rows proving Math 8 source comparison, evidence-null preservation, teacher-field protection, flexible placement, and legacy namespace protection.",
+  "units": [
+    {
+      "UnitID": "M8-U1",
+      "CourseID": "M8",
+      "UnitNumber": 1,
+      "UnitTitle": "Rigid Transformations and Congruence",
+      "UnitPurpose": "Legacy teacher-owned curriculum row",
+      "RequiredDays": 19,
+      "OptionalDays": 2
+    },
+    {
+      "UnitID": "AMP-M8-U1",
+      "CourseID": "M8",
+      "UnitNumber": 1,
+      "UnitTitle": "Rigid Transformations and Congruence",
+      "UnitPurpose": "Students learn to visualize, describe, and perform translations, rotations, and reflections on a grid. They learn and use the word congruent and use rigid transformations to determine whether figures are congruent. Students also apply rigid transformations to discover new angle relationships (e.g., that corresponding angles on parallel lines are congruent and that the sum of the interior angle measures in a triangle is 180°).",
+      "RequiredDays": 21,
+      "OptionalDays": 4
+    },
+    {
+      "UnitID": "AMP-M8-U2",
+      "CourseID": "M8",
+      "UnitNumber": 2,
+      "UnitTitle": "Old source title",
+      "UnitPurpose": "Old source purpose",
+      "RequiredDays": 18,
+      "OptionalDays": 3
+    }
+  ],
+  "lessons": [
+    {
+      "LessonID": "M8-U1-L1",
+      "UnitID": "M8-U1",
+      "CourseID": "M8",
+      "LessonTitle": "Getting to Know Each Other",
+      "Type": "Teacher legacy type",
+      "SortOrder": 1,
+      "TeacherNotes": "Protected legacy note",
+      "PrimaryLink": "https://example.invalid/legacy"
+    },
+    {
+      "LessonID": "AMP-M8-U1-I01",
+      "UnitID": "AMP-M8-U1",
+      "CourseID": "M8",
+      "LessonTitle": "Getting to Know Each Other",
+      "Type": "Teacher classification retained because publisher Type is null",
+      "SortOrder": 1,
+      "PlacementRule": "",
+      "IsOptional": true,
+      "Description": "Students get to know each other and start to develop classroom culture.",
+      "PlannedDays": 2,
+      "TeacherNotes": "Keep this note",
+      "PrimaryLink": "https://example.invalid/slides"
+    },
+    {
+      "LessonID": "AMP-M8-U1-I02",
+      "UnitID": "AMP-M8-U1",
+      "CourseID": "M8",
+      "LessonTitle": "Old pre-unit title",
+      "Type": "Pre-Unit Check",
+      "SortOrder": 2,
+      "PlacementRule": "",
+      "IsOptional": true,
+      "Description": "Learn more about your students' understanding of foundational concepts and skills that will support them in the upcoming unit. This pre-unit check is intended for students to complete using a scientific calculator.",
+      "PlannedDays": 1,
+      "TeacherNotes": "Must survive a source update",
+      "PrimaryLink": "https://example.invalid/check"
+    },
+    {
+      "LessonID": "AMP-M8-U1-I03",
+      "UnitID": "AMP-M8-U1",
+      "CourseID": "M8",
+      "LessonTitle": "Tessellations",
+      "Type": "Explore",
+      "SortOrder": 3,
+      "PlacementRule": "",
+      "IsOptional": false,
+      "Description": "How can patterns be created using shapes?"
+    },
+    {
+      "LessonID": "AMP-M8-U1-I12",
+      "UnitID": "AMP-M8-U1",
+      "CourseID": "M8",
+      "LessonTitle": "No Bending, No Stretching",
+      "Type": "Lesson",
+      "SortOrder": 12,
+      "PlacementRule": "",
+      "IsOptional": true,
+      "Description": "Let's compare measurements of transformed figures."
+    },
+    {
+      "LessonID": "AMP-M8-U5-F1",
+      "UnitID": "AMP-M8-U5",
+      "CourseID": "M8",
+      "LessonTitle": "Packing Spheres",
+      "Type": "Investigate",
+      "SortOrder": "",
+      "PlacementRule": "Use anytime in this course after Unit 5, Lesson 15.",
+      "IsOptional": true,
+      "Description": "Invite students to design a container to make sense of how to pack spheres."
+    },
+    {
+      "LessonID": "AMP-M8-U6-I12",
+      "UnitID": "AMP-M8-U6",
+      "CourseID": "M8",
+      "LessonTitle": "Teacher's Practice Day label",
+      "Type": "Practice Day",
+      "SortOrder": 12,
+      "PlacementRule": "",
+      "IsOptional": true,
+      "Description": "Teacher-authored description that unresolved source fields cannot erase.",
+      "TeacherNotes": "Keep this unresolved-day context"
+    },
+    {
+      "LessonID": "AMP-M8-U6-I13",
+      "UnitID": "AMP-M8-U6",
+      "CourseID": "M8",
+      "LessonTitle": "8.6 Sub-Unit Quiz",
+      "Type": "Sub-Unit Quiz",
+      "SortOrder": 13,
+      "PlacementRule": "",
+      "IsOptional": true,
+      "Description": "Learn about your students' understanding of the concepts and skills so far in this unit. This assessment is intended for students to complete using a scientific calculator."
+    },
+    {
+      "LessonID": "AMP-M8-U6-F1",
+      "UnitID": "AMP-M8-U6",
+      "CourseID": "M8",
+      "LessonTitle": "The Ozone Layer Over Time",
+      "Type": "Investigate",
+      "SortOrder": "",
+      "PlacementRule": "Use anytime in this grade after Unit 6, Lesson 9.",
+      "IsOptional": true,
+      "Description": "Invite students to investigate potential connections to the changing size of the \"hole\" in the ozone layer."
+    }
+  ]
+}

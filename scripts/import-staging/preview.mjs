@@ -24,6 +24,7 @@ import path from "node:path";
 
 import { validateArtifact } from "./validate-artifact.mjs";
 import { buildImportPlan } from "./build-import-plan.mjs";
+import { buildAmplifyM8ImportPlan } from "./build-amplify-m8-import-plan.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
@@ -51,17 +52,35 @@ function countItems(units) {
   return units.reduce((total, unit) => total + unit.items.length, 0);
 }
 
-function buildHumanSummary(report) {
+function summarizeNullEvidence(artifact) {
+  if (artifact.validationProfile !== "amplify-m8") return null;
+  const summary = {};
+  for (const item of artifact.units.flatMap((unit) => unit.items)) {
+    for (const field of ["type", "title", "subtitle", "summary", "isOptional"]) {
+      if (item[field] !== null) continue;
+      const status = item[`${field}Status`];
+      const key = `${field}:${status}`;
+      summary[key] = (summary[key] ?? 0) + 1;
+    }
+  }
+  return summary;
+}
+
+export function buildHumanSummary(report) {
   const lines = [];
-  lines.push("AMPLIFY IM1 STAGED IMPORT — PREVIEW");
+  const isM8 = report.artifact.validationProfile === "amplify-m8";
+  lines.push(`${isM8 ? "AMPLIFY MATH 8" : "AMPLIFY IM1"} STAGED IMPORT — PREVIEW`);
   lines.push("This preview performed zero writes. No spreadsheet, file, or production data was modified.");
   lines.push("");
 
+  lines.push(`Artifact path: ${report.artifactPath}`);
   lines.push(`Artifact schema version: ${report.artifact.schemaVersion}`);
-  lines.push(`Source document: ${report.artifact.generator.sourceDocument}`);
-  lines.push(`Source document SHA-256: ${report.artifact.generator.sourceDocumentSha256}`);
+  lines.push(`Validation profile: ${report.artifact.validationProfile ?? "amplify-im1"}`);
+  lines.push(`Source document: ${report.artifact.generator.sourceDocument ?? report.artifact.generator.extraction}`);
+  lines.push(`Extraction SHA-256: ${report.artifact.generator.sourceDocumentSha256 ?? report.artifact.generator.extractionSha256}`);
   lines.push(`Units in artifact: ${report.artifact.units.length}`);
   lines.push(`Instructional Items in artifact: ${countItems(report.artifact.units)}`);
+  if (report.nullEvidenceSummary) lines.push(`Null publisher fields (field:evidence-status=count; never coerced): ${Object.entries(report.nullEvidenceSummary).map(([key, value]) => `${key}=${value}`).join(", ")}`);
   lines.push("");
 
   lines.push(`Validation: ${report.validation.valid ? "PASSED" : "FAILED"}`);
@@ -76,6 +95,7 @@ function buildHumanSummary(report) {
   lines.push("");
 
   lines.push(`Destination: ${report.destinationPath}`);
+  if (report.destinationIdentity) lines.push(`Destination identity: ${report.destinationIdentity}`);
   lines.push(`Import plan blocked overall: ${report.plan.blocked}`);
   if (report.plan.blockers.length > 0) {
     lines.push(`  Blockers (${report.plan.blockers.length}):`);
@@ -85,6 +105,8 @@ function buildHumanSummary(report) {
 
   lines.push("Unit classifications: " + JSON.stringify(report.plan.summary.units));
   lines.push("Item classifications: " + JSON.stringify(report.plan.summary.items));
+  if (report.plan.protectedLegacy) lines.push(`Protected legacy rows: ${report.plan.protectedLegacy.total} (${report.plan.protectedLegacy.units} units, ${report.plan.protectedLegacy.items} items)`);
+  lines.push(`Writes performed: ${report.plan.writesPerformed ?? 0}`);
   lines.push("");
 
   lines.push("Sample rows (first 3 units):");
@@ -107,12 +129,16 @@ export function runPreview({ artifactPath, destinationPath }) {
   const destination = readJson(destinationPath);
 
   const validation = validateArtifact(artifact);
-  const plan = buildImportPlan(artifact, destination);
+  const plan = artifact.validationProfile === "amplify-m8"
+    ? buildAmplifyM8ImportPlan(artifact, destination)
+    : buildImportPlan(artifact, destination);
 
   return {
     generatedAt: new Date().toISOString(),
     artifactPath,
     destinationPath,
+    destinationIdentity: destination.identity ?? destination.description ?? null,
+    nullEvidenceSummary: summarizeNullEvidence(artifact),
     artifact,
     validation,
     plan,
