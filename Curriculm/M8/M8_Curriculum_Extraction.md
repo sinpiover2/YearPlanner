@@ -1,6 +1,6 @@
 # Amplify Math 8 - Curriculum Extraction (Working Draft)
 
-Normalized source document for the Amplify Math 8 to Year Planner curriculum import (Sprint 6.7). Nothing in this file has been imported into Year Planner's `Units`/`Lessons` sheets. This extraction currently contains Units 1-5 only.
+Normalized source document for the Amplify Math 8 to Year Planner curriculum import (Sprint 6.7). Nothing in this file has been imported into Year Planner's `Units`/`Lessons` sheets. This extraction currently contains Units 1-6 only.
 
 Rule followed throughout: **do not infer missing fields.** `Confirmed absent` means the complete relevant unit PDF and all paired screenshots were reviewable and support the absence. `Not found in what was reviewable` is reserved for incomplete or unclear evidence.
 
@@ -491,5 +491,107 @@ The complete `Curriculm/M8/Unit 5/Unit 5.pdf` was reviewed (23 of 23 pages), and
 | 21 | `Screenshot 2026-07-30 at 5.33.46 PM.png` | Practice Day 2 |
 | 22 | `Screenshot 2026-07-30 at 5.33.58 PM.png` | Performance Task |
 | 23 | `Screenshot 2026-07-30 at 5.34.10 PM.png` | Unit Synthesis and Reflection |
+
+The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
+
+## Unit 6 - Associations in Data
+
+- **Source label:** 8.6 Unit Overview
+- **Required Days:** Confirmed absent
+- **Optional Days:** Confirmed absent
+
+**Overview (publisher text):**
+
+Students construct and interpret scatter plots for bivariate data to investigate patterns of association between two quantities. They describe patterns such as clustering and outliers. Students informally fit a line to model the association in data and assess how well the line fits the data. For scatter plots that suggest a linear association, they interpret the slope and *y*-intercept in context and use the linear model to make predictions. Students use two-way tables and segmented bar graphs to make claims about associations in categorical data.
+
+### Unit at a Glance
+
+- **Explore: Changes in the Ozone Layer** - Launch the unit with a non-routine task to investigate the question, "How has the ozone layer been changing?"
+- **Investigate: The Ozone Layer Over Time** - `(Optional)` Invite students to investigate potential connections to the changing size of the "hole" in the ozone layer. Use anytime in this grade after Unit 6, Lesson 9.
+- **Sub-Unit 1: Organizing Numerical Data** `(Lessons 1-3)`
+  - Compare different ways to organize numerical data with two variables, including scatter plots.
+  - **Language Goal:** Compare and contrast various data representations.
+- **Sub-Unit 2: Analyzing Numerical Data** `(Lessons 4-9 + Practice Day + Quiz)`
+  - Use scatter plots and linear models to identify associations and make predictions.
+  - **Language Goal:** Interpret and describe features of data presented in a scatter plot.
+- **Sub-Unit 3: Categorical Data** `(Lessons 10-11 + Practice Day)`
+  - Use two-way tables and bar graphs to identify associations in categorical data.
+  - **Language Goal:** Analyze data presented in two-way tables and bar graphs.
+
+The overview does not include the `8.6 Pre-Unit Check`, the `8.6 Performance Task`, or `Unit Synthesis and Reflection` in its sub-unit ranges. Their pages occur in the publisher's fixed Unit 6 sequence, and they are included below without assigning them to a sub-unit that the source does not assign. `Investigate: The Ozone Layer Over Time` is overview-only and explicitly publisher-flexible, so it is recorded separately from that fixed sequence. The overview also explicitly includes a Practice Day in Sub-Unit 2, but the complete PDF and screenshot set contain no corresponding card; that overview-supported item remains in the fixed sequence with its unavailable fields marked `Not found in what was reviewable`.
+
+### Instructional Items
+
+`Type` preserves the literal Math 8 label visible in the source. The 18 items below have fixed publisher placement. Seventeen occupy specific pages in the serialized Unit 6 PDF; the first Sub-Unit 2 Practice Day is supported only by the overview's ordered structure. The separate `Investigate` item has no fixed position and retains the publisher's exact flexible-placement rule rather than receiving an inferred order.
+
+| Order | Type | Title | Subtitle | Summary or description | Optionality | Placement | Evidence |
+|---:|---|---|---|---|---|---|---|
+| 1 | Pre-Unit Check | 8.6 Pre-Unit Check | Confirmed absent | Learn more about your students' understanding of foundational concepts and skills that will support them in the upcoming unit. This can be given in its entirety before the unit or spread throughout the unit. This pre-unit check is intended for students to complete using a scientific calculator. | Yes - `OPTIONAL` badge; may be given in its entirety before the unit begins or spread out throughout the unit | Fixed - first instructional-item page after the overview, before the Explore | PDF p. 2; screenshot 02 |
+| 2 | Explore | Changes in the Ozone Layer | Explore: Changes in the Ozone Layer | How has the ozone layer been changing? | No optional marker or optionality statement; **Confirmed absent** | Fixed - before Lesson 1; also named before Sub-Unit 1 in the overview | PDF p. 3; screenshot 03 |
+| 3 | Lesson | Click Battle | Lesson 1: Organizing Data | Let's find ways to show patterns in data. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 1 | PDF p. 4; screenshot 04 |
+| 4 | Lesson | Wingspan | Lesson 2: Plotting Data | Let's compare dot plots and scatter plots. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 2 | PDF p. 5; screenshot 05 |
+| 5 | Lesson | Robots | Lesson 3: What a Point on a Scatter Plot Means | Let's investigate points on a scatter plot. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 1, Lesson 3 | PDF p. 6; screenshot 06 |
+| 6 | Lesson | Dapper Cats | Lesson 4: Linear Models and Outliers | Let's identify potential outliers and use a linear model to predict values. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 4 | PDF p. 7; screenshot 07 |
+| 7 | Lesson | Interpreting Scatter Plots | Lesson 5: Showing Patterns in Data | Let's identify patterns in data. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 5 | PDF p. 8; screenshot 08 |
+| 8 | Lesson | Find the Fit | Lesson 6: Fitting a Line to Data | Let's fit a line to data on a scatter plot. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 6 | PDF p. 9; screenshot 09 |
+| 9 | Lesson | Interpreting Slopes | Lesson 7: The Slope of a Linear Model | Let's identify different types of associations. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 7 | PDF p. 10; screenshot 10 |
+| 10 | Lesson | Scatter Plot City | Lesson 8: Observing More Patterns in Scatter Plots | Let's use precise language to describe the trends in a scatter plot. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 8 | PDF p. 11; screenshot 11 |
+| 11 | Lesson | Animal Brains | Lesson 9: Analyzing Bivariate Data | Let's analyze bivariate data. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 2, Lesson 9 | PDF p. 12; screenshot 12 |
+| 12 | Practice Day | Not found in what was reviewable | Not found in what was reviewable | Not found in what was reviewable | Not found in what was reviewable | Fixed - Sub-Unit 2, after Lesson 9 and before the Quiz, as stated by the overview's `(Lessons 4-9 + Practice Day + Quiz)` structure | PDF p. 1; screenshot 01; no dedicated item page in the complete source |
+| 13 | Sub-Unit Quiz | 8.6 Sub-Unit Quiz | Confirmed absent | Learn about your students' understanding of the concepts and skills so far in this unit. This assessment is intended for students to complete using a scientific calculator. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 2 | PDF p. 13; screenshot 13 |
+| 14 | Lesson | Tasty Fruit | Lesson 10: Two-Way Tables and Bar Graphs | Let's explore two-way tables and bar graphs. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 10 | PDF p. 14; screenshot 14 |
+| 15 | Lesson | Finding Associations | Lesson 11: Using Data Displays to Find Associations | Let's use data displays to find associations. | No optional marker or optionality statement; **Confirmed absent** | Fixed - Sub-Unit 3, Lesson 11 | PDF p. 15; screenshot 15 |
+| 16 | Practice Day | 8.6 Practice Day 2 | Confirmed absent | Students practice the concepts, skills, and strategies developed in Lessons 1-11. Consider using this Practice Day as preparation for the upcoming End-of-Unit Assessment. | No optional marker or optionality statement; **Confirmed absent** | Fixed - closes Sub-Unit 3, after Lesson 11 | PDF p. 16; screenshot 16 |
+| 17 | Performance Task | 8.6 Performance Task | Confirmed absent | Assign this summative assessment performance task at the end of the unit to evaluate students' proficiency with the concepts and skills addressed in the unit. | No optional marker or optionality statement; **Confirmed absent** | Fixed - end of unit, after Practice Day 2 | PDF p. 17; screenshot 17 |
+| 18 | Unit Synthesis and Reflection | Unit Synthesis and Reflection | Confirmed absent | Here are six optional activities for students to engage in at the end of a unit to synthesize and/or reflect on their learning from the unit. | The item itself is not marked optional; **Confirmed absent**. Internal activity choice: select one to two tasks before or after the End-of-Unit Assessment. | Fixed - final Unit 6 source page | PDF p. 18; screenshot 18 |
+
+**Flexible-placement item (not part of the fixed sequence above):**
+
+| Order | Type | Title | Subtitle | Summary or description | Optionality | Placement | Evidence |
+|---|---|---|---|---|---|---|---|
+| Confirmed absent - publisher assigns no fixed order | Investigate | The Ozone Layer Over Time | Investigate: The Ozone Layer Over Time | Invite students to investigate potential connections to the changing size of the "hole" in the ozone layer. | Yes - `(Optional)` in the Unit at a Glance | Publisher-flexible - `Use anytime in this grade after Unit 6, Lesson 9.` | PDF p. 1; screenshot 01; no dedicated item page in the complete source |
+
+### Days and Durations
+
+- Unit-level required-day and optional-day totals: **Confirmed absent** from the complete Unit 6 source.
+- Per-item durations or `PlannedDays`: **Confirmed absent** from the complete Unit 6 source, except that the missing Sub-Unit 2 Practice Day card prevents confirming whether that unavailable page would have stated a duration; for that item, duration is **Not found in what was reviewable**.
+- `Practice Day` is a literal publisher Type/title component. It is not treated as evidence that either Practice Day has a stated one-day duration.
+- The overview's lesson ranges and `+ Practice Day` / `+ Quiz` structure are preserved as structure, not converted into a day budget.
+- The publisher gives `Investigate: The Ozone Layer Over Time` a placement threshold after Lesson 9, not a duration.
+
+### Material Ambiguities and Unresolved Questions
+
+1. The overview explicitly lists a Practice Day in Sub-Unit 2 after Lessons 4-9 and before the Quiz, but no corresponding card exists in the complete 18-page PDF or 18 screenshots. The overview-supported item is extracted with literal Type `Practice Day` and fixed placement, while its exact title, subtitle, description, optionality, and duration remain **Not found in what was reviewable**. Whether a publisher page is missing from both supplied source representations remains unresolved.
+2. `Investigate: The Ozone Layer Over Time` appears only in the Unit at a Glance, has no dedicated page, and is explicitly optional and publisher-flexible. Its exact rule is `Use anytime in this grade after Unit 6, Lesson 9.` Unit 5's `Investigate: Packing Spheres` independently says `Use anytime in this course after Unit 5, Lesson 15.` Therefore both are eligible after Unit 6, Lesson 9, while only `Packing Spheres` is eligible earlier in Unit 6; the source states no required ordering or other interaction between them.
+3. The `8.6 Pre-Unit Check` may be completed before the unit or spread throughout it. This is flexibility in administration, not publisher-flexible sequence placement; the card retains its fixed source position.
+4. Unlike the Explores in Units 1-5, `Explore: Changes in the Ozone Layer` has no optional marker or optionality statement in either its overview entry or dedicated card. Its item-level optionality is therefore **Confirmed absent**, not inferred from earlier units.
+5. `End-of-Unit Assessment` appears in the supporting descriptions for `8.6 Practice Day 2` and `Unit Synthesis and Reflection`. No distinct card or item with that Type/title exists in the complete Unit 6 source. It is therefore not extracted as a separate instructional item. Whether it is publisher shorthand for the visible `8.6 Performance Task` is **not stated** and remains unresolved.
+6. `Unit Synthesis and Reflection` contains six optional internal activities and directs the teacher to select one to two. The source does not mark the enclosing item optional; item-level optionality is therefore **Confirmed absent**, distinct from its internal activity choice.
+7. The PDF contains 18 raster-image pages in publisher order. The 18 screenshots are individual page captures of the same content; their capture timestamps continue from 5:58-6:00 PM to 10:32-10:34 PM. The curriculum content agrees between the PDF and screenshots. The PDF has no reviewable text layer, so transcription was visually validated against both representations.
+
+### Unit 6 Source Coverage
+
+The complete `Curriculm/M8/Unit 6/Unit 6.pdf` was reviewed (18 of 18 pages), and every paired screenshot was visually inspected (18 of 18 PNGs). Screenshot numbers below are chronological local evidence references used in the item tables.
+
+| Ref | Screenshot file | Content verified |
+|---:|---|---|
+| 01 | `Screenshot 2026-07-30 at 5.58.47 PM.png` | Unit overview, exact title and overview, Explore, flexible Investigate, all three sub-units and ranges, and overview-only Sub-Unit 2 Practice Day evidence |
+| 02 | `Screenshot 2026-07-30 at 5.59.08 PM.png` | 8.6 Pre-Unit Check |
+| 03 | `Screenshot 2026-07-30 at 5.59.17 PM.png` | Explore: Changes in the Ozone Layer and absence of optionality marking |
+| 04 | `Screenshot 2026-07-30 at 5.59.27 PM.png` | Lesson 1 |
+| 05 | `Screenshot 2026-07-30 at 5.59.41 PM.png` | Lesson 2 |
+| 06 | `Screenshot 2026-07-30 at 5.59.51 PM.png` | Lesson 3 |
+| 07 | `Screenshot 2026-07-30 at 6.00.03 PM.png` | Lesson 4 |
+| 08 | `Screenshot 2026-07-30 at 6.00.15 PM.png` | Lesson 5 |
+| 09 | `Screenshot 2026-07-30 at 6.00.26 PM.png` | Lesson 6 |
+| 10 | `Screenshot 2026-07-30 at 6.00.35 PM.png` | Lesson 7 |
+| 11 | `Screenshot 2026-07-30 at 6.00.44 PM.png` | Lesson 8 |
+| 12 | `Screenshot 2026-07-30 at 10.32.23 PM.png` | Lesson 9; confirms the next supplied page is the Quiz, with no intervening Practice Day card |
+| 13 | `Screenshot 2026-07-30 at 10.32.55 PM.png` | Sub-Unit Quiz |
+| 14 | `Screenshot 2026-07-30 at 10.33.13 PM.png` | Lesson 10 |
+| 15 | `Screenshot 2026-07-30 at 10.33.30 PM.png` | Lesson 11 |
+| 16 | `Screenshot 2026-07-30 at 10.33.44 PM.png` | Practice Day 2 |
+| 17 | `Screenshot 2026-07-30 at 10.34.02 PM.png` | Performance Task |
+| 18 | `Screenshot 2026-07-30 at 10.34.32 PM.png` | Unit Synthesis and Reflection |
 
 The filenames above are normalized to ordinary spaces for readability. On disk, the timestamp separator before `PM` is a narrow no-break space. No source filename was changed.
