@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
@@ -38,7 +39,7 @@ function payload() {
     summary: values.summary, summaryStatus: field(values.summary).status,
     isOptional: values.isOptional, isOptionalStatus: field(values.isOptional).status,
     provenance: { evidence: "fixture", optionalityEvidence: "fixture", placementEvidence: "fixture" } });
-  return { schemaVersion: "2.0.0", course: { courseId: "M8" }, units: [{ unitId: "AMP-M8-U1", unitNumber: 1,
+  return { schemaVersion: "2.0.0", generator: { suppliedUnitsFullyExtracted: true, authoritativeCourseCompleteness: "unconfirmed" }, course: { courseId: "M8" }, units: [{ unitId: "AMP-M8-U1", unitNumber: 1,
     title: "Test Unit", purpose: "Purpose", requiredDays: field(null), optionalDays: field(null), items: [
       item("AMP-M8-U1-I01", 1, null, { type: null, title: "Known", summary: null, isOptional: null }),
       item("AMP-M8-U1-F1", null, "Use anytime after Lesson 1.", { type: "Investigate", title: "Flex", summary: "Summary", isOptional: true }),
@@ -224,6 +225,7 @@ test("read-only preview reads only approved sheets and fields and cannot mutate 
   const fixtureBefore = JSON.stringify(payload());
   const d = previewDeps({ spreadsheet: s });
   const report = importer.amplifyM8BuildPreviewReport_(d, new Date(0));
+  const summary = importer.amplifyM8BuildPreviewSummary_(report);
   assert.deepEqual(requestedSheets, ["Courses", "Units", "Lessons"]);
   assert.deepEqual(COURSE_HEADERS, ["CourseID"]);
   assert.deepEqual(report.courseValidation.course, { _rowNumber: 2, CourseID: "M8" });
@@ -233,8 +235,79 @@ test("read-only preview reads only approved sheets and fields and cannot mutate 
     assert.equal(sheet.readRanges.some((args) => args[0] > 1 && args[1] === forbiddenColumn), false);
   }
   assert.equal(report.writesOccurred, false);
+  assert.equal(summary.writesOccurred, false);
   assert.equal(JSON.stringify(d.payload), fixtureBefore);
   assert.equal(JSON.stringify(s.sheetsByName), before);
+});
+
+test("compact summary reports exact empty and representative aggregate counts, legacy protection, and completeness", () => {
+  const emptyReport = importer.amplifyM8BuildPreviewReport_(previewDeps({ payload: data.AMPLIFY_M8_IMPORT_PAYLOAD,
+    metadata: data.AMPLIFY_M8_IMPORT_METADATA }), new Date("2026-08-03T00:00:00.000Z"));
+  const emptySummary = importer.amplifyM8BuildPreviewSummary_(emptyReport);
+  assert.deepEqual(emptySummary.unitClassificationCounts, { create: 8, "source-update": 0, "no-op": 0, blocked: 0 });
+  assert.deepEqual(emptySummary.lessonClassificationCounts, { create: 163, "source-update": 0, "no-op": 0, blocked: 0 });
+  assert.equal(emptySummary.protectedLegacyUnitCount, 0);
+  assert.equal(emptySummary.protectedLegacyLessonCount, 0);
+
+  const fixture = JSON.parse(readFileSync(path.join(HERE, "fixtures/amplify-m8-representative-destination.json"), "utf8"));
+  const representativeSheet = previewSpreadsheet({ units: fixture.units, lessons: fixture.lessons });
+  const destinationBefore = JSON.stringify(representativeSheet.sheetsByName);
+  const payloadBefore = JSON.stringify(data.AMPLIFY_M8_IMPORT_PAYLOAD);
+  const report = importer.amplifyM8BuildPreviewReport_(previewDeps({ spreadsheet: representativeSheet,
+    payload: data.AMPLIFY_M8_IMPORT_PAYLOAD, metadata: data.AMPLIFY_M8_IMPORT_METADATA }), new Date(0));
+  const reportBefore = JSON.stringify(report);
+  const summary = importer.amplifyM8BuildPreviewSummary_(report);
+  assert.deepEqual(summary.unitClassificationCounts, { create: 6, "source-update": 1, "no-op": 1, blocked: 0 });
+  assert.deepEqual(summary.lessonClassificationCounts, { create: 155, "source-update": 1, "no-op": 6, blocked: 1 });
+  assert.equal(summary.protectedLegacyUnitCount, 1);
+  assert.equal(summary.protectedLegacyLessonCount, 1);
+  assert.equal(summary.teacherFieldBlockerCount, 1);
+  assert.equal(summary.suppliedUnitsFullyExtracted, true);
+  assert.equal(summary.authoritativeCourseCompleteness, "unconfirmed");
+  assert.equal(summary.writesOccurred, false);
+  assert.equal(JSON.stringify(report), reportBefore, "summary generation must not mutate the full report");
+  assert.equal(JSON.stringify(data.AMPLIFY_M8_IMPORT_PAYLOAD), payloadBefore);
+  assert.equal(JSON.stringify(representativeSheet.sheetsByName), destinationBefore);
+});
+
+test("compact summary preserves every blocker and warning without staged rows or item arrays", () => {
+  const p = payload();
+  const destination = {
+    units: [{ UnitID: "AMP-M8-U1", CourseID: "OTHER" }],
+    lessons: [
+      { LessonID: "AMP-M8-U1-I01", UnitID: "AMP-M8-U1", CourseID: "M8", LessonTitle: "stale", PlannedDays: 2 },
+      { LessonID: "AMP-M8-U1-F1", UnitID: "AMP-M8-U1", CourseID: "OTHER" },
+    ],
+  };
+  const plan = importer.amplifyM8BuildImportPlan_(p, destination);
+  const report = {
+    mode: "preview", timestamp: new Date(0).toISOString(), artifact: { schemaVersion: "2.0.0", sha256: "hash", unitCount: 1, itemCount: 2 },
+    spreadsheetId: "fixture", sheetsPresent: { courses: true, units: true, lessons: true },
+    payloadIntegrity: { valid: true, errors: [] }, payloadStructure: { valid: true, errors: [] },
+    destinationSchema: { valid: true, errors: [], missingCourseHeaders: [], missingUnitHeaders: [], missingLessonHeaders: [] },
+    courseValidation: { valid: true, errors: [] }, plan, writesOccurred: false,
+  };
+  const summary = importer.amplifyM8BuildPreviewSummary_(report);
+  assert.equal(summary.blockerCount, plan.blockers.length);
+  assert.deepEqual(summary.blockerReasons, plan.blockers);
+  assert.equal(summary.teacherFieldBlockerCount, 1);
+  assert.ok(summary.warningCount > 0);
+  assert.deepEqual(summary.warnings, ["Item AMP-M8-U1-I01: title-mismatch-warning"]);
+  const serialized = JSON.stringify(summary);
+  assert.equal(serialized.includes("proposedRow"), false);
+  assert.equal(serialized.includes('"units":['), false);
+  assert.equal(serialized.includes('"items":['), false);
+  assert.equal(summary.writesOccurred, false);
+});
+
+test("real 8-unit/163-item compact summary stays below the conservative 8,000-character log threshold", () => {
+  const report = importer.amplifyM8BuildPreviewReport_(previewDeps({ payload: data.AMPLIFY_M8_IMPORT_PAYLOAD,
+    metadata: data.AMPLIFY_M8_IMPORT_METADATA }), new Date(0));
+  const serialized = JSON.stringify(importer.amplifyM8BuildPreviewSummary_(report));
+  assert.ok(serialized.length < 8000, `serialized summary was ${serialized.length} characters`);
+  assert.equal(serialized.includes("proposedRow"), false);
+  assert.equal(serialized.includes('"items":['), false);
+  assert.equal((serialized.match(/AMP-M8-U\d-(?:I\d{2}|F\d+)/g) || []).length, 0, "must not serialize the 163 item objects");
 });
 
 test("confirmation, lock, and backup guards fail before writes", () => {
