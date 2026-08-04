@@ -48,7 +48,7 @@ function payload() {
 function spreadsheet(destination = { units: [], lessons: [] }) {
   return createFakeSpreadsheetFromFixture(destination, { units: UNIT_HEADERS, lessons: LESSON_HEADERS });
 }
-function previewSpreadsheet({ courses = [{ CourseID: "M8", "Course Name": "Math 8" }], units = [], lessons = [],
+function previewSpreadsheet({ courses = [{ CourseID: "M8" }], units = [], lessons = [],
   courseHeaders = COURSE_HEADERS, unitHeaders = UNIT_HEADERS, lessonHeaders = LESSON_HEADERS, omit = [] } = {}) {
   const rows = {};
   const values = (headers, objects) => [headers, ...objects.map((object) => headers.map((header) => object[header] ?? ""))];
@@ -66,7 +66,7 @@ function deps(overrides = {}) {
   const p = overrides.payload || payload();
   return { spreadsheetApp: createFakeSpreadsheetApp(overrides.spreadsheet || spreadsheet()), lockService: createFakeLockService(),
     sheetId: "local-only", computeSha256Hex: sha256, payload: p, metadata: overrides.metadata || metadata(p),
-    courses: [{ CourseID: "M8", "Course Name": "Math 8" }], formatTimestamp: () => "2026-08-02 000000", ...overrides };
+    courses: [{ CourseID: "M8" }], formatTimestamp: () => "2026-08-02 000000", ...overrides };
 }
 
 test("generated payload preserves schema/profile/hash/counts and exact confirmation phrase", () => {
@@ -129,11 +129,17 @@ test("duplicate IDs, incompatible collisions, and structural clears block", () =
   assert.equal(importer.amplifyM8BuildImportPlan_(p, { units: [], lessons: [{ ...duplicate, PlacementRule: "would clear" }] }).blocked, true);
 });
 
-test("requires exactly one existing compatible M8 course", () => {
+test("course identity requires exactly one exact M8 CourseID and ignores display wording", () => {
   assert.equal(importer.amplifyM8ValidateCourse_([]).valid, false);
-  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8", "Course Name": "Math 8" }]).valid, true);
-  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8", "Course Name": "Math 8" }, { CourseID: "M8", "Course Name": "Math 8" }]).valid, false);
-  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8", "Course Name": "Mathematics 8" }]).valid, false);
+  for (const course of [
+    { CourseID: "M8" },
+    { CourseID: "M8", CourseName: "Math 8" },
+    { CourseID: "M8", CourseName: "Mathematics 8" },
+    { CourseID: "M8", CourseName: "" },
+    { CourseID: "M8", ShortName: "Eighth Grade" },
+  ]) assert.equal(importer.amplifyM8ValidateCourse_([course]).valid, true);
+  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "M8" }, { CourseID: "M8" }]).valid, false);
+  assert.equal(importer.amplifyM8ValidateCourse_([{ CourseID: "MATH8", CourseName: "Math 8" }]).valid, false);
 });
 
 test("read-only preview allows exactly one compatible M8 course and always reports zero writes", () => {
@@ -146,11 +152,21 @@ test("read-only preview allows exactly one compatible M8 course and always repor
   assert.equal(report.writesOccurred, false);
 });
 
-test("read-only preview blocks missing, duplicate, or incompatible M8 course identity", () => {
+test("read-only preview accepts optional CourseName wording and blocks missing, duplicate, or incompatible M8 identity", () => {
+  for (const courses of [
+    [{ CourseID: "M8", CourseName: "Math 8" }],
+    [{ CourseID: "M8", CourseName: "Alternate wording" }],
+    [{ CourseID: "M8", CourseName: "" }],
+    [{ CourseID: "M8" }],
+  ]) {
+    const report = importer.amplifyM8BuildPreviewReport_(previewDeps({ spreadsheet: previewSpreadsheet({ courses, courseHeaders: ["CourseID", "CourseName"] }) }), new Date(0));
+    assert.equal(report.courseValidation.valid, true);
+    assert.ok(report.plan);
+    assert.equal(report.writesOccurred, false);
+  }
   for (const courses of [[],
-    [{ CourseID: "M8", "Course Name": "Math 8" }, { CourseID: "M8", "Course Name": "Math 8" }],
-    [{ CourseID: "M8", "Course Name": "Wrong" }],
-    [{ CourseID: "MATH8", "Course Name": "Math 8" }]]) {
+    [{ CourseID: "M8" }, { CourseID: "M8" }],
+    [{ CourseID: "MATH8", CourseName: "Math 8" }]]) {
     const report = importer.amplifyM8BuildPreviewReport_(previewDeps({ spreadsheet: previewSpreadsheet({ courses }) }), new Date(0));
     assert.equal(report.courseValidation.valid, false);
     assert.equal(report.plan, null);
@@ -174,6 +190,16 @@ test("read-only preview requires all three sheets and required headers before cl
       assert.match(report.destinationSchema.errors.join(" "), new RegExp(header.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     }
   }
+  const legacyDisplayHeaderOnly = importer.amplifyM8BuildPreviewReport_(previewDeps({
+    spreadsheet: previewSpreadsheet({ courseHeaders: ["Course Name"], courses: [{ "Course Name": "Math 8" }] }),
+  }), new Date(0));
+  assert.equal(legacyDisplayHeaderOnly.destinationSchema.valid, false);
+  assert.deepEqual(legacyDisplayHeaderOnly.destinationSchema.missingCourseHeaders, ["CourseID"]);
+  const exactIdOnly = importer.amplifyM8BuildPreviewReport_(previewDeps({
+    spreadsheet: previewSpreadsheet({ courseHeaders: ["CourseID"], courses: [{ CourseID: "M8" }] }),
+  }), new Date(0));
+  assert.equal(exactIdOnly.destinationSchema.valid, true);
+  assert.equal(exactIdOnly.courseValidation.valid, true);
 });
 
 test("read-only preview reads only approved sheets and fields and cannot mutate fake state", () => {
@@ -199,6 +225,8 @@ test("read-only preview reads only approved sheets and fields and cannot mutate 
   const d = previewDeps({ spreadsheet: s });
   const report = importer.amplifyM8BuildPreviewReport_(d, new Date(0));
   assert.deepEqual(requestedSheets, ["Courses", "Units", "Lessons"]);
+  assert.deepEqual(COURSE_HEADERS, ["CourseID"]);
+  assert.deepEqual(report.courseValidation.course, { _rowNumber: 2, CourseID: "M8" });
   for (const name of ["Courses", "Units", "Lessons"]) {
     const sheet = s.sheetsByName[name];
     const forbiddenColumn = sheet.values[0].indexOf("NotApprovedForPreview") + 1;

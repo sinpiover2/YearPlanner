@@ -55,10 +55,21 @@ Course definitions.
 
 Examples:
 
-| CourseID | Course Name |
-|-----------|-------------|
+Canonical fields, in executable schema order:
+
+`CourseID, CourseName, ShortName, Active, SortOrder`
+
+Examples:
+
+| CourseID | CourseName |
+|----------|------------|
 | M8 | Math 8 |
 | IM1 | Integrated Math 1 |
+
+The Math 8 importer identifies its destination course only by requiring
+exactly one row whose `CourseID` is exactly `M8`. It does not gate on
+`CourseName`, `ShortName`, or the artifact display label `Math 8`, and this
+identity correction does not introduce a schema migration.
 
 ---
 

@@ -36,7 +36,7 @@
 
 const AMPLIFY_M8_IMPORTER_SUPPORTED_SCHEMA_VERSION = "2.0.0";
 
-const AMPLIFY_M8_REQUIRED_COURSE_HEADERS = ["CourseID", "Course Name"];
+const AMPLIFY_M8_REQUIRED_COURSE_HEADERS = ["CourseID"];
 
 // Corrected per the Sprint 5 read-only production audit (see
 // AMPLIFY_M8_IMPORT_IMPLEMENTATION_SPEC.md's Sprint 6.1 section): the real
@@ -526,12 +526,6 @@ function amplifyM8ValidateCourse_(courses) {
   const matches = (courses || []).filter(function (course) { return course.CourseID === "M8"; });
   if (matches.length !== 1) {
     return { valid: false, errors: [`Expected exactly one existing M8 course; found ${matches.length}.`] };
-  }
-  if (matches[0]["Course Name"] !== "Math 8") {
-    return {
-      valid: false,
-      errors: [`CourseID "M8" must have course label "Math 8"; found ${JSON.stringify(matches[0]["Course Name"])}.`],
-    };
   }
   return { valid: true, errors: [], course: matches[0] };
 }
