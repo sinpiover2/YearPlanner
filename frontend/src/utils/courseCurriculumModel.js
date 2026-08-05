@@ -1,7 +1,11 @@
 import {
+  aggregatePlanningDayValues,
   getActiveCurriculum,
   isUnitArchived,
   isTrue,
+  parseOptionalDays,
+  parsePlannedDays,
+  parseRequiredDays,
   sortLessons,
   sortUnits,
 } from "./plannerUtils.js";
@@ -40,6 +44,13 @@ function getLessonProgress(lessonId, dailyProgress) {
   };
 }
 
+function getSafeActualDays(entries) {
+  return entries.reduce((sum, entry) => {
+    const dayFraction = Number(entry.DayFraction);
+    return Number.isFinite(dayFraction) ? sum + dayFraction : sum;
+  }, 0);
+}
+
 function getActiveCourseCurriculum(courseId, units, lessons) {
   const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
   const courseUnits = sortUnits(activeUnits.filter((unit) => unit.CourseID === courseId));
@@ -50,8 +61,41 @@ function getActiveCourseCurriculum(courseId, units, lessons) {
   return { courseUnits, courseLessons };
 }
 
+function getCourseUnitDayPlanning(courseUnits) {
+  const requiredDays = aggregatePlanningDayValues(
+    courseUnits.map((unit) => unit.RequiredDays),
+    parseRequiredDays,
+  );
+  const optionalDays = aggregatePlanningDayValues(
+    courseUnits.map((unit) => unit.OptionalDays),
+    parseOptionalDays,
+  );
+
+  return {
+    requiredDays,
+    optionalDays,
+    complete: requiredDays.complete && optionalDays.complete,
+    hasInvalidValues:
+      requiredDays.hasInvalidValues || optionalDays.hasInvalidValues,
+  };
+}
+
+function getLessonDayPlanning(lessons, actualDays) {
+  const plannedDays = aggregatePlanningDayValues(
+    lessons.map((lesson) => lesson.PlannedDays),
+    parsePlannedDays,
+  );
+
+  return {
+    plannedDays,
+    variance: plannedDays.complete ? actualDays - plannedDays.total : null,
+    complete: plannedDays.complete,
+    hasInvalidValues: plannedDays.hasInvalidValues,
+  };
+}
+
 export function getCourseStatus(courseId, units, lessons, dailyProgress) {
-  const { courseLessons } = getActiveCourseCurriculum(courseId, units, lessons);
+  const { courseUnits, courseLessons } = getActiveCourseCurriculum(courseId, units, lessons);
   const completedLessonIds = new Set(
     dailyProgress
       .filter((entry) => entry.CourseID === courseId && isTrue(entry.Finished))
@@ -59,12 +103,21 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
   );
   const completedLessons = courseLessons.filter((lesson) => completedLessonIds.has(lesson.LessonID));
   const activeLessonIds = new Set(courseLessons.map((lesson) => lesson.LessonID));
-  const actualDays = dailyProgress
-    .filter((entry) => entry.CourseID === courseId && activeLessonIds.has(entry.LessonID))
+  const activeProgress = dailyProgress.filter(
+    (entry) =>
+      entry.CourseID === courseId && activeLessonIds.has(entry.LessonID),
+  );
+  const actualDays = activeProgress
     .reduce((sum, entry) => sum + Number(entry.DayFraction || 0), 0);
+  const safeActualDays = getSafeActualDays(activeProgress);
   const plannedDaysCompleted = completedLessons.reduce(
     (sum, lesson) => sum + Number(lesson.PlannedDays || 0),
     0,
+  );
+  const unitDays = getCourseUnitDayPlanning(courseUnits);
+  const completedLessonsPlanning = getLessonDayPlanning(
+    completedLessons,
+    safeActualDays,
   );
 
   return {
@@ -72,6 +125,21 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
     completedCount: completedLessons.length,
     plannedDaysCompleted,
     actualDays,
+    // Canonical read-only contract for later presentation slices. The legacy
+    // numeric fields above/below remain until their current UI consumers move
+    // together, preserving visible behavior in this foundation slice.
+    planning: {
+      actualDays: safeActualDays,
+      requiredDays: unitDays.requiredDays,
+      optionalDays: unitDays.optionalDays,
+      completedPlannedDays: completedLessonsPlanning.plannedDays,
+      variance: completedLessonsPlanning.variance,
+      unitDaysComplete: unitDays.complete,
+      completedPlannedDaysComplete: completedLessonsPlanning.complete,
+      complete: unitDays.complete && completedLessonsPlanning.complete,
+      hasInvalidValues:
+        unitDays.hasInvalidValues || completedLessonsPlanning.hasInvalidValues,
+    },
     variance: actualDays - plannedDaysCompleted,
   };
 }
@@ -100,6 +168,16 @@ export function getCourseNavigation(courseId, units, lessons, dailyProgress) {
     (sum, lesson) => sum + getLessonProgress(lesson.LessonID, dailyProgress).actualDays,
     0,
   );
+  const currentUnitLessonIds = new Set(
+    currentUnitLessons.map((lesson) => lesson.LessonID),
+  );
+  const safeActualDays = getSafeActualDays(
+    dailyProgress.filter((entry) => currentUnitLessonIds.has(entry.LessonID)),
+  );
+  const currentUnitPlanning = getLessonDayPlanning(
+    currentUnitLessons,
+    safeActualDays,
+  );
 
   return {
     courseUnits,
@@ -118,6 +196,15 @@ export function getCourseNavigation(courseId, units, lessons, dailyProgress) {
     remainingInUnit: Math.max(currentUnitLessons.length - completedInUnit - (currentLesson ? 1 : 0), 0),
     plannedDays,
     actualDays,
+    // Canonical nullable current-Unit calculation; legacy plannedDays and
+    // unitVariance stay numeric until the Unit/Sidebar presentation migration.
+    planning: {
+      actualDays: safeActualDays,
+      plannedDays: currentUnitPlanning.plannedDays,
+      variance: currentUnitPlanning.variance,
+      complete: currentUnitPlanning.complete,
+      hasInvalidValues: currentUnitPlanning.hasInvalidValues,
+    },
     unitVariance: actualDays - plannedDays,
   };
 }
