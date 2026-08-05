@@ -286,6 +286,8 @@ test("completed lesson variance is withheld for unknown or invalid PlannedDays",
     assert.equal(status.completedCount, 1);
     assert.equal(status.planning.completedPlannedDays.complete, false);
     assert.equal(status.planning.variance, null);
+    assert.equal(status.plannedDaysCompleted, null);
+    assert.equal(status.variance, null);
     assert.equal(
       status.planning.completedPlannedDays.invalidCount,
       PlannedDays === "" || PlannedDays === null || PlannedDays === undefined
@@ -328,6 +330,8 @@ test("current Unit variance is withheld while navigation remains deterministic",
   assert.equal(navigation.planning.plannedDays.unknownCount, 2);
   assert.equal(navigation.planning.variance, null);
   assert.equal(navigation.planning.complete, false);
+  assert.equal(navigation.plannedDays, null);
+  assert.equal(navigation.unitVariance, null);
   assert.deepEqual(units, unitsSnapshot);
   assert.deepEqual(lessons, lessonsSnapshot);
   assert.deepEqual(progress, progressSnapshot);

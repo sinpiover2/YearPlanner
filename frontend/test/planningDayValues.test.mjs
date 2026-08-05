@@ -6,6 +6,7 @@ import {
   aggregatePlanningDayValues,
   formatPlanningDayValue,
   formatPlanningDayValueCompact,
+  formatDays,
   getCompactPlanningDayDisplay,
   parseOptionalDays,
   parseActualDays,
@@ -251,6 +252,12 @@ test("formatters preserve known zero and provide accessible compact wording", ()
     text: "—",
     accessibleText: "Not planned",
   });
+});
+
+test("day formatting preserves zero and does not present missing or invalid data as zero", () => {
+  assert.equal(formatDays(0), "0");
+  assert.equal(formatDays(null), "—");
+  assert.equal(formatDays("bad"), "—");
 });
 
 test("parsing and aggregation do not mutate inputs", () => {

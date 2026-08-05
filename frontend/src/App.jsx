@@ -19,8 +19,6 @@ import {
   formatDayPhrase,
   calculateProgressPercent,
   getOutcomeList,
-  getRequiredDays,
-  getOptionalDays,
   getActiveCurriculum,
   sortUnits,
   sortLessons,
@@ -171,11 +169,6 @@ function App() {
 
   const math8Units = activeUnits.filter((unit) => unit.CourseID === "M8");
   const math1Units = activeUnits.filter((unit) => unit.CourseID === "IM1");
-
-  const math8RequiredDays = getRequiredDays(math8Units);
-  const math1RequiredDays = getRequiredDays(math1Units);
-  const math8OptionalDays = getOptionalDays(math8Units);
-  const math1OptionalDays = getOptionalDays(math1Units);
 
   const math8Sections = getSectionsForCourse("M8", sections);
   const math1Sections = getSectionsForCourse("IM1", sections);

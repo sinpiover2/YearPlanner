@@ -107,10 +107,6 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
   );
   const actualDayValues = getActualDayValues(activeProgress);
   const actualDays = actualDayValues.total;
-  const plannedDaysCompleted = completedLessons.reduce(
-    (sum, lesson) => sum + Number(lesson.PlannedDays || 0),
-    0,
-  );
   const unitDays = getCourseUnitDayPlanning(courseUnits);
   const completedLessonsPlanning = getLessonDayPlanning(
     completedLessons,
@@ -120,11 +116,10 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
   return {
     currentLesson: courseLessons.find((lesson) => !completedLessonIds.has(lesson.LessonID)) ?? null,
     completedCount: completedLessons.length,
-    plannedDaysCompleted,
+    plannedDaysCompleted: completedLessonsPlanning.complete
+      ? completedLessonsPlanning.plannedDays.total
+      : null,
     actualDays,
-    // Canonical read-only contract for later presentation slices. The legacy
-    // numeric fields above/below remain until their current UI consumers move
-    // together, preserving visible behavior in this foundation slice.
     planning: {
       actualDays,
       actualDayValues,
@@ -140,7 +135,7 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
         unitDays.hasInvalidValues ||
         completedLessonsPlanning.hasInvalidValues,
     },
-    variance: actualDays - plannedDaysCompleted,
+    variance: completedLessonsPlanning.variance,
   };
 }
 
@@ -215,7 +210,6 @@ export function getCourseNavigation(courseId, units, lessons, dailyProgress) {
     ? currentUnitLessons.findIndex((lesson) => lesson.LessonID === currentLesson.LessonID)
     : -1;
   const completedInUnit = currentUnitLessons.filter((lesson) => completedLessonIds.has(lesson.LessonID)).length;
-  const plannedDays = currentUnitLessons.reduce((sum, lesson) => sum + Number(lesson.PlannedDays || 0), 0);
   const actualDays = currentUnitLessons.reduce(
     (sum, lesson) => sum + getLessonProgress(lesson.LessonID, dailyProgress).actualDays,
     0,
@@ -246,10 +240,10 @@ export function getCourseNavigation(courseId, units, lessons, dailyProgress) {
     totalLessonsInUnit: currentUnitLessons.length,
     completedInUnit,
     remainingInUnit: Math.max(currentUnitLessons.length - completedInUnit - (currentLesson ? 1 : 0), 0),
-    plannedDays,
+    plannedDays: currentUnitPlanning.complete
+      ? currentUnitPlanning.plannedDays.total
+      : null,
     actualDays,
-    // Canonical nullable current-Unit calculation; legacy plannedDays and
-    // unitVariance stay numeric until the Unit/Sidebar presentation migration.
     planning: {
       actualDays: actualDayValues.total,
       actualDayValues,
@@ -259,7 +253,7 @@ export function getCourseNavigation(courseId, units, lessons, dailyProgress) {
       hasInvalidValues:
         actualDayValues.hasInvalidValues || currentUnitPlanning.hasInvalidValues,
     },
-    unitVariance: actualDays - plannedDays,
+    unitVariance: currentUnitPlanning.variance,
   };
 }
 

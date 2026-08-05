@@ -34,7 +34,9 @@ export function formatVarianceCompact(variance) {
 }
 
 export function formatDays(value) {
-  const number = Number(value || 0);
+  if (value === null || value === undefined || value === "") return "—";
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "—";
 
   if (Number.isInteger(number)) return String(number);
 
@@ -87,27 +89,6 @@ export function getOutcomeList(value) {
     .split(/\||\n/)
     .map((outcome) => outcome.trim())
     .filter(Boolean);
-}
-
-// Sprint 2: resolved the Sprint 1 TODO. An unconfirmed unit still contributes
-// 0 to this sum — unchanged from before — but that 0 is now reached via
-// parseKnownNumber() rather than the bare Number(x || 0) pattern, so this
-// stays consistent with every other planning-day read in this file and in
-// forecastModel.js. Neither of these two functions currently has a caller
-// that renders their result, so this is not yet a user-visible fix — see
-// docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §10.
-export function getRequiredDays(courseUnits) {
-  return courseUnits.reduce(
-    (sum, unit) => sum + (parseKnownNumber(unit.RequiredDays) ?? 0),
-    0,
-  );
-}
-
-export function getOptionalDays(courseUnits) {
-  return courseUnits.reduce(
-    (sum, unit) => sum + (parseKnownNumber(unit.OptionalDays) ?? 0),
-    0,
-  );
 }
 
 // Distinguishes a genuinely unknown planning value (blank cell, or missing
