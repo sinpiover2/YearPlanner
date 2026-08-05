@@ -144,6 +144,48 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
   };
 }
 
+export function getSidebarCoursePresentation(status, navigation) {
+  const planning = status.planning;
+  const unitPlanning = navigation.planning;
+  const paceAvailable = planning.completedPlannedDaysComplete;
+  const requiredDaysComplete = planning.requiredDays.complete;
+  const unitProgressAvailable = requiredDaysComplete && unitPlanning.complete;
+  const optionalDaysKnown = planning.optionalDays.complete;
+  const variance = paceAvailable ? planning.variance : null;
+
+  let paceLabel = "Pacing unavailable";
+  let paceClassName = "unavailable";
+  if (paceAvailable) {
+    const absoluteVariance = Math.abs(variance);
+    paceLabel = variance === 0
+      ? "On pace"
+      : `${absoluteVariance}d ${variance > 0 ? "behind" : "ahead"}`;
+    paceClassName = variance === 0 ? "on-pace" : variance > 0 ? "behind" : "ahead";
+  }
+
+  return {
+    paceAvailable,
+    paceLabel,
+    paceClassName,
+    progressPercent: unitProgressAvailable && unitPlanning.plannedDays.total
+      ? Math.min(100, (unitPlanning.actualDays / unitPlanning.plannedDays.total) * 100)
+      : null,
+    unitDaysLabel: unitProgressAvailable
+      ? `${unitPlanning.actualDays} of ${unitPlanning.plannedDays.total} days in unit`
+      : `${unitPlanning.actualDays} logged`,
+    requiredDaysLabel: requiredDaysComplete
+      ? null
+      : `${planning.requiredDays.total} known days`,
+    planningLabel: requiredDaysComplete ? null : "Planning incomplete",
+    pacingPlanningLabel: paceAvailable ? null : "Planning days incomplete",
+    bufferLabel: optionalDaysKnown
+      ? `${planning.optionalDays.total}d buffer`
+      : planning.optionalDays.hasInvalidValues
+        ? "Invalid buffer value"
+        : "Buffer not planned",
+  };
+}
+
 export function getCourseNavigation(courseId, units, lessons, dailyProgress) {
   const { courseUnits, courseLessons } = getActiveCourseCurriculum(courseId, units, lessons);
   const completedLessonIds = new Set(

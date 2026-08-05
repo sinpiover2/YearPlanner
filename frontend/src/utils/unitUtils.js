@@ -1,5 +1,6 @@
 import {
   aggregateActualDayValues,
+  getCompactPlanningDayDisplay,
   parseOptionalDays,
   parseRequiredDays,
 } from "./plannerUtils.js";
@@ -50,6 +51,60 @@ export function getUnitPlanningModel(dailyProgress, unit) {
         )
       : null,
   };
+}
+
+export function getUnitPlanningPresentation(planningModel, { compact = false } = {}) {
+  const { actualDays, requiredDays } = planningModel;
+
+  if (requiredDays.state === "unknown") {
+    const compactDisplay = getCompactPlanningDayDisplay(requiredDays);
+    return {
+      daysLabel: compact
+        ? `${actualDays} logged · ${compactDisplay.text}`
+        : `${actualDays} logged · Not planned`,
+      daysAccessibleLabel: `${actualDays} logged · ${compactDisplay.accessibleText}`,
+      status: null,
+      statusLabel: null,
+      progressPercent: null,
+      progressLabel: "Not planned",
+      requiredDaysLabel: "Not planned",
+    };
+  }
+
+  if (requiredDays.state === "invalid") {
+    return {
+      daysLabel: actualDays ? `${actualDays} logged · Invalid value` : "Invalid value",
+      daysAccessibleLabel: null,
+      status: null,
+      statusLabel: null,
+      progressPercent: null,
+      progressLabel: "Invalid value",
+      requiredDaysLabel: "Invalid value",
+    };
+  }
+
+  return {
+    daysLabel: compact
+      ? `${actualDays} / ${requiredDays.value} days`
+      : `${actualDays}/${requiredDays.value} days · ${planningModel.remainingRequiredDays} remaining`,
+    daysAccessibleLabel: null,
+    status: planningModel.requiredDayStatus,
+    statusLabel:
+      planningModel.requiredDayStatus === "complete" ? "✓ Complete" : null,
+    progressPercent: planningModel.progressPercent,
+    progressLabel: `${planningModel.progressPercent}% complete`,
+    requiredDaysLabel: String(requiredDays.value),
+  };
+}
+
+export function getOptionalDaysPresentation(planningModel) {
+  if (planningModel.optionalDays.state === "known") {
+    return `${planningModel.optionalDays.value}d buffer`;
+  }
+
+  return planningModel.optionalDays.state === "invalid"
+    ? "Invalid buffer value"
+    : "Buffer not planned";
 }
 
 // Temporary compatibility helpers for current Unit components. Presentation

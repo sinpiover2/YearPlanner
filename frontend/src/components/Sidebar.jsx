@@ -1,18 +1,39 @@
-function getVarianceLabel(variance) {
-  const numericVariance = Number(variance || 0);
-  const absoluteVariance = Math.abs(numericVariance);
+import { getSidebarCoursePresentation } from "../utils/courseCurriculumModel";
 
-  if (numericVariance === 0) return "On pace";
+function CourseCard({ courseId, name, color, selectedCourseId, status, navigation, onSelect }) {
+  const presentation = getSidebarCoursePresentation(status, navigation);
 
-  return `${absoluteVariance}d ${numericVariance > 0 ? "behind" : "ahead"}`;
-}
-
-function getVarianceClassName(variance) {
-  const numericVariance = Number(variance || 0);
-
-  if (numericVariance === 0) return "on-pace";
-  if (numericVariance > 0) return "behind";
-  return "ahead";
+  return (
+    <button
+      className={selectedCourseId === courseId ? "course-sidebar-card active" : "course-sidebar-card"}
+      onClick={onSelect}
+    >
+      <div>
+        <strong>{name}</strong>
+        <em className={presentation.paceClassName}>{presentation.paceLabel}</em>
+      </div>
+      <p>
+        {navigation.currentUnit
+          ? `U${navigation.currentUnit.UnitNumber} · ${navigation.currentLesson?.LessonTitle ?? "Complete"}`
+          : "No unit selected"}
+      </p>
+      {presentation.progressPercent === null ? (
+        <div className={`mini-bar ${color} incomplete`} role="status">
+          {presentation.planningLabel ?? presentation.pacingPlanningLabel}
+        </div>
+      ) : (
+        <div className={`mini-bar ${color}`}>
+          <div style={{ width: `${presentation.progressPercent}%` }} />
+        </div>
+      )}
+      <small>
+        {[presentation.unitDaysLabel, presentation.requiredDaysLabel, presentation.planningLabel, presentation.pacingPlanningLabel, presentation.bufferLabel]
+          .filter(Boolean)
+          .join(" · ")}
+      </small>
+      <small>{status.completedCount} lessons complete</small>
+    </button>
+  );
 }
 
 function Sidebar({
@@ -26,9 +47,6 @@ function Sidebar({
   math1Navigation,
   math8Status,
   math1Status,
-  math8OptionalDays,
-  math1OptionalDays,
-  calculateProgressPercent,
   selectedSection,
   selectedCourseSections,
   setSelectedSectionId,
@@ -74,85 +92,31 @@ function Sidebar({
 
       <div className="sidebar-section-title">Courses</div>
 
-      <button
-        className={
-          selectedCourseId === "M8"
-            ? "course-sidebar-card active"
-            : "course-sidebar-card"
-        }
-        onClick={() => {
+      <CourseCard
+        courseId="M8"
+        name="Math 8"
+        color="blue"
+        selectedCourseId={selectedCourseId}
+        status={math8Status}
+        navigation={math8Navigation}
+        onSelect={() => {
           setSelectedCourseId("M8");
           setSelectedUnitId(math8Navigation.currentUnit?.UnitID ?? null);
         }}
-      >
-        <div>
-          <strong>Math 8</strong>
-          <em className={getVarianceClassName(math8Status.variance)}>
-            {getVarianceLabel(math8Status.variance)}
-          </em>
-        </div>
-        <p>
-          {math8Navigation.currentUnit
-            ? `U${math8Navigation.currentUnit.UnitNumber} · ${
-                math8Navigation.currentLesson?.LessonTitle ?? "Complete"
-              }`
-            : "No unit selected"}
-        </p>
-        <div className="mini-bar blue">
-          <div
-            style={{
-              width: `${calculateProgressPercent(
-                math8Navigation.actualDays,
-                math8Navigation.plannedDays,
-              )}%`,
-            }}
-          />
-        </div>
-        <small>
-          {math8Navigation.actualDays} of {math8Navigation.plannedDays} days in
-          unit · {math8OptionalDays}d buffer
-        </small>
-      </button>
+      />
 
-      <button
-        className={
-          selectedCourseId === "IM1"
-            ? "course-sidebar-card active"
-            : "course-sidebar-card"
-        }
-        onClick={() => {
+      <CourseCard
+        courseId="IM1"
+        name="Math 1"
+        color="green"
+        selectedCourseId={selectedCourseId}
+        status={math1Status}
+        navigation={math1Navigation}
+        onSelect={() => {
           setSelectedCourseId("IM1");
           setSelectedUnitId(math1Navigation.currentUnit?.UnitID ?? null);
         }}
-      >
-        <div>
-          <strong>Math 1</strong>
-          <em className={getVarianceClassName(math1Status.variance)}>
-            {getVarianceLabel(math1Status.variance)}
-          </em>
-        </div>
-        <p>
-          {math1Navigation.currentUnit
-            ? `U${math1Navigation.currentUnit.UnitNumber} · ${
-                math1Navigation.currentLesson?.LessonTitle ?? "Complete"
-              }`
-            : "No unit selected"}
-        </p>
-        <div className="mini-bar green">
-          <div
-            style={{
-              width: `${calculateProgressPercent(
-                math1Navigation.actualDays,
-                math1Navigation.plannedDays,
-              )}%`,
-            }}
-          />
-        </div>
-        <small>
-          {math1Navigation.actualDays} of {math1Navigation.plannedDays} days in
-          unit · {math1OptionalDays}d buffer
-        </small>
-      </button>
+      />
 
       <div className="sidebar-section-title">Section</div>
 

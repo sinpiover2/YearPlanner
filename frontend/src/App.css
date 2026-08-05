@@ -177,6 +177,18 @@ button {
   background: #73776f;
 }
 
+.mini-bar.incomplete,
+.units-map-card-progress.incomplete,
+.units-summary-progress.incomplete {
+  height: auto;
+  min-height: 8px;
+  overflow: visible;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .mini-bar.blue div {
   background: #3b82f6;
 }
@@ -231,6 +243,11 @@ button {
 .course-sidebar-card em.ahead {
   background: #d1fae5;
   color: #047857;
+}
+
+.course-sidebar-card em.unavailable {
+  background: #e2e8f0;
+  color: #475569;
 }
 
 .course-sidebar-card p {
@@ -1210,6 +1227,10 @@ button {
   color: #047857;
   font-size: 0.72rem;
   font-weight: 850;
+}
+
+.units-days-badge.incomplete::before {
+  display: none;
 }
 
 .units-summary-progress {

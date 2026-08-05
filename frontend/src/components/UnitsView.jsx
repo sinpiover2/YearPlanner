@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LessonTable from "./LessonTable";
 import {
-  getUnitLoggedDays,
-  getUnitProgressPercent,
+  getUnitPlanningModel,
+  getUnitPlanningPresentation,
   getUnitState,
-  getUnitRemainingDays,
-  getUnitRequiredDays,
 } from "../utils/unitUtils";
 import { getActiveCurriculum, isUnitArchived } from "../utils/plannerUtils";
 
@@ -27,7 +25,6 @@ function UnitsView({
   setSelectedUnitId,
   showArchivedUnits,
   setShowArchivedUnits,
-  getCourseLabel,
   selectedDailyProgress,
   selectedNavigation,
   activeProgressLessonId,
@@ -82,11 +79,8 @@ function UnitsView({
 
   const selectedUnitPurpose = getUnitPurpose(selectedUnit);
 
-  const [showAllOutcomes, setShowAllOutcomes] = useState(false);
-
-  useEffect(() => {
-    setShowAllOutcomes(false);
-  }, [selectedUnit?.UnitID]);
+  const [expandedOutcomesUnitId, setExpandedOutcomesUnitId] = useState(null);
+  const showAllOutcomes = expandedOutcomesUnitId === selectedUnit?.UnitID;
 
   const selectedUnitOutcomes = selectedUnit
     ? [
@@ -105,19 +99,8 @@ function UnitsView({
 
   const hasHiddenOutcomes = selectedUnitOutcomes.length > 5;
 
-  const unitLoggedDays = getUnitLoggedDays(
-    selectedDailyProgress,
-    selectedUnit?.UnitID,
-  );
-  const unitRequiredDays = getUnitRequiredDays(selectedUnit);
-  const unitRemainingDays = getUnitRemainingDays(
-    selectedDailyProgress,
-    selectedUnit,
-  );
-  const unitPercentComplete = getUnitProgressPercent(
-    selectedDailyProgress,
-    selectedUnit,
-  );
+  const selectedUnitPlanning = getUnitPlanningModel(selectedDailyProgress, selectedUnit);
+  const selectedUnitPresentation = getUnitPlanningPresentation(selectedUnitPlanning);
 
   return (
     <section className="workspace-panel units-workspace">
@@ -186,19 +169,11 @@ function UnitsView({
             {projectedUnits.map((unit) => {
               const isSelected = selectedUnit?.UnitID === unit.UnitID;
               const isArchived = isUnitArchived(unit);
-              const progressPercent = getUnitProgressPercent(
-                selectedDailyProgress,
-                unit,
-              );
-              const loggedDays = getUnitLoggedDays(
-                selectedDailyProgress,
-                unit.UnitID,
-              );
-              const unitState = getUnitState(
-                selectedDailyProgress,
-                unit,
-                activeCourseUnits,
-              );
+              const planning = getUnitPlanningModel(selectedDailyProgress, unit);
+              const presentation = getUnitPlanningPresentation(planning, { compact: true });
+              const unitState = planning.requiredDaysComplete
+                ? getUnitState(selectedDailyProgress, unit, activeCourseUnits)
+                : null;
 
               return (
                 <button
@@ -225,7 +200,7 @@ function UnitsView({
                     <span className="units-map-card-state archived">
                       Archived
                     </span>
-                  ) : (
+                  ) : unitState ? (
                     <span
                       className={`units-map-card-state ${unitState}`}
                     >
@@ -235,18 +210,24 @@ function UnitsView({
                           ? "Current"
                           : "Upcoming"}
                     </span>
-                  )}
+                  ) : null}
 
-                  <span className="units-map-card-days">
-                    {loggedDays} / {unit.RequiredDays} days
+                  <span
+                    className="units-map-card-days"
+                    aria-label={presentation.daysAccessibleLabel ?? undefined}
+                  >
+                    {presentation.daysLabel}
                   </span>
 
-                  <div
-                    className="units-map-card-progress"
-                    aria-label={`${progressPercent}% complete`}
-                  >
-                    <span style={{ width: `${progressPercent}%` }} />
-                  </div>
+                  {presentation.progressPercent === null ? (
+                    <div className="units-map-card-progress incomplete" role="status">
+                      {presentation.progressLabel}
+                    </div>
+                  ) : (
+                    <div className="units-map-card-progress" aria-label={presentation.progressLabel}>
+                      <span style={{ width: `${presentation.progressPercent}%` }} />
+                    </div>
+                  )}
 
                   <em>
                     {unit.projectedStart && unit.projectedEnd
@@ -277,16 +258,19 @@ function UnitsView({
                 </div>
               </div>
 
-              <div className="units-days-badge">
-                {unitLoggedDays}/{unitRequiredDays} days · {unitRemainingDays} remaining
+              <div className={`units-days-badge${selectedUnitPlanning.requiredDaysComplete ? "" : " incomplete"}`}>
+                {selectedUnitPresentation.daysLabel}
               </div>
 
-              <div
-                className="units-summary-progress"
-                aria-label={`${unitPercentComplete}% complete`}
-              >
-                <span style={{ width: `${unitPercentComplete}%` }} />
-              </div>
+              {selectedUnitPresentation.progressPercent === null ? (
+                <div className="units-summary-progress incomplete" role="status">
+                  {selectedUnitPresentation.progressLabel}
+                </div>
+              ) : (
+                <div className="units-summary-progress" aria-label={selectedUnitPresentation.progressLabel}>
+                  <span style={{ width: `${selectedUnitPresentation.progressPercent}%` }} />
+                </div>
+              )}
             </div>
 
             <div className="units-summary-brief">
@@ -318,7 +302,13 @@ function UnitsView({
                     <button
                       type="button"
                       className="units-show-outcomes"
-                      onClick={() => setShowAllOutcomes((value) => !value)}
+                      onClick={() =>
+                        setExpandedOutcomesUnitId((unitId) =>
+                          unitId === selectedUnit.UnitID
+                            ? null
+                            : selectedUnit.UnitID,
+                        )
+                      }
                     >
                       {showAllOutcomes ? "Show fewer" : "Show all outcomes"}
                     </button>
