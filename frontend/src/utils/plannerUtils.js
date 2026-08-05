@@ -65,6 +65,21 @@ export function isUnitArchived(unit) {
   return isTrue(unit?.IsArchived);
 }
 
+// Canonical publisher-neutral curriculum lifecycle selector. Complete source
+// collections remain available to callers for historical-reference lookup;
+// these returned collections are exclusively for active calculations and
+// choices. Filter Units first so equal SortOrder values from different
+// curriculum generations can never interleave during a later sort.
+export function getActiveCurriculum(units = [], lessons = []) {
+  const activeUnits = units.filter((unit) => !isUnitArchived(unit));
+  const activeUnitIds = new Set(activeUnits.map((unit) => unit.UnitID));
+  const activeLessons = lessons.filter((lesson) =>
+    activeUnitIds.has(lesson.UnitID),
+  );
+
+  return { activeUnits, activeLessons };
+}
+
 export function getOutcomeList(value) {
   if (!value) return [];
 

@@ -4,7 +4,8 @@ import {
   getSequencedItems,
   isOptionalItem,
   parseKnownNumber,
-} from "./plannerUtils";
+  getActiveCurriculum,
+} from "./plannerUtils.js";
 
 function getSectionForecast({
   section,
@@ -15,27 +16,35 @@ function getSectionForecast({
 }) {
   if (!section) return null;
 
+  const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
+
   const courseUnits = sortUnits(
-    units.filter((unit) => unit.CourseID === section.CourseID),
+    activeUnits.filter((unit) => unit.CourseID === section.CourseID),
   );
 
   // Flexible-placement items (no fixed SortOrder) are excluded here, before
   // any sequential walk begins — see
   // docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §6.
   const courseLessons = getSequencedItems(
-    lessons.filter((lesson) => lesson.CourseID === section.CourseID),
+    activeLessons.filter((lesson) => lesson.CourseID === section.CourseID),
     courseUnits,
   );
 
   const sectionProgress = getProgressForSection(dailyProgress, section);
+  const activeLessonIds = new Set(
+    courseLessons.map((lesson) => lesson.LessonID),
+  );
+  const activeSectionProgress = sectionProgress.filter((entry) =>
+    activeLessonIds.has(entry.LessonID),
+  );
 
   const finishedLessonIds = new Set(
-    sectionProgress
+    activeSectionProgress
       .filter((entry) => isTrue(entry.Finished))
       .map((entry) => entry.LessonID),
   );
 
-  const actualDays = sectionProgress.reduce(
+  const actualDays = activeSectionProgress.reduce(
     (sum, entry) => sum + Number(entry.DayFraction || 0),
     0,
   );
@@ -203,13 +212,14 @@ function getSectionForecast({
 
 function getSectionTimeline(forecast, units, lessons) {
   const section = forecast.section;
+  const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
 
   const courseUnits = sortUnits(
-    units.filter((unit) => unit.CourseID === section.CourseID),
+    activeUnits.filter((unit) => unit.CourseID === section.CourseID),
   );
 
   const courseLessons = getSequencedItems(
-    lessons.filter((lesson) => lesson.CourseID === section.CourseID),
+    activeLessons.filter((lesson) => lesson.CourseID === section.CourseID),
     courseUnits,
   );
 

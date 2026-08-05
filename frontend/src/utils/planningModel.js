@@ -3,9 +3,13 @@ import {
   buildCalendarIndex,
   buildScheduleIndex,
   buildSectionMeetingMaps,
-} from "./planningCalendar";
-import { getSequencedItems, getItemType } from "./plannerUtils";
-import { getLessonSessionSummary } from "./lessonSessionStorage";
+} from "./planningCalendar.js";
+import {
+  getActiveCurriculum,
+  getSequencedItems,
+  getItemType,
+} from "./plannerUtils.js";
+import { getLessonSessionSummary } from "./lessonSessionStorage.js";
 
 function getLessonTitle(lesson) {
   return lesson?.LessonTitle || "Lesson Session";
@@ -96,12 +100,17 @@ export function getPlanningModel({
   schedulePatterns = [],
   referenceDate = new Date(),
 }) {
+  const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
   const courseContextCache = new Map();
   function getCachedCourseContext(courseId) {
     if (!courseContextCache.has(courseId)) {
       courseContextCache.set(
         courseId,
-        getCourseContext(planningNavigationByCourse[courseId], lessons, units),
+        getCourseContext(
+          planningNavigationByCourse[courseId],
+          activeLessons,
+          activeUnits,
+        ),
       );
     }
     return courseContextCache.get(courseId);

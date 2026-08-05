@@ -408,6 +408,7 @@ function getDisplayedEpisodeMinutes(episode) {
 function LessonSessionView({
   activeLessonContext,
   curriculumLessons,
+  referenceCurriculumLessons = curriculumLessons,
   copyTargets,
   bumpTargets,
   getOutcomeList,
@@ -466,9 +467,15 @@ function LessonSessionView({
   // session-level value is kept only so older saved plans still show a
   // header pill. Nothing writes to it anymore.
   const attachedCurriculumLesson =
-    curriculumLessons.find(
+    referenceCurriculumLessons.find(
       (lesson) => lesson.LessonID === curriculumLessonId,
     ) ?? null;
+  const activeCurriculumLessonIds = new Set(
+    curriculumLessons.map((lesson) => lesson.LessonID),
+  );
+  const attachedCurriculumIsHistorical =
+    attachedCurriculumLesson &&
+    !activeCurriculumLessonIds.has(attachedCurriculumLesson.LessonID);
 
   const canPrintLesson = Boolean(
     activeLessonContext?.sectionId && activeLessonContext?.date,
@@ -482,7 +489,7 @@ function LessonSessionView({
       courseLabel,
       unitLabel,
       episodes,
-      curriculumLessons,
+      curriculumLessons: referenceCurriculumLessons,
     });
 
     printLessonSession({
@@ -1205,7 +1212,7 @@ function LessonSessionView({
       episodes: current.episodes.map((item) => {
         if (item.id !== episodeId) return item;
 
-        const attachedLesson = curriculumLessons.find(
+        const attachedLesson = referenceCurriculumLessons.find(
           (lesson) => lesson.LessonID === item.curriculumLessonId,
         );
         const generatedTitle = attachedLesson
@@ -1856,7 +1863,9 @@ function LessonSessionView({
 
             {attachedCurriculumLesson ? (
               <span className="lesson-context-pill">
-                Curriculum · {attachedCurriculumLesson.LessonTitle || "Untitled lesson"}
+                {attachedCurriculumIsHistorical
+                  ? "Historical curriculum"
+                  : "Curriculum"} · {attachedCurriculumLesson.LessonTitle || "Untitled lesson"}
               </span>
             ) : null}
 
@@ -1946,11 +1955,14 @@ function LessonSessionView({
               ?.sourceLessonId ??
             null;
           const episodeCurriculumLesson = episodeCurriculumLessonId
-            ? curriculumLessons.find(
+            ? referenceCurriculumLessons.find(
                 (lesson) =>
                   lesson.LessonID === episodeCurriculumLessonId,
               ) ?? null
             : null;
+          const episodeCurriculumIsHistorical =
+            episodeCurriculumLesson &&
+            !activeCurriculumLessonIds.has(episodeCurriculumLesson.LessonID);
           const episodeCurriculumOutcomes = episodeCurriculumLesson
             ? getOutcomeList(episodeCurriculumLesson.KeyOutcome)
               : [];
@@ -2409,7 +2421,9 @@ function LessonSessionView({
                   {episodeCurriculumLesson ? (
                     <details className="episode-curriculum-reference">
                       <summary>
-                        Curriculum · {episodeCurriculumLesson.LessonTitle}
+                        {episodeCurriculumIsHistorical
+                          ? "Historical curriculum"
+                          : "Curriculum"} · {episodeCurriculumLesson.LessonTitle}
                       </summary>
 
                       <div className="episode-curriculum-reference-body">

@@ -15,6 +15,7 @@ import {
   getOutcomeList,
   getRequiredDays,
   getOptionalDays,
+  getActiveCurriculum,
   sortUnits,
   sortLessons,
   getCourseLabel,
@@ -64,12 +65,13 @@ function getLessonProgress(lessonId, dailyProgress) {
 }
 
 function getCourseStatus(courseId, units, lessons, dailyProgress) {
+  const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
   const courseUnits = sortUnits(
-    units.filter((unit) => unit.CourseID === courseId),
+    activeUnits.filter((unit) => unit.CourseID === courseId),
   );
 
   const courseLessons = sortLessons(
-    lessons.filter((lesson) => lesson.CourseID === courseId),
+    activeLessons.filter((lesson) => lesson.CourseID === courseId),
     courseUnits,
   );
 
@@ -82,9 +84,15 @@ function getCourseStatus(courseId, units, lessons, dailyProgress) {
   const completedLessons = courseLessons.filter((lesson) =>
     completedLessonIds.has(lesson.LessonID),
   );
+  const activeLessonIds = new Set(
+    courseLessons.map((lesson) => lesson.LessonID),
+  );
 
   const actualDays = dailyProgress
-    .filter((entry) => entry.CourseID === courseId)
+    .filter(
+      (entry) =>
+        entry.CourseID === courseId && activeLessonIds.has(entry.LessonID),
+    )
     .reduce((sum, entry) => sum + Number(entry.DayFraction || 0), 0);
 
   const plannedDaysCompleted = completedLessons.reduce(
@@ -106,12 +114,13 @@ function getCourseStatus(courseId, units, lessons, dailyProgress) {
 }
 
 function getCourseNavigation(courseId, units, lessons, dailyProgress) {
+  const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
   const courseUnits = sortUnits(
-    units.filter((unit) => unit.CourseID === courseId),
+    activeUnits.filter((unit) => unit.CourseID === courseId),
   );
 
   const courseLessons = sortLessons(
-    lessons.filter((lesson) => lesson.CourseID === courseId),
+    activeLessons.filter((lesson) => lesson.CourseID === courseId),
     courseUnits,
   );
 
@@ -333,14 +342,15 @@ function App() {
   const schedulePatterns = plannerData?.schedulePatterns ?? [];
   const sections = plannerData?.sections ?? [];
   const lessons = plannerData?.lessons ?? [];
+  const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
   const dailyProgress = plannerData?.dailyProgress ?? [];
 
   const instructionalDays = schoolCalendar.filter((day) =>
     isTrue(day.InstructionalDay),
   ).length;
 
-  const math8Units = units.filter((unit) => unit.CourseID === "M8");
-  const math1Units = units.filter((unit) => unit.CourseID === "IM1");
+  const math8Units = activeUnits.filter((unit) => unit.CourseID === "M8");
+  const math1Units = activeUnits.filter((unit) => unit.CourseID === "IM1");
 
   const math8RequiredDays = getRequiredDays(math8Units);
   const math1RequiredDays = getRequiredDays(math1Units);
@@ -1050,10 +1060,12 @@ function App() {
 
   const curriculumLessons = activeContextUnit
     ? sortLessons(
-        lessons.filter(
+        activeLessons.filter(
           (lesson) => lesson.CourseID === activeContextUnit.CourseID,
         ),
-        units.filter((unit) => unit.CourseID === activeContextUnit.CourseID),
+        activeUnits.filter(
+          (unit) => unit.CourseID === activeContextUnit.CourseID,
+        ),
       )
     : [];
 
@@ -1083,6 +1095,7 @@ function App() {
   const lessonSessionWorkspaceModel = {
     activeLessonContext,
     curriculumLessons,
+    referenceCurriculumLessons: lessons,
     copyTargets: lessonSessionCopyTargets,
     bumpTargets: lessonSessionBumpTargets,
     getOutcomeList,

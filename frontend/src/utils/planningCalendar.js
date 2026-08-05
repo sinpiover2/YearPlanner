@@ -1,4 +1,4 @@
-import { isTrue } from "./plannerUtils";
+import { isTrue } from "./plannerUtils.js";
 
 const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat("en-US", {
   weekday: "short",

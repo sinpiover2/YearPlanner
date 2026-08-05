@@ -7,7 +7,7 @@ import {
   getUnitRemainingDays,
   getUnitRequiredDays,
 } from "../utils/unitUtils";
-import { isUnitArchived } from "../utils/plannerUtils";
+import { getActiveCurriculum, isUnitArchived } from "../utils/plannerUtils";
 
 function getUnitPurpose(unit) {
   return [unit?.Purpose, unit?.UnitPurpose, unit?.purpose, unit?.unitPurpose]
@@ -66,12 +66,15 @@ function UnitsView({
   const activeCourseUnits = activeCourse
     ? units.filter((unit) => unit.CourseID === activeCourse.CourseID)
     : [];
+  const { activeUnits: selectableCourseUnits } = getActiveCurriculum(
+    activeCourseUnits,
+  );
 
   const [showArchivedUnits, setShowArchivedUnits] = useState(false);
 
   const visibleCourseUnits = showArchivedUnits
     ? activeCourseUnits
-    : activeCourseUnits.filter((unit) => !isUnitArchived(unit));
+    : selectableCourseUnits;
 
   const archivedUnitCount = activeCourseUnits.filter(isUnitArchived).length;
 
@@ -139,15 +142,12 @@ function UnitsView({
               const nextCourseUnits = units.filter(
                 (unit) => unit.CourseID === course.CourseID,
               );
-              const nextActiveCourseUnits = nextCourseUnits.filter(
-                (unit) => !isUnitArchived(unit),
-              );
+              const { activeUnits: nextActiveCourseUnits } =
+                getActiveCurriculum(nextCourseUnits);
 
               setSelectedCourseId(course.CourseID);
               setSelectedUnitId(
-                nextActiveCourseUnits[0]?.UnitID ||
-                  nextCourseUnits[0]?.UnitID ||
-                  "",
+                nextActiveCourseUnits[0]?.UnitID || "",
               );
             }}
           >
@@ -172,7 +172,17 @@ function UnitsView({
                 <input
                   type="checkbox"
                   checked={showArchivedUnits}
-                  onChange={(e) => setShowArchivedUnits(e.target.checked)}
+                  onChange={(event) => {
+                    const nextShowArchived = event.target.checked;
+                    setShowArchivedUnits(nextShowArchived);
+
+                    if (
+                      !nextShowArchived &&
+                      isUnitArchived(selectedUnit)
+                    ) {
+                      setSelectedUnitId(selectableCourseUnits[0]?.UnitID || "");
+                    }
+                  }}
                 />
                 Show Archived Curriculum ({archivedUnitCount})
               </label>
