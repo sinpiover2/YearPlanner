@@ -55,9 +55,11 @@ function ForecastSummaryCard({ summary }) {
 
         {summary.currentLessonText && <p>{summary.currentLessonText}</p>}
 
-        <p>{summary.projectionState}</p>
+        {summary.projectionState && <p>{summary.projectionState}</p>}
 
-        <em className="forecast-recommendation">{summary.recommendation}</em>
+        {summary.recommendation && (
+          <em className="forecast-recommendation">{summary.recommendation}</em>
+        )}
 
         {summary.incompleteDataText && (
           <p className="forecast-incomplete-note">

@@ -3,7 +3,11 @@ import {
   sortUnits,
   getSequencedItems,
   isOptionalItem,
-  parseKnownNumber,
+  aggregateActualDayValues,
+  aggregatePlanningDayValues,
+  parseOptionalDays,
+  parsePlannedDays,
+  parseRequiredDays,
   getActiveCurriculum,
 } from "./plannerUtils.js";
 
@@ -44,14 +48,22 @@ function getSectionForecast({
       .map((entry) => entry.LessonID),
   );
 
-  const actualDays = activeSectionProgress.reduce(
-    (sum, entry) => sum + Number(entry.DayFraction || 0),
-    0,
+  const actualDayValues = aggregateActualDayValues(
+    activeSectionProgress.map((entry) => entry.DayFraction),
   );
-
-  const plannedDaysCompleted = courseLessons
-    .filter((lesson) => finishedLessonIds.has(lesson.LessonID))
-    .reduce((sum, lesson) => sum + (parseKnownNumber(lesson.PlannedDays) ?? 0), 0);
+  const actualDays = actualDayValues.total;
+  const completedLessons = courseLessons.filter((lesson) =>
+    finishedLessonIds.has(lesson.LessonID),
+  );
+  const completedPlannedDays = aggregatePlanningDayValues(
+    completedLessons.map((lesson) => lesson.PlannedDays),
+    parsePlannedDays,
+  );
+  const completedPlansComplete =
+    completedLessons.length === 0 || completedPlannedDays.complete;
+  const plannedDaysCompleted = completedPlansComplete
+    ? completedPlannedDays.total
+    : null;
 
   // D-1 (approved): an unfinished optional item never blocks progression —
   // the walk looks past it for the next unfinished *required* item. A
@@ -73,26 +85,26 @@ function getSectionForecast({
     ? courseUnits.find((unit) => unit.UnitID === currentLesson.UnitID)
     : (courseUnits.at(-1) ?? null);
 
-  // An unconfirmed unit's day budget, or a finished lesson's unconfirmed
-  // PlannedDays, both make every sum below untrustworthy — flagged as
-  // dataComplete on the returned forecast rather than silently treated as a
-  // real zero. See docs/Architecture/CURRICULUM_INFORMATION_MODEL.md, §10.
-  const hasUnknownUnitDays = courseUnits.some(
-    (unit) =>
-      parseKnownNumber(unit.RequiredDays) === null ||
-      parseKnownNumber(unit.OptionalDays) === null,
+  const requiredDays = aggregatePlanningDayValues(
+    courseUnits.map((unit) => unit.RequiredDays),
+    parseRequiredDays,
   );
-  const hasUnknownPlannedDays = courseLessons.some(
-    (lesson) =>
-      finishedLessonIds.has(lesson.LessonID) &&
-      parseKnownNumber(lesson.PlannedDays) === null,
+  const optionalDays = aggregatePlanningDayValues(
+    courseUnits.map((unit) => unit.OptionalDays),
+    parseOptionalDays,
   );
-  const dataComplete = !hasUnknownUnitDays && !hasUnknownPlannedDays;
-
-  const bufferDays = courseUnits.reduce(
-    (sum, unit) => sum + (parseKnownNumber(unit.OptionalDays) ?? 0),
-    0,
-  );
+  const dataComplete =
+    requiredDays.complete && optionalDays.complete && completedPlansComplete;
+  const hasInvalidPlanningData =
+    requiredDays.hasInvalidValues ||
+    optionalDays.hasInvalidValues ||
+    completedPlannedDays.hasInvalidValues;
+  const planningState = dataComplete
+    ? "complete"
+    : hasInvalidPlanningData
+      ? "invalid"
+      : "incomplete";
+  const bufferDays = optionalDays.complete ? optionalDays.total : null;
 
   const currentUnitIndex = currentLesson
     ? courseUnits.findIndex((unit) => unit.UnitID === currentLesson.UnitID)
@@ -101,33 +113,43 @@ function getSectionForecast({
   const remainingUnits =
     currentUnitIndex >= 0 ? courseUnits.slice(currentUnitIndex) : [];
 
-  const optionalDaysRemaining = remainingUnits.reduce(
-    (sum, unit) => sum + (parseKnownNumber(unit.OptionalDays) ?? 0),
-    0,
+  const remainingOptionalDays = aggregatePlanningDayValues(
+    remainingUnits.map((unit) => unit.OptionalDays),
+    parseOptionalDays,
   );
-
-  const remainingRequiredDays = remainingUnits.reduce(
-    (sum, unit) => sum + (parseKnownNumber(unit.RequiredDays) ?? 0),
-    0,
+  const remainingRequiredDayValues = aggregatePlanningDayValues(
+    remainingUnits.map((unit) => unit.RequiredDays),
+    parseRequiredDays,
   );
+  const optionalDaysRemaining = remainingOptionalDays.complete
+    ? remainingOptionalDays.total
+    : null;
+  const remainingRequiredDays = remainingRequiredDayValues.complete
+    ? remainingRequiredDayValues.total
+    : null;
+  const currentOptionalDays = parseOptionalDays(currentUnit?.OptionalDays);
+  const currentUnitOptionalDays =
+    currentOptionalDays.state === "known" ? currentOptionalDays.value : null;
 
-  const currentUnitOptionalDays = parseKnownNumber(currentUnit?.OptionalDays) ?? 0;
-
-  const variance = actualDays - plannedDaysCompleted;
+  const variance = dataComplete ? actualDays - plannedDaysCompleted : null;
   const forecastShift = variance;
   const paceRatio =
-    plannedDaysCompleted > 0 ? actualDays / plannedDaysCompleted : 1;
-  const projectedActualAtFinish = remainingRequiredDays * paceRatio;
-  const projectedFinishVariance =
-    projectedActualAtFinish +
-    actualDays -
-    (plannedDaysCompleted + remainingRequiredDays);
-  const totalRequiredDays = courseUnits.reduce(
-    (sum, unit) => sum + (parseKnownNumber(unit.RequiredDays) ?? 0),
-    0,
-  );
-
-  const totalTimelineDays = totalRequiredDays + bufferDays;
+    dataComplete && plannedDaysCompleted > 0
+      ? actualDays / plannedDaysCompleted
+      : dataComplete
+        ? 1
+        : null;
+  const projectedActualAtFinish = dataComplete
+    ? remainingRequiredDays * paceRatio
+    : null;
+  const projectedFinishVariance = dataComplete
+    ? projectedActualAtFinish + actualDays -
+      (plannedDaysCompleted + remainingRequiredDays)
+    : null;
+  const totalRequiredDays = requiredDays.complete ? requiredDays.total : null;
+  const totalTimelineDays = dataComplete
+    ? totalRequiredDays + bufferDays
+    : null;
 
   const projectedFinishPercent =
     totalTimelineDays > 0
@@ -136,16 +158,24 @@ function getSectionForecast({
       : null;
 
   const endPositionPercent =
-    totalTimelineDays > 0 ? (totalRequiredDays / totalTimelineDays) * 100 : 100;
-  const bufferUsed = Math.max(0, variance);
-  const bufferRemaining = Math.max(0, bufferDays - bufferUsed);
+    dataComplete && totalTimelineDays > 0
+      ? (totalRequiredDays / totalTimelineDays) * 100
+      : null;
+  const bufferUsed = dataComplete ? Math.max(0, variance) : null;
+  const bufferRemaining = dataComplete
+    ? Math.max(0, bufferDays - bufferUsed)
+    : null;
   const consumedFraction = bufferDays > 0 ? bufferUsed / bufferDays : 0;
   const bufferRemainingPercent =
-    bufferDays > 0 ? (bufferRemaining / bufferDays) * 100 : 0;
+    dataComplete && bufferDays > 0
+      ? (bufferRemaining / bufferDays) * 100
+      : dataComplete
+        ? 0
+        : null;
 
-  let projectionState = "Fits";
+  let projectionState = dataComplete ? "Fits" : null;
 
-  if (projectedFinishVariance > 0) {
+  if (dataComplete && projectedFinishVariance > 0) {
     if (optionalDaysRemaining <= 0) {
       projectionState = "Unlikely To Fit";
     } else if (projectedFinishVariance > optionalDaysRemaining) {
@@ -155,10 +185,10 @@ function getSectionForecast({
     }
   }
 
-  let state = "On Track";
-  let recoverabilityMessage = "No action needed.";
+  let state = dataComplete ? "On Track" : "Pacing unavailable";
+  let recoverabilityMessage = dataComplete ? "No action needed." : null;
 
-  if (variance > 0) {
+  if (dataComplete && variance > 0) {
     if (bufferUsed > bufferDays) {
       state = "Buffer Exhausted";
       recoverabilityMessage =
@@ -172,8 +202,9 @@ function getSectionForecast({
     }
   }
 
-  const visualStateClass =
-    bufferUsed > bufferDays
+  const visualStateClass = !dataComplete
+    ? "unavailable"
+    : bufferUsed > bufferDays
       ? "buffer-exhausted"
       : state === "Monitoring" || state === "Needs Attention"
         ? "monitoring"
@@ -183,11 +214,15 @@ function getSectionForecast({
     section,
     state,
     actualDays,
+    actualDayValues,
     plannedDaysCompleted,
+    completedPlannedDays,
     variance,
     forecastShift,
     projectedFinishVariance,
-    projectedFinishDaysLate: Math.max(0, Math.round(projectedFinishVariance)),
+    projectedFinishDaysLate: dataComplete
+      ? Math.max(0, Math.round(projectedFinishVariance))
+      : null,
     projectedFinishPercent,
     endPositionPercent,
     projectionState,
@@ -207,6 +242,12 @@ function getSectionForecast({
     currentLessonNumber: currentLessonIndex + 1,
     totalLessons: courseLessons.length,
     dataComplete,
+    planningState,
+    hasInvalidPlanningData,
+    requiredDays,
+    optionalDays,
+    remainingRequiredDayValues,
+    remainingOptionalDays,
   };
 }
 
@@ -223,39 +264,50 @@ function getSectionTimeline(forecast, units, lessons) {
     courseUnits,
   );
 
-  const totalRequiredDays = courseUnits.reduce(
-    (sum, unit) => sum + (parseKnownNumber(unit.RequiredDays) ?? 0),
-    0,
+  const requiredDays = aggregatePlanningDayValues(
+    courseUnits.map((unit) => unit.RequiredDays),
+    parseRequiredDays,
   );
-
-  const bufferDays = courseUnits.reduce(
-    (sum, unit) => sum + (parseKnownNumber(unit.OptionalDays) ?? 0),
-    0,
+  const optionalDays = aggregatePlanningDayValues(
+    courseUnits.map((unit) => unit.OptionalDays),
+    parseOptionalDays,
   );
-
-  const totalTimelineDays = totalRequiredDays + bufferDays;
+  const totalsComplete = requiredDays.complete && optionalDays.complete;
+  const totalRequiredDays = requiredDays.complete ? requiredDays.total : null;
+  const bufferDays = optionalDays.complete ? optionalDays.total : null;
+  const totalTimelineDays = totalsComplete
+    ? totalRequiredDays + bufferDays
+    : null;
 
   const currentLessonIndex = courseLessons.findIndex(
     (lesson) => lesson.LessonID === forecast.currentLesson?.LessonID,
   );
 
+  const precedingLessons =
+    currentLessonIndex >= 0 ? courseLessons.slice(0, currentLessonIndex) : [];
+  const precedingPlannedDays = aggregatePlanningDayValues(
+    precedingLessons.map((lesson) => lesson.PlannedDays),
+    parsePlannedDays,
+  );
   const completedRequiredDays =
     currentLessonIndex >= 0
-      ? courseLessons
-          .slice(0, currentLessonIndex)
-          .reduce((sum, lesson) => sum + (parseKnownNumber(lesson.PlannedDays) ?? 0), 0)
+      ? precedingLessons.length === 0 || precedingPlannedDays.complete
+        ? precedingPlannedDays.total
+        : null
       : totalRequiredDays;
+  const dataComplete =
+    totalsComplete && completedRequiredDays !== null && forecast.dataComplete;
 
   const currentPositionPercent =
-    totalTimelineDays > 0
+    dataComplete && totalTimelineDays > 0
       ? Math.min(
           100,
           Math.max(0, (completedRequiredDays / totalTimelineDays) * 100),
         )
-      : 0;
+      : null;
 
   const expectedPositionPercent =
-    totalTimelineDays > 0
+    dataComplete && totalTimelineDays > 0
       ? Math.min(
           100,
           Math.max(
@@ -264,7 +316,7 @@ function getSectionTimeline(forecast, units, lessons) {
               100,
           ),
         )
-      : 0;
+      : null;
 
   return {
     section,
@@ -279,7 +331,10 @@ function getSectionTimeline(forecast, units, lessons) {
     expectedPositionPercent,
     // Reused rather than recomputed — forecast already carries this from
     // getSectionForecast, and both describe the same section.
-    dataComplete: forecast.dataComplete ?? true,
+    dataComplete,
+    planningState: forecast.planningState,
+    requiredDays,
+    optionalDays,
   };
 }
 
@@ -297,11 +352,13 @@ function getTimelineSyncSummary(forecasts) {
         Number(a.section?.Period || 999) - Number(b.section?.Period || 999),
     );
 
-    const variances = sortedForecasts.map((forecast) =>
-      Number(forecast.variance || 0),
-    );
+    const variances = sortedForecasts
+      .map((forecast) => forecast.variance)
+      .filter((variance) => Number.isFinite(variance));
 
-    const spread = Math.max(...variances) - Math.min(...variances);
+    const spread = variances.length
+      ? Math.max(...variances) - Math.min(...variances)
+      : null;
 
     const sectionLabels = sortedForecasts
       .map((forecast) => `P${forecast.section?.Period || "—"}`)
@@ -310,7 +367,9 @@ function getTimelineSyncSummary(forecasts) {
     return {
       courseId,
       message:
-        spread <= 0.1
+        spread === null
+          ? `${sectionLabels} pacing unavailable`
+          : spread <= 0.1
           ? `${sectionLabels} synchronized`
           : `${sectionLabels} diverging`,
     };
@@ -406,6 +465,16 @@ function buildForecastModel({
   } else if (!hasForecastProgress) {
     overallForecastMessage = "Nothing to report yet.";
     overallForecastDetail = "Check back after logging your first lessons.";
+  } else if (forecastedSections.some((forecast) => !forecast.dataComplete)) {
+    const hasInvalidPlanning = forecastedSections.some(
+      (forecast) => forecast.planningState === "invalid",
+    );
+    overallForecastMessage = hasInvalidPlanning
+      ? "Planning data is invalid."
+      : "Planning days incomplete.";
+    overallForecastDetail =
+      "Pacing unavailable until planning days are resolved.";
+    overallForecastStateClass = "unavailable";
   } else if (bufferExhaustedForecasts.length > 0) {
     overallForecastMessage =
       bufferExhaustedForecasts.length === 1

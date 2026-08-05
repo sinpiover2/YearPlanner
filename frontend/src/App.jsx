@@ -26,6 +26,7 @@ import {
   sortLessons,
   getCourseLabel,
   serializePlannedDays,
+  getProjectedUnits,
 } from "./utils/plannerUtils";
 import {
   addLesson,
@@ -36,27 +37,6 @@ import {
   updateLesson,
 } from "./api";
 import { loadRosterSortBy, saveRosterSortBy } from "./utils/rosterSortPreference";
-
-function getProjectedUnits(courseUnits, schoolCalendar) {
-  const schoolDays = schoolCalendar.filter((day) =>
-    isTrue(day.InstructionalDay),
-  );
-  let cursor = 0;
-
-  return sortUnits(courseUnits).map((unit) => {
-    const requiredDays = Number(unit.RequiredDays || 0);
-    const startDay = schoolDays[cursor];
-    const endDay = schoolDays[cursor + requiredDays - 1];
-
-    cursor += requiredDays;
-
-    return {
-      ...unit,
-      projectedStart: startDay?.Date ?? null,
-      projectedEnd: endDay?.Date ?? null,
-    };
-  });
-}
 
 function getLessonProgress(lessonId, dailyProgress) {
   const entries = dailyProgress.filter((entry) => entry.LessonID === lessonId);

@@ -1,4 +1,4 @@
-import { getCourseLabel, formatDayPhrase, formatDays } from "./plannerUtils";
+import { getCourseLabel, formatDayPhrase, formatDays } from "./plannerUtils.js";
 
 function getCalmStateLabel(state) {
   if (state === "Monitoring") return "Worth watching.";
@@ -46,12 +46,11 @@ function getProjectionLabel(rawState, projectionState) {
 function getProjectedText(forecast = {}) {
   const state = forecast.state || "On Track";
   const projectionState = forecast.projectionState || "Fits";
-  const forecastShift = Number(forecast.forecastShift || 0);
-  const bufferRemaining = Number(forecast.bufferRemaining || 0);
-  const bufferUsed = Number(forecast.bufferUsed || 0);
-  const optionalDaysRemaining = Number(
-    forecast.optionalDaysRemaining ?? forecast.optionalDays ?? 0,
-  );
+  const forecastShift = forecast.forecastShift;
+  const bufferRemaining = forecast.bufferRemaining;
+  const bufferUsed = forecast.bufferUsed;
+  const optionalDaysRemaining =
+    forecast.optionalDaysRemaining ?? forecast.optionalDays;
 
   const shiftedDays = Math.abs(forecastShift);
 
@@ -126,10 +125,9 @@ export function getRecoverabilityText(forecast = {}) {
 }
 
 function getRecommendationText(state, forecast = {}) {
-  const bufferRemaining = Number(forecast.bufferRemaining || 0);
-  const bufferUsed = Number(forecast.bufferUsed || 0);
-  const optionalDaysRemaining = Number(forecast.optionalDaysRemaining || 0);
-  const currentUnitOptionalDays = Number(forecast.currentUnitOptionalDays || 0);
+  const bufferUsed = forecast.bufferUsed;
+  const optionalDaysRemaining = forecast.optionalDaysRemaining;
+  const currentUnitOptionalDays = forecast.currentUnitOptionalDays;
   const currentUnitName = forecast.currentUnitName || "the current unit";
 
   if (state === "Buffer Exhausted") {
@@ -165,16 +163,59 @@ function getRecommendationText(state, forecast = {}) {
 
 export function getForecastCardSummary(forecast = {}) {
   const section = forecast.section ?? {};
+  const heading = `${getCourseLabel(section.CourseID)} · Period ${
+    section.Period || "—"
+  }`;
+  const currentLessonText = forecast.currentLesson
+    ? [
+        forecast.currentLesson.LessonNumber
+          ? `Lesson ${forecast.currentLesson.LessonNumber}`
+          : null,
+        forecast.currentLesson.LessonTitle,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : null;
+
+  if (forecast.dataComplete === false) {
+    const invalid = forecast.planningState === "invalid";
+    return {
+      key: section.SectionID || `${section.CourseID}-${section.Period}`,
+      dataComplete: false,
+      incompleteDataText: invalid
+        ? "Planning data invalid"
+        : "Planning days incomplete",
+      state: "Pacing unavailable",
+      projectionState: "Pacing unavailable",
+      stateClass: "unavailable",
+      heading,
+      currentLessonText,
+      paceText: "Pacing unavailable",
+      projectedText: null,
+      recoverabilityText: null,
+      bufferRemainingText: null,
+      bufferUsedText: null,
+      bufferAriaLabel: null,
+      meterWidth: null,
+      recommendation: null,
+      projectedFinishDaysLate: null,
+      projection: null,
+      flexibility: null,
+      runway: null,
+      recommendationModel: null,
+    };
+  }
+
   const rawState = forecast.state || "On Track";
   const stateClass = forecast.visualStateClass || "on-track";
-  const variance = Number(forecast.variance || 0);
+  const variance = forecast.variance;
   const bufferRemaining = formatDays(forecast.bufferRemaining);
   const bufferUsed = formatDays(forecast.bufferUsed);
   const recommendationText = getRecommendationText(rawState, forecast);
   const projectedFinishDaysLate = forecast.projectedFinishDaysLate ?? null;
   const meterWidth = Math.min(
     100,
-    Math.max(0, Number(forecast.bufferRemainingPercent || 0)),
+    Math.max(0, forecast.bufferRemainingPercent),
   );
 
   const projectionHeadline = getProjectionLabel(
@@ -226,19 +267,8 @@ export function getForecastCardSummary(forecast = {}) {
     state: getCalmStateLabel(rawState),
     projectionState: projectionHeadline,
     stateClass,
-    heading: `${getCourseLabel(section.CourseID)} · Period ${
-      section.Period || "—"
-    }`,
-    currentLessonText: forecast.currentLesson
-      ? [
-          forecast.currentLesson.LessonNumber
-            ? `Lesson ${forecast.currentLesson.LessonNumber}`
-            : null,
-          forecast.currentLesson.LessonTitle,
-        ]
-          .filter(Boolean)
-          .join(" · ")
-      : null,
+    heading,
+    currentLessonText,
     paceText: getPaceText(variance),
     projectedText: projectionDetail,
     recoverabilityText: getRecoverabilityText(forecast),
@@ -256,11 +286,10 @@ export function getForecastCardSummary(forecast = {}) {
       state: rawState,
     },
     flexibility: {
-      remaining: forecast.bufferRemaining ?? 0,
+      remaining: forecast.bufferRemaining,
       total:
         forecast.totalBufferDays ??
-        Number(forecast.bufferRemaining || 0) +
-          Number(forecast.bufferUsed || 0),
+        forecast.bufferRemaining + forecast.bufferUsed,
       label: bufferRemaining,
       detail: `${bufferUsed} used`,
     },

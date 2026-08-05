@@ -21,6 +21,8 @@ import {
 let renderSidebarComponent;
 let renderUnitsComponent;
 let renderLessonTableComponent;
+let renderForecastCardsComponent;
+let renderYearTimelineComponent;
 let renderBuildDirectory;
 
 before(async () => {
@@ -33,12 +35,18 @@ before(async () => {
     import Sidebar from ${JSON.stringify(join(frontendRoot, "src/components/Sidebar.jsx"))};
     import UnitsView from ${JSON.stringify(join(frontendRoot, "src/components/UnitsView.jsx"))};
     import LessonTable from ${JSON.stringify(join(frontendRoot, "src/components/LessonTable.jsx"))};
+    import ForecastSummaryCards from ${JSON.stringify(join(frontendRoot, "src/components/ForecastSummaryCards.jsx"))};
+    import YearTimeline from ${JSON.stringify(join(frontendRoot, "src/components/YearTimeline.jsx"))};
     export const renderSidebarComponent = (props) =>
       renderToStaticMarkup(React.createElement(Sidebar, props));
     export const renderUnitsComponent = (props) =>
       renderToStaticMarkup(React.createElement(UnitsView, props));
     export const renderLessonTableComponent = (props) =>
       renderToStaticMarkup(React.createElement(LessonTable, props));
+    export const renderForecastCardsComponent = (props) =>
+      renderToStaticMarkup(React.createElement(ForecastSummaryCards, props));
+    export const renderYearTimelineComponent = (props) =>
+      renderToStaticMarkup(React.createElement(YearTimeline, props));
   `);
   const result = await build({
     configFile: false,
@@ -54,7 +62,7 @@ before(async () => {
   const output = Array.isArray(result) ? result[0].output[0] : result.output[0];
   const bundlePath = join(renderBuildDirectory, "planning-render-bundle.mjs");
   await writeFile(bundlePath, output.code);
-  ({ renderSidebarComponent, renderUnitsComponent, renderLessonTableComponent } = await import(pathToFileURL(bundlePath)));
+  ({ renderSidebarComponent, renderUnitsComponent, renderLessonTableComponent, renderForecastCardsComponent, renderYearTimelineComponent } = await import(pathToFileURL(bundlePath)));
 });
 
 after(async () => {
@@ -351,4 +359,39 @@ test("Lesson table renders known, unknown, and invalid PlannedDays without unsaf
   const invalid = renderLessonPlan(0);
   assert.match(invalid, /aria-label="Invalid value">Invalid value<\/strong>/);
   assert.doesNotMatch(invalid, />1<\/strong>[\s\S]*class="variance-warning"/);
+});
+
+test("Forecast cards and timeline render a withheld incomplete-planning state", () => {
+  const incompleteForecast = {
+    section: { SectionID: "S1", CourseID: "IM1", Period: 1 },
+    state: "Pacing unavailable",
+    visualStateClass: "unavailable",
+    dataComplete: false,
+    planningState: "incomplete",
+    actualDays: 1,
+    currentLesson: { LessonID: "L1", LessonNumber: 1, LessonTitle: "Lesson" },
+    variance: null,
+    projectedFinishPercent: null,
+    endPositionPercent: null,
+  };
+  const courseUnits = [{ UnitID: "U1", CourseID: "IM1", UnitNumber: 1, SortOrder: 1, RequiredDays: "", OptionalDays: 0 }];
+  const courseLessons = [{ LessonID: "L1", UnitID: "U1", CourseID: "IM1", SortOrder: 1, PlannedDays: "" }];
+
+  const cards = renderForecastCardsComponent({
+    forecastedSections: [incompleteForecast],
+    sectionForecasts: [incompleteForecast],
+    hasForecastProgress: true,
+  });
+  assert.match(cards, /Pacing unavailable/);
+  assert.match(cards, /Planning days incomplete/);
+  assert.doesNotMatch(cards, /forecast-runway|forecast-recommendation/);
+
+  const timeline = renderYearTimelineComponent({
+    forecastedSections: [incompleteForecast],
+    units: courseUnits,
+    lessons: courseLessons,
+    timelineSyncSummaries: [],
+  });
+  assert.match(timeline, /Planning days incomplete · Pacing unavailable/);
+  assert.doesNotMatch(timeline, /unit-timeline-block|unit-timeline-end-marker|unit-timeline-projected-marker|unit-timeline-marker/);
 });

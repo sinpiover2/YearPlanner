@@ -4,13 +4,13 @@ import {
   getCourseLabel,
   formatDays,
   getOutcomeList,
+  parseRequiredDays,
 } from "../utils/plannerUtils";
 
 function YearTimeline({
   forecastedSections,
   units,
   lessons,
-  timelineSyncSummaries,
 }) {
   const [selectedUnit, setSelectedUnit] = useState(null);
 
@@ -209,7 +209,9 @@ function YearTimeline({
                   <strong>P{section.Period || "—"}</strong>
                   <span>{forecast.state}</span>
                   <em className="unit-timeline-drift">
-                    {forecast.variance === 0
+                    {forecast.variance === null
+                      ? "Pacing unavailable"
+                      : forecast.variance === 0
                       ? "On pace"
                       : `${formatDays(Math.abs(forecast.variance))}d ${
                           forecast.variance > 0 ? "behind" : "ahead"
@@ -220,6 +222,14 @@ function YearTimeline({
                 <div
                   className={`unit-timeline-track course-${section.CourseID || "unknown"}`}
                 >
+                  {!timeline.dataComplete ? (
+                    <span className="forecast-incomplete-note" role="status">
+                      {timeline.planningState === "invalid"
+                        ? "Planning data invalid · Pacing unavailable"
+                        : "Planning days incomplete · Pacing unavailable"}
+                    </span>
+                  ) : (
+                    <>
                   <span
                     className="timeline-track-break winter-break"
                     aria-hidden="true"
@@ -233,7 +243,7 @@ function YearTimeline({
                     let consumedRequiredDays = 0;
 
                     return timeline.courseUnits.map((unit) => {
-                      const requiredDays = Number(unit.RequiredDays || 0);
+                      const requiredDays = parseRequiredDays(unit.RequiredDays).value;
                       const widthPercent =
                         timeline.totalTimelineDays > 0
                           ? (requiredDays / timeline.totalTimelineDays) * 100
@@ -241,7 +251,7 @@ function YearTimeline({
 
                       const completedInUnit = Math.min(
                         Math.max(
-                          Number(timeline.completedRequiredDays || 0) -
+                          timeline.completedRequiredDays -
                             consumedRequiredDays,
                           0,
                         ),
@@ -345,6 +355,8 @@ function YearTimeline({
                     title={`Current: ${timeline.completedRequiredDays} of ${timeline.totalRequiredDays} required days completed`}
                     aria-label="Current position"
                   />
+                    </>
+                  )}
                 </div>
               </div>
             </Fragment>
@@ -413,7 +425,7 @@ function YearTimeline({
               >
                 <div className="timeline-detail-stat-card">
                   <span>Required</span>
-                  <strong>{Number(selectedUnit.RequiredDays || 0)}</strong>
+                  <strong>{parseRequiredDays(selectedUnit.RequiredDays).value}</strong>
                 </div>
 
                 <div className="timeline-detail-stat-card">

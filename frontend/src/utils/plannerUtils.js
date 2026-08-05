@@ -374,3 +374,30 @@ export function getCourseLabel(courseId) {
   if (courseId === "IM1") return "Math 1";
   return courseId;
 }
+
+export function getProjectedUnits(courseUnits, schoolCalendar) {
+  const schoolDays = schoolCalendar.filter((day) =>
+    isTrue(day.InstructionalDay),
+  );
+  let cursor = 0;
+  let datesAvailable = true;
+
+  return sortUnits(courseUnits).map((unit) => {
+    const requiredDays = parseRequiredDays(unit.RequiredDays);
+    if (requiredDays.state !== "known") datesAvailable = false;
+
+    if (!datesAvailable) {
+      return { ...unit, projectedStart: null, projectedEnd: null };
+    }
+
+    const startDay = schoolDays[Math.floor(cursor)];
+    const endDay = schoolDays[Math.ceil(cursor + requiredDays.value) - 1];
+    cursor += requiredDays.value;
+
+    return {
+      ...unit,
+      projectedStart: startDay?.Date ?? null,
+      projectedEnd: endDay?.Date ?? null,
+    };
+  });
+}
