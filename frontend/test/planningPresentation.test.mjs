@@ -193,7 +193,11 @@ test("canonical Unit state withholds unsafe sequence assertions", () => {
   assert.equal(getUnitState(sequenceProgress, fullyPlanned[2], fullyPlanned), "upcoming");
 });
 
-function renderUnits(requiredDays, courseUnits = null) {
+function renderUnits(
+  requiredDays,
+  courseUnits = null,
+  { showArchivedUnits = false } = {},
+) {
   const renderedUnits = courseUnits ?? [{
     ...units[0],
     RequiredDays: requiredDays,
@@ -212,7 +216,7 @@ function renderUnits(requiredDays, courseUnits = null) {
     selectedUnitLessons: [],
     setSelectedCourseId: () => {},
     setSelectedUnitId: () => {},
-    showArchivedUnits: false,
+    showArchivedUnits,
     setShowArchivedUnits: () => {},
     selectedDailyProgress: progress,
     selectedNavigation: { currentLesson: null, nextLesson: null },
@@ -249,13 +253,22 @@ test("UnitsView renders complete, unknown, invalid, archive, and indeterminate b
   assert.doesNotMatch(invalid, /Current|Upcoming/);
 
   const siblingUnits = [
-    { ...units[0], UnitID: "UNKNOWN", RequiredDays: "", UnitTitle: "Unknown" },
-    { ...units[1], UnitID: "AFTER", RequiredDays: 6, UnitTitle: "After" },
-    { ...units[1], UnitID: "ARCHIVE", IsArchived: true, UnitTitle: "Archive" },
+    { ...units[0], RequiredDays: 4, UnitTitle: "Active" },
+    { ...units[1], UnitID: "ARCHIVE", RequiredDays: "", IsArchived: true, UnitTitle: "Archive" },
   ];
-  const siblingOutput = renderUnits("", siblingUnits);
+  const siblingOutput = renderUnits(4, siblingUnits, { showArchivedUnits: true });
+  const archivedCard = siblingOutput.match(
+    /<button class="[^"]*archived-unit[^"]*"[^>]*>[\s\S]*?<strong>Archive<\/strong>[\s\S]*?<\/button>/,
+  )?.[0];
+
   assert.match(siblingOutput, /Show Archived Curriculum \(1\)/);
-  assert.doesNotMatch(siblingOutput, /Current|Upcoming/);
+  assert.ok(archivedCard, "archived Unit card should render when archive view is enabled");
+  assert.match(archivedCard, /class="units-map-card-state archived">Archived<\/span>/);
+  assert.match(archivedCard, /aria-label="0 logged · Not planned">0 logged · —<\/span>/);
+  assert.match(archivedCard, /role="status">Not planned<\/div>/);
+  assert.match(siblingOutput, /<strong>Active<\/strong>/);
+  assert.match(siblingOutput, /class="units-map-card-state current">Current<\/span>/);
+  assert.match(siblingOutput, /1 \/ 4 days/);
 });
 
 function renderSidebar(courseUnits, courseLessons = lessons) {
