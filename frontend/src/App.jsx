@@ -167,9 +167,6 @@ function App() {
     isTrue(day.InstructionalDay),
   ).length;
 
-  const math8Units = activeUnits.filter((unit) => unit.CourseID === "M8");
-  const math1Units = activeUnits.filter((unit) => unit.CourseID === "IM1");
-
   const math8Sections = getSectionsForCourse("M8", sections);
   const math1Sections = getSectionsForCourse("IM1", sections);
 
