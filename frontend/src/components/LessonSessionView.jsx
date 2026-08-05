@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { LESSON_SESSION_STORAGE_KEY } from "../utils/lessonSessionStorage";
 import { buildLessonPrintPayload } from "../utils/lessonPrintPayload";
 import { printLessonSession } from "../utils/combinedPrint";
+import { classifyLessonCurriculumReference } from "../utils/lessonCurriculumReference";
 import RosterSortToggle from "./Planning/RosterSortToggle";
 
 const STORAGE_KEY = LESSON_SESSION_STORAGE_KEY;
@@ -409,6 +410,7 @@ function LessonSessionView({
   activeLessonContext,
   curriculumLessons,
   referenceCurriculumLessons = curriculumLessons,
+  referenceCurriculumUnits = [],
   copyTargets,
   bumpTargets,
   getOutcomeList,
@@ -466,16 +468,12 @@ function LessonSessionView({
   // Lesson Session. Connections are now made per Teaching Episode; this
   // session-level value is kept only so older saved plans still show a
   // header pill. Nothing writes to it anymore.
-  const attachedCurriculumLesson =
-    referenceCurriculumLessons.find(
-      (lesson) => lesson.LessonID === curriculumLessonId,
-    ) ?? null;
-  const activeCurriculumLessonIds = new Set(
-    curriculumLessons.map((lesson) => lesson.LessonID),
+  const attachedCurriculumReference = classifyLessonCurriculumReference(
+    curriculumLessonId,
+    referenceCurriculumUnits,
+    referenceCurriculumLessons,
   );
-  const attachedCurriculumIsHistorical =
-    attachedCurriculumLesson &&
-    !activeCurriculumLessonIds.has(attachedCurriculumLesson.LessonID);
+  const attachedCurriculumLesson = attachedCurriculumReference.lesson;
 
   const canPrintLesson = Boolean(
     activeLessonContext?.sectionId && activeLessonContext?.date,
@@ -1861,11 +1859,11 @@ function LessonSessionView({
               {totalDisplayedMinutes}m
             </p>
 
-            {attachedCurriculumLesson ? (
+            {curriculumLessonId ? (
               <span className="lesson-context-pill">
-                {attachedCurriculumIsHistorical
-                  ? "Historical curriculum"
-                  : "Curriculum"} · {attachedCurriculumLesson.LessonTitle || "Untitled lesson"}
+                {attachedCurriculumReference.label} ·{" "}
+                {attachedCurriculumLesson?.LessonTitle ||
+                  "Lesson reference unavailable"}
               </span>
             ) : null}
 
@@ -1954,15 +1952,13 @@ function LessonSessionView({
             episode.blocks.find((block) => block.sourceLessonId)
               ?.sourceLessonId ??
             null;
-          const episodeCurriculumLesson = episodeCurriculumLessonId
-            ? referenceCurriculumLessons.find(
-                (lesson) =>
-                  lesson.LessonID === episodeCurriculumLessonId,
-              ) ?? null
-            : null;
-          const episodeCurriculumIsHistorical =
-            episodeCurriculumLesson &&
-            !activeCurriculumLessonIds.has(episodeCurriculumLesson.LessonID);
+          const episodeCurriculumReference =
+            classifyLessonCurriculumReference(
+              episodeCurriculumLessonId,
+              referenceCurriculumUnits,
+              referenceCurriculumLessons,
+            );
+          const episodeCurriculumLesson = episodeCurriculumReference.lesson;
           const episodeCurriculumOutcomes = episodeCurriculumLesson
             ? getOutcomeList(episodeCurriculumLesson.KeyOutcome)
               : [];
@@ -2418,15 +2414,16 @@ function LessonSessionView({
               <div
                 className={`episode-body${isOpen ? "" : " is-collapsed"}`}
               >
-                  {episodeCurriculumLesson ? (
+                  {episodeCurriculumLessonId ? (
                     <details className="episode-curriculum-reference">
                       <summary>
-                        {episodeCurriculumIsHistorical
-                          ? "Historical curriculum"
-                          : "Curriculum"} · {episodeCurriculumLesson.LessonTitle}
+                        {episodeCurriculumReference.label} ·{" "}
+                        {episodeCurriculumLesson?.LessonTitle ||
+                          "Lesson reference unavailable"}
                       </summary>
 
-                      <div className="episode-curriculum-reference-body">
+                      {episodeCurriculumLesson ? (
+                        <div className="episode-curriculum-reference-body">
                         <p className="episode-curriculum-identity">
                           Unit {episodeCurriculumLesson.UnitID?.replace(/.*U/, "")} ·
                           Lesson {episodeCurriculumLesson.LessonNumber}
@@ -2466,7 +2463,8 @@ function LessonSessionView({
                             Open curriculum source ↗
                           </a>
                         ) : null}
-                      </div>
+                        </div>
+                      ) : null}
                     </details>
                   ) : null}
 

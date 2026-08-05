@@ -25,6 +25,8 @@ function UnitsView({
   selectedUnitLessons,
   setSelectedCourseId,
   setSelectedUnitId,
+  showArchivedUnits,
+  setShowArchivedUnits,
   getCourseLabel,
   selectedDailyProgress,
   selectedNavigation,
@@ -69,8 +71,6 @@ function UnitsView({
   const { activeUnits: selectableCourseUnits } = getActiveCurriculum(
     activeCourseUnits,
   );
-
-  const [showArchivedUnits, setShowArchivedUnits] = useState(false);
 
   const visibleCourseUnits = showArchivedUnits
     ? activeCourseUnits
@@ -173,15 +173,8 @@ function UnitsView({
                   type="checkbox"
                   checked={showArchivedUnits}
                   onChange={(event) => {
-                    const nextShowArchived = event.target.checked;
-                    setShowArchivedUnits(nextShowArchived);
-
-                    if (
-                      !nextShowArchived &&
-                      isUnitArchived(selectedUnit)
-                    ) {
-                      setSelectedUnitId(selectableCourseUnits[0]?.UnitID || "");
-                    }
+                    setSelectedUnitId(selectedUnit?.UnitID ?? null);
+                    setShowArchivedUnits(event.target.checked);
                   }}
                 />
                 Show Archived Curriculum ({archivedUnitCount})

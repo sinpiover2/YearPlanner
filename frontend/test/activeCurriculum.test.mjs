@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
@@ -9,7 +10,9 @@ import {
 import {
   getCourseNavigation,
   getCourseStatus,
+  reconcileUnitSelection,
 } from "../src/utils/courseCurriculumModel.js";
+import { classifyLessonCurriculumReference } from "../src/utils/lessonCurriculumReference.js";
 import {
   getSectionForecast,
   getSectionTimeline,
@@ -80,8 +83,14 @@ test("course status and global/current-next navigation ignore archived curriculu
   assert.equal(status.currentLesson.LessonID, "NEW-L2");
   assert.equal(navigation.currentUnit.UnitID, "NEW-1");
   assert.equal(navigation.currentLesson.LessonID, "NEW-L2");
+  assert.equal(navigation.previousLesson.LessonID, "NEW-L1");
   assert.equal(navigation.nextLesson.LessonID, "NEW-L3");
   assert.ok(navigation.courseLessons.every((lesson) => lesson.UnitID !== "OLD"));
+
+  const math8Status = getCourseStatus("M8", units, lessons, []);
+  const math8Navigation = getCourseNavigation("M8", units, lessons, []);
+  assert.equal(math8Status.currentLesson.LessonID, "M8-L1");
+  assert.equal(math8Navigation.currentLesson.LessonID, "M8-L1");
 });
 
 test("forecast calculations and timelines ignore archived units and lessons", () => {
@@ -142,4 +151,105 @@ test("active Lesson Session choices exclude archived lessons for both IM1 and Ma
 
   assert.deepEqual(im1Choices.map((lesson) => lesson.LessonID), ["NEW-L1", "NEW-L2", "NEW-L3"]);
   assert.deepEqual(math8Choices.map((lesson) => lesson.LessonID), ["M8-L1"]);
+});
+
+test("App imports the shared course model without duplicate local implementations", async () => {
+  const appSource = await readFile(new URL("../src/App.jsx", import.meta.url), "utf8");
+
+  assert.match(appSource, /from "\.\/utils\/courseCurriculumModel"/);
+  assert.doesNotMatch(appSource, /function getCourseStatus\s*\(/);
+  assert.doesNotMatch(appSource, /function getCourseNavigation\s*\(/);
+  assert.doesNotMatch(appSource, /function getPrepareNext\s*\(/);
+});
+
+test("Lesson Session uses the shared global reference classifier", async () => {
+  const [appSource, lessonSessionSource] = await Promise.all([
+    readFile(new URL("../src/App.jsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../src/components/LessonSessionView.jsx", import.meta.url),
+      "utf8",
+    ),
+  ]);
+
+  assert.match(appSource, /referenceCurriculumUnits: units/);
+  assert.match(
+    lessonSessionSource,
+    /import \{ classifyLessonCurriculumReference \} from "\.\.\/utils\/lessonCurriculumReference"/,
+  );
+  assert.doesNotMatch(lessonSessionSource, /activeCurriculumLessonIds/);
+});
+
+test("unit selection repairs an archived selection while active-only mode remains on", () => {
+  const courseUnits = units.filter((unit) => unit.CourseID === "IM1");
+  const snapshot = structuredClone(courseUnits);
+
+  assert.equal(
+    reconcileUnitSelection({
+      selectedUnitId: "OLD",
+      courseUnits,
+      showArchivedUnits: false,
+    }),
+    "NEW-1",
+  );
+  assert.deepEqual(courseUnits, snapshot);
+});
+
+test("unit selection clears safely when no active Unit remains", () => {
+  assert.equal(
+    reconcileUnitSelection({
+      selectedUnitId: "OLD",
+      courseUnits: [units[0]],
+      showArchivedUnits: false,
+    }),
+    null,
+  );
+});
+
+test("archive view permits archived selection and turning it off repairs selection", () => {
+  const courseUnits = units.filter((unit) => unit.CourseID === "IM1");
+
+  assert.equal(reconcileUnitSelection({
+    selectedUnitId: "OLD",
+    courseUnits,
+    showArchivedUnits: true,
+  }), "OLD");
+  assert.equal(reconcileUnitSelection({
+    selectedUnitId: "OLD",
+    courseUnits,
+    showArchivedUnits: false,
+  }), "NEW-1");
+});
+
+test("Lesson Session references use canonical global Unit activity", () => {
+  const globalUnits = [
+    ...units,
+    { UnitID: "OTHER", CourseID: "OTHER", IsArchived: false },
+  ];
+  const globalLessons = [
+    ...lessons,
+    { LessonID: "OTHER-L1", UnitID: "OTHER", CourseID: "OTHER", LessonTitle: "Other course" },
+    { LessonID: "ORPHAN-L1", UnitID: "MISSING-UNIT", CourseID: "IM1", LessonTitle: "Orphan" },
+  ];
+  const unitsSnapshot = structuredClone(globalUnits);
+  const lessonsSnapshot = structuredClone(globalLessons);
+
+  const historical = classifyLessonCurriculumReference("OLD-L1", globalUnits, globalLessons);
+  const crossCourse = classifyLessonCurriculumReference("OTHER-L1", globalUnits, globalLessons);
+  const orphan = classifyLessonCurriculumReference("ORPHAN-L1", globalUnits, globalLessons);
+  const missing = classifyLessonCurriculumReference("DOES-NOT-EXIST", globalUnits, globalLessons);
+
+  assert.equal(historical.status, "historical");
+  assert.equal(historical.label, "Historical curriculum");
+  assert.equal(historical.lesson.LessonID, "OLD-L1");
+  assert.equal(crossCourse.status, "active");
+  assert.equal(crossCourse.label, "Curriculum");
+  assert.equal(crossCourse.lesson.LessonID, "OTHER-L1");
+  assert.equal(orphan.status, "unavailable");
+  assert.equal(orphan.label, "Unavailable curriculum");
+  assert.equal(orphan.lesson.LessonID, "ORPHAN-L1");
+  assert.equal(missing.status, "unavailable");
+  assert.equal(missing.label, "Unavailable curriculum");
+  assert.equal(missing.lesson, null);
+  assert.deepEqual(globalUnits, unitsSnapshot);
+  assert.deepEqual(globalLessons, lessonsSnapshot);
 });

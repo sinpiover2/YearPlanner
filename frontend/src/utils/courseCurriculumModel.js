@@ -1,9 +1,36 @@
 import {
   getActiveCurriculum,
+  isUnitArchived,
   isTrue,
   sortLessons,
   sortUnits,
 } from "./plannerUtils.js";
+
+export function reconcileUnitSelection({
+  selectedUnitId,
+  courseUnits = [],
+  fallbackUnitId = null,
+  showArchivedUnits = false,
+}) {
+  const selectableUnits = showArchivedUnits
+    ? courseUnits
+    : courseUnits.filter((unit) => !isUnitArchived(unit));
+  const selectableUnitIds = new Set(selectableUnits.map((unit) => unit.UnitID));
+
+  if (selectedUnitId && selectableUnitIds.has(selectedUnitId)) {
+    return selectedUnitId;
+  }
+
+  if (
+    !selectedUnitId &&
+    fallbackUnitId &&
+    selectableUnitIds.has(fallbackUnitId)
+  ) {
+    return fallbackUnitId;
+  }
+
+  return selectableUnits[0]?.UnitID ?? null;
+}
 
 function getLessonProgress(lessonId, dailyProgress) {
   const entries = dailyProgress.filter((entry) => entry.LessonID === lessonId);
