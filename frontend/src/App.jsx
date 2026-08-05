@@ -25,6 +25,7 @@ import {
   sortUnits,
   sortLessons,
   getCourseLabel,
+  serializePlannedDays,
 } from "./utils/plannerUtils";
 import {
   addLesson,
@@ -383,7 +384,7 @@ function App() {
     setEditingLessonId(lesson.LessonID);
     setEditLessonDraft({
       lessonTitle: lesson.LessonTitle || "",
-      plannedDays: lesson.PlannedDays || 1,
+      plannedDays: lesson.PlannedDays ?? "",
       goals: getOutcomeList(lesson.KeyOutcome).length
         ? getOutcomeList(lesson.KeyOutcome)
         : [""],
@@ -518,12 +519,19 @@ function App() {
       return;
     }
 
-    setIsAddingLessonSaving(true);
-
     const courseId = selectedUnit.CourseID;
     const unitId = selectedUnit.UnitID;
     const lessonTitle = newLesson.lessonTitle.trim();
-    const plannedDays = Number(newLesson.plannedDays || 1);
+    const plannedDaysResult = serializePlannedDays(newLesson.plannedDays);
+
+    if (!plannedDaysResult.ok) {
+      alert(plannedDaysResult.error);
+      return;
+    }
+
+    setIsAddingLessonSaving(true);
+
+    const plannedDays = plannedDaysResult.value;
     const keyOutcome = newLesson.keyOutcomes
       .map((goal) => goal.trim())
       .filter(Boolean)
@@ -754,7 +762,14 @@ function App() {
     }
 
     const lessonTitle = editLessonDraft.lessonTitle.trim();
-    const plannedDays = Number(editLessonDraft.plannedDays || 1);
+    const plannedDaysResult = serializePlannedDays(editLessonDraft.plannedDays);
+
+    if (!plannedDaysResult.ok) {
+      alert(plannedDaysResult.error);
+      return;
+    }
+
+    const plannedDays = plannedDaysResult.value;
     const keyOutcome = editLessonDraft.goals
       .map((goal) => goal.trim())
       .filter(Boolean)

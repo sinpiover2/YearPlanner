@@ -475,7 +475,47 @@ function saveDailyProgress(payload) {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
+function parsePlannedDaysForWrite_(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    (typeof value === "string" && value.trim() === "")
+  ) {
+    return { ok: true, value: "" };
+  }
+
+  const number =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value.trim())
+        : NaN;
+
+  if (
+    !Number.isFinite(number) ||
+    number <= 0 ||
+    !Number.isInteger(number / 0.5)
+  ) {
+    return {
+      ok: false,
+      error:
+        "Planned days must be blank or a positive number in 0.5-day increments.",
+    };
+  }
+
+  return { ok: true, value: number };
+}
+
+function planningErrorResponse_(message) {
+  return ContentService.createTextOutput(
+    JSON.stringify({ ok: false, error: message }),
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
 function addLesson(payload) {
+  const plannedDays = parsePlannedDaysForWrite_(payload.plannedDays);
+  if (!plannedDays.ok) return planningErrorResponse_(plannedDays.error);
+
   const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName("Lessons");
 
@@ -498,7 +538,7 @@ function addLesson(payload) {
     LessonNumber: nextLessonNumber,
     SortOrder: nextLessonNumber,
     LessonTitle: payload.lessonTitle,
-    PlannedDays: Number(payload.plannedDays || 1),
+    PlannedDays: plannedDays.value,
     KeyOutcome: payload.keyOutcome || "",
     PrimaryLink: payload.primaryLink || "",
     Description: "",
@@ -523,6 +563,9 @@ function addLesson(payload) {
 }
 
 function updateLesson(payload) {
+  const plannedDays = parsePlannedDaysForWrite_(payload.plannedDays);
+  if (!plannedDays.ok) return planningErrorResponse_(plannedDays.error);
+
   const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName("Lessons");
 
@@ -543,7 +586,7 @@ function updateLesson(payload) {
 
   const updates = {
     LessonTitle: payload.lessonTitle,
-    PlannedDays: Number(payload.plannedDays || 1),
+    PlannedDays: plannedDays.value,
     KeyOutcome: payload.keyOutcome || "",
     PrimaryLink: payload.primaryLink || "",
     TeacherNotes: payload.teacherNotes || "",

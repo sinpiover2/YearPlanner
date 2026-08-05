@@ -1,4 +1,8 @@
-import { getItemType } from "../utils/plannerUtils";
+import {
+  getCompactPlanningDayDisplay,
+  getItemType,
+  parsePlannedDays,
+} from "../utils/plannerUtils";
 
 function LessonTable({
   lessonList,
@@ -56,7 +60,10 @@ function LessonTable({
         const isNext =
           lesson.LessonID === selectedNavigation.nextLesson?.LessonID;
 
-        const variance = actualDays - Number(lesson.PlannedDays || 0);
+        const plannedDays = parsePlannedDays(lesson.PlannedDays);
+        const plannedDaysDisplay = getCompactPlanningDayDisplay(plannedDays);
+        const variance =
+          plannedDays.state === "known" ? actualDays - plannedDays.value : null;
         const outcomes = getOutcomeList(lesson.KeyOutcome);
         const isTemporaryLesson = lesson.LessonID.startsWith("temp-");
         const isReorderDisabled =
@@ -178,12 +185,23 @@ function LessonTable({
               )}
             </div>
 
-            <strong>{lesson.PlannedDays || "—"}d</strong>
+            <strong
+              aria-label={
+                plannedDays.state === "known"
+                  ? `${plannedDaysDisplay.accessibleText} planned days`
+                  : plannedDaysDisplay.accessibleText
+              }
+            >
+              {plannedDaysDisplay.text}
+              {plannedDays.state === "known" ? "d" : ""}
+            </strong>
 
             <strong>{actualDays || "—"}</strong>
 
             <strong className={variance > 0 ? "variance-warning" : ""}>
-              {actualDays ? formatVarianceCompact(variance) : "—"}
+              {actualDays && variance !== null
+                ? formatVarianceCompact(variance)
+                : "—"}
             </strong>
 
             <div className="lesson-actions">

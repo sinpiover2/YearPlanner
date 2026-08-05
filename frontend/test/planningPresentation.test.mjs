@@ -20,6 +20,7 @@ import {
 
 let renderSidebarComponent;
 let renderUnitsComponent;
+let renderLessonTableComponent;
 let renderBuildDirectory;
 
 before(async () => {
@@ -31,10 +32,13 @@ before(async () => {
     import { renderToStaticMarkup } from ${JSON.stringify(join(frontendRoot, "node_modules/react-dom/server.node.js"))};
     import Sidebar from ${JSON.stringify(join(frontendRoot, "src/components/Sidebar.jsx"))};
     import UnitsView from ${JSON.stringify(join(frontendRoot, "src/components/UnitsView.jsx"))};
+    import LessonTable from ${JSON.stringify(join(frontendRoot, "src/components/LessonTable.jsx"))};
     export const renderSidebarComponent = (props) =>
       renderToStaticMarkup(React.createElement(Sidebar, props));
     export const renderUnitsComponent = (props) =>
       renderToStaticMarkup(React.createElement(UnitsView, props));
+    export const renderLessonTableComponent = (props) =>
+      renderToStaticMarkup(React.createElement(LessonTable, props));
   `);
   const result = await build({
     configFile: false,
@@ -50,7 +54,7 @@ before(async () => {
   const output = Array.isArray(result) ? result[0].output[0] : result.output[0];
   const bundlePath = join(renderBuildDirectory, "planning-render-bundle.mjs");
   await writeFile(bundlePath, output.code);
-  ({ renderSidebarComponent, renderUnitsComponent } = await import(pathToFileURL(bundlePath)));
+  ({ renderSidebarComponent, renderUnitsComponent, renderLessonTableComponent } = await import(pathToFileURL(bundlePath)));
 });
 
 after(async () => {
@@ -314,4 +318,37 @@ test("Sidebar renders fully planned, unknown, and invalid canonical branches", (
   assert.match(invalid, /Planning data invalid/);
   assert.match(invalid, /role="status">Planning data invalid/);
   assert.doesNotMatch(invalid, /Planning (?:days )?incomplete|actual of 0 days|On pace|ahead|behind|d buffer/);
+});
+
+function renderLessonPlan(PlannedDays, actualDays = 1) {
+  return renderLessonTableComponent({
+    lessonList: [{ LessonID: "L1", UnitID: "U1", LessonNumber: 1, LessonTitle: "Lesson", PlannedDays }],
+    selectedDailyProgress: [],
+    selectedNavigation: { currentLesson: null, nextLesson: null },
+    activeProgressLessonId: null,
+    progressInputs: {},
+    editingLessonId: null,
+    editLessonDraft: null,
+    reorderingUnitId: null,
+    isAddingLesson: false,
+    isAddingLessonSaving: false,
+    newLesson: { lessonTitle: "", plannedDays: 1, keyOutcomes: [""] },
+    getLessonProgress: () => ({ actualDays, finished: false }),
+    getOutcomeList: () => [],
+    formatVarianceCompact: (value) => String(value),
+  });
+}
+
+test("Lesson table renders known, unknown, and invalid PlannedDays without unsafe variance", () => {
+  const known = renderLessonPlan(0.5);
+  assert.match(known, /aria-label="0\.5 planned days">0\.5d/);
+  assert.match(known, />0\.5<\/strong>/);
+
+  const unknown = renderLessonPlan("");
+  assert.match(unknown, /aria-label="Not planned">—<\/strong>/);
+  assert.doesNotMatch(unknown, />1<\/strong>[\s\S]*class="variance-warning"/);
+
+  const invalid = renderLessonPlan(0);
+  assert.match(invalid, /aria-label="Invalid value">Invalid value<\/strong>/);
+  assert.doesNotMatch(invalid, />1<\/strong>[\s\S]*class="variance-warning"/);
 });

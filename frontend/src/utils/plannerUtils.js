@@ -203,6 +203,23 @@ export function parsePlannedDays(value) {
   );
 }
 
+export const PLANNED_DAYS_VALIDATION_MESSAGE =
+  "Planned days must be blank or a positive number in 0.5-day increments.";
+
+export function serializePlannedDays(value) {
+  const parsed = parsePlannedDays(value);
+
+  if (parsed.state === "known") {
+    return { ok: true, value: parsed.value };
+  }
+
+  if (parsed.state === "unknown") {
+    return { ok: true, value: "" };
+  }
+
+  return { ok: false, error: PLANNED_DAYS_VALIDATION_MESSAGE };
+}
+
 // Logged DayFraction values have a separate contract from planned values:
 // zero is meaningful, arbitrary precision is preserved, and negative actual
 // use is invalid.
