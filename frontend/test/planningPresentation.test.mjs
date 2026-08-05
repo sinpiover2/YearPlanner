@@ -300,5 +300,5 @@ test("Sidebar renders fully planned, unknown, and invalid canonical branches", (
   assert.match(invalid, /Invalid required-day value/);
   assert.match(invalid, /Planning data invalid/);
   assert.match(invalid, /role="status">Planning data invalid/);
-  assert.doesNotMatch(invalid, /Planning incomplete|actual of 0 days|On pace|ahead|behind|d buffer/);
+  assert.doesNotMatch(invalid, /Planning (?:days )?incomplete|actual of 0 days|On pace|ahead|behind|d buffer/);
 });

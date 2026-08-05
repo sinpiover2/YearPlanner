@@ -184,7 +184,8 @@ export function getSidebarCoursePresentation(status, navigation) {
       : requiredDaysInvalid
         ? "Planning data invalid"
         : "Planning incomplete",
-    pacingPlanningLabel: paceAvailable ? null : "Planning days incomplete",
+    pacingPlanningLabel:
+      paceAvailable || requiredDaysInvalid ? null : "Planning days incomplete",
     bufferLabel: requiredDaysInvalid
       ? null
       : optionalDaysKnown
