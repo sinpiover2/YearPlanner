@@ -172,7 +172,7 @@ function UnitsView({
               const planning = getUnitPlanningModel(selectedDailyProgress, unit);
               const presentation = getUnitPlanningPresentation(planning, { compact: true });
               const unitState = planning.requiredDaysComplete
-                ? getUnitState(selectedDailyProgress, unit, activeCourseUnits)
+                ? getUnitState(selectedDailyProgress, unit, selectableCourseUnits)
                 : null;
 
               return (

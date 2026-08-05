@@ -107,57 +107,29 @@ export function getOptionalDaysPresentation(planningModel) {
     : "Buffer not planned";
 }
 
-// Temporary compatibility helpers for current Unit components. Presentation
-// will migrate atomically to getUnitPlanningModel() in a later slice.
-export function getUnitRequiredDays(unit) {
-  return Number(unit?.RequiredDays || 0);
-}
-
-export function getUnitRemainingDays(dailyProgress, unit) {
-  return Math.max(
-    0,
-    getUnitRequiredDays(unit) - getUnitLoggedDays(dailyProgress, unit?.UnitID),
-  );
-}
-
-export function getUnitProgressPercent(dailyProgress, unit) {
-  const requiredDays = getUnitRequiredDays(unit);
-
-  if (!requiredDays) return 0;
-
-  return Math.min(
-    100,
-    Math.round(
-      (getUnitLoggedDays(dailyProgress, unit.UnitID) / requiredDays) * 100,
-    ),
-  );
-}
-
 export function getUnitState(dailyProgress, unit, courseUnits) {
-  const loggedDays = getUnitLoggedDays(dailyProgress, unit?.UnitID);
-  const requiredDays = getUnitRequiredDays(unit);
+  let currentUnitFound = false;
+  let currentUnitIndeterminate = false;
 
-  if (requiredDays && loggedDays >= requiredDays) {
-    return "complete";
+  for (const courseUnit of courseUnits) {
+    const planning = getUnitPlanningModel(dailyProgress, courseUnit);
+    let state = null;
+
+    if (planning.requiredDaysComplete) {
+      if (planning.requiredDayStatus === "complete") {
+        state = "complete";
+      } else if (!currentUnitFound && !currentUnitIndeterminate) {
+        state = "current";
+        currentUnitFound = true;
+      } else if (currentUnitFound) {
+        state = "upcoming";
+      }
+    } else if (!currentUnitFound) {
+      currentUnitIndeterminate = true;
+    }
+
+    if (courseUnit.UnitID === unit?.UnitID) return state;
   }
 
-  const currentUnit =
-    courseUnits.find((courseUnit) => {
-      const courseUnitLoggedDays = getUnitLoggedDays(
-        dailyProgress,
-        courseUnit.UnitID,
-      );
-      const courseUnitRequiredDays = getUnitRequiredDays(courseUnit);
-
-      return (
-        !courseUnitRequiredDays ||
-        courseUnitLoggedDays < courseUnitRequiredDays
-      );
-    }) ?? courseUnits[0];
-
-  if (currentUnit?.UnitID === unit?.UnitID) {
-    return "current";
-  }
-
-  return "upcoming";
+  return null;
 }

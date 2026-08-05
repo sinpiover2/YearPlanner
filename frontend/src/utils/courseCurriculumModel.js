@@ -147,7 +147,8 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
 export function getSidebarCoursePresentation(status, navigation) {
   const planning = status.planning;
   const unitPlanning = navigation.planning;
-  const paceAvailable = planning.completedPlannedDaysComplete;
+  const requiredDaysInvalid = planning.requiredDays.hasInvalidValues;
+  const paceAvailable = !requiredDaysInvalid && planning.completedPlannedDaysComplete;
   const requiredDaysComplete = planning.requiredDays.complete;
   const unitProgressAvailable = requiredDaysComplete && unitPlanning.complete;
   const optionalDaysKnown = planning.optionalDays.complete;
@@ -175,10 +176,18 @@ export function getSidebarCoursePresentation(status, navigation) {
       : `${unitPlanning.actualDays} logged`,
     requiredDaysLabel: requiredDaysComplete
       ? null
-      : `${planning.requiredDays.total} known days`,
-    planningLabel: requiredDaysComplete ? null : "Planning incomplete",
+      : requiredDaysInvalid
+        ? "Invalid required-day value"
+        : `${planning.requiredDays.total} known days`,
+    planningLabel: requiredDaysComplete
+      ? null
+      : requiredDaysInvalid
+        ? "Planning data invalid"
+        : "Planning incomplete",
     pacingPlanningLabel: paceAvailable ? null : "Planning days incomplete",
-    bufferLabel: optionalDaysKnown
+    bufferLabel: requiredDaysInvalid
+      ? null
+      : optionalDaysKnown
       ? `${planning.optionalDays.total}d buffer`
       : planning.optionalDays.hasInvalidValues
         ? "Invalid buffer value"

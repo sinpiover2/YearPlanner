@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import test, { after, before } from "node:test";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { build } from "vite";
 
 import {
   getCourseNavigation,
@@ -10,7 +15,47 @@ import {
   getOptionalDaysPresentation,
   getUnitPlanningModel,
   getUnitPlanningPresentation,
+  getUnitState,
 } from "../src/utils/unitUtils.js";
+
+let renderSidebarComponent;
+let renderUnitsComponent;
+let renderBuildDirectory;
+
+before(async () => {
+  const frontendRoot = fileURLToPath(new URL("..", import.meta.url));
+  renderBuildDirectory = await mkdtemp(join(tmpdir(), "year-planner-render-"));
+  const entryPath = join(renderBuildDirectory, "planning-render-entry.jsx");
+  await writeFile(entryPath, `
+    import React from ${JSON.stringify(join(frontendRoot, "node_modules/react/index.js"))};
+    import { renderToStaticMarkup } from ${JSON.stringify(join(frontendRoot, "node_modules/react-dom/server.node.js"))};
+    import Sidebar from ${JSON.stringify(join(frontendRoot, "src/components/Sidebar.jsx"))};
+    import UnitsView from ${JSON.stringify(join(frontendRoot, "src/components/UnitsView.jsx"))};
+    export const renderSidebarComponent = (props) =>
+      renderToStaticMarkup(React.createElement(Sidebar, props));
+    export const renderUnitsComponent = (props) =>
+      renderToStaticMarkup(React.createElement(UnitsView, props));
+  `);
+  const result = await build({
+    configFile: false,
+    root: frontendRoot,
+    logLevel: "silent",
+    ssr: { noExternal: true },
+    build: {
+      write: false,
+      ssr: entryPath,
+      rollupOptions: { output: { format: "esm" } },
+    },
+  });
+  const output = Array.isArray(result) ? result[0].output[0] : result.output[0];
+  const bundlePath = join(renderBuildDirectory, "planning-render-bundle.mjs");
+  await writeFile(bundlePath, output.code);
+  ({ renderSidebarComponent, renderUnitsComponent } = await import(pathToFileURL(bundlePath)));
+});
+
+after(async () => {
+  await rm(renderBuildDirectory, { recursive: true, force: true });
+});
 
 const units = [
   { UnitID: "U1", CourseID: "IM1", UnitNumber: 1, SortOrder: 1, RequiredDays: 4, OptionalDays: 0 },
@@ -125,4 +170,135 @@ test("presentation helpers do not mutate inputs", () => {
   getSidebarCoursePresentation(status, navigation);
   assert.deepEqual(status, statusSnapshot);
   assert.deepEqual(navigation, navigationSnapshot);
+});
+
+test("canonical Unit state withholds unsafe sequence assertions", () => {
+  const sequence = [
+    { ...units[0], UnitID: "DONE", RequiredDays: 1 },
+    { ...units[0], UnitID: "UNKNOWN", RequiredDays: "" },
+    { ...units[0], UnitID: "AFTER", RequiredDays: 3 },
+  ];
+  const sequenceProgress = [{ UnitID: "DONE", DayFraction: 1 }];
+
+  assert.equal(getUnitState(sequenceProgress, sequence[0], sequence), "complete");
+  assert.equal(getUnitState(sequenceProgress, sequence[1], sequence), null);
+  assert.equal(getUnitState(sequenceProgress, sequence[2], sequence), null);
+
+  const fullyPlanned = sequence.map((unit, index) => ({
+    ...unit,
+    RequiredDays: index === 0 ? 1 : 3,
+  }));
+  assert.equal(getUnitState(sequenceProgress, fullyPlanned[0], fullyPlanned), "complete");
+  assert.equal(getUnitState(sequenceProgress, fullyPlanned[1], fullyPlanned), "current");
+  assert.equal(getUnitState(sequenceProgress, fullyPlanned[2], fullyPlanned), "upcoming");
+});
+
+function renderUnits(requiredDays, courseUnits = null) {
+  const renderedUnits = courseUnits ?? [{
+    ...units[0],
+    RequiredDays: requiredDays,
+    UnitTitle: "Expressions",
+    Purpose: "Build fluency",
+  }];
+  const selectedUnit = renderedUnits[0];
+
+  return renderUnitsComponent({
+    courses: [{ CourseID: "IM1", CourseName: "Math 1" }],
+    units: renderedUnits,
+    schoolCalendar: [],
+    getProjectedUnits: (value) => value,
+    selectedCourseId: "IM1",
+    selectedUnit,
+    selectedUnitLessons: [],
+    setSelectedCourseId: () => {},
+    setSelectedUnitId: () => {},
+    showArchivedUnits: false,
+    setShowArchivedUnits: () => {},
+    selectedDailyProgress: progress,
+    selectedNavigation: { currentLesson: null, nextLesson: null },
+    activeProgressLessonId: null,
+    progressInputs: {},
+    editingLessonId: null,
+    editLessonDraft: null,
+    reorderingUnitId: null,
+    isAddingLesson: false,
+    isAddingLessonSaving: false,
+    newLesson: {},
+    getLessonProgress: () => ({ actualDays: 0, finished: false }),
+    getOutcomeList: () => [],
+    formatVarianceCompact: String,
+    formatDate: String,
+  });
+}
+
+test("UnitsView renders complete, unknown, invalid, archive, and indeterminate branches", () => {
+  const fullyPlanned = renderUnits(4);
+  assert.match(fullyPlanned, /Current/);
+  assert.match(fullyPlanned, /1 \/ 4 days/);
+  assert.match(fullyPlanned, /aria-label="25% complete"/);
+
+  const unknown = renderUnits("");
+  assert.match(unknown, /1 logged · —/);
+  assert.match(unknown, /aria-label="1 logged · Not planned"/);
+  assert.match(unknown, /role="status">Not planned/);
+  assert.doesNotMatch(unknown, /0% complete|Current|Upcoming/);
+
+  const invalid = renderUnits(0);
+  assert.match(invalid, /Invalid value/);
+  assert.match(invalid, /role="status">Invalid value/);
+  assert.doesNotMatch(invalid, /Current|Upcoming/);
+
+  const siblingUnits = [
+    { ...units[0], UnitID: "UNKNOWN", RequiredDays: "", UnitTitle: "Unknown" },
+    { ...units[1], UnitID: "AFTER", RequiredDays: 6, UnitTitle: "After" },
+    { ...units[1], UnitID: "ARCHIVE", IsArchived: true, UnitTitle: "Archive" },
+  ];
+  const siblingOutput = renderUnits("", siblingUnits);
+  assert.match(siblingOutput, /Show Archived Curriculum \(1\)/);
+  assert.doesNotMatch(siblingOutput, /Current|Upcoming/);
+});
+
+function renderSidebar(courseUnits, courseLessons = lessons) {
+  const status = getCourseStatus("IM1", courseUnits, courseLessons, progress);
+  const navigation = getCourseNavigation("IM1", courseUnits, courseLessons, progress);
+
+  return renderSidebarComponent({
+    timeLens: "school",
+    setTimeLens: () => {},
+    timeLensInfo: { label: "School", value: 10, unit: "days", bar: 50 },
+    selectedCourseId: "IM1",
+    setSelectedCourseId: () => {},
+    setSelectedUnitId: () => {},
+    math8Navigation: navigation,
+    math1Navigation: navigation,
+    math8Status: status,
+    math1Status: status,
+    selectedSection: null,
+    selectedCourseSections: [],
+    setSelectedSectionId: () => {},
+    renderUnitChips: () => "Sequence navigation",
+    math8Units: courseUnits,
+    math1Units: courseUnits,
+  });
+}
+
+test("Sidebar renders fully planned, unknown, and invalid canonical branches", () => {
+  const fullyPlanned = renderSidebar(units);
+  assert.match(fullyPlanned, /On pace/);
+  assert.match(fullyPlanned, /1 of 2 days in unit/);
+  assert.match(fullyPlanned, /U1 · Second lesson|U1 · Complete|U1 ·/);
+  assert.match(fullyPlanned, /Sequence navigation/);
+
+  const unknownUnits = [{ ...units[0] }, { ...units[1], RequiredDays: "" }];
+  const unknown = renderSidebar(unknownUnits);
+  assert.match(unknown, /Planning incomplete/);
+  assert.match(unknown, /4 known days/);
+  assert.doesNotMatch(unknown, /actual of 0 days/);
+
+  const invalidUnits = [{ ...units[0] }, { ...units[1], RequiredDays: 0 }];
+  const invalid = renderSidebar(invalidUnits);
+  assert.match(invalid, /Invalid required-day value/);
+  assert.match(invalid, /Planning data invalid/);
+  assert.match(invalid, /role="status">Planning data invalid/);
+  assert.doesNotMatch(invalid, /Planning incomplete|actual of 0 days|On pace|ahead|behind|d buffer/);
 });
