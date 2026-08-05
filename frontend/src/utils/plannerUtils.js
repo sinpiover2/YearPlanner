@@ -126,6 +126,140 @@ export function parseKnownNumber(value) {
   return Number.isNaN(number) ? null : number;
 }
 
+export const PLANNING_DAY_POLICIES = Object.freeze({
+  RequiredDays: Object.freeze({ minimum: 0, minimumInclusive: false }),
+  OptionalDays: Object.freeze({ minimum: 0, minimumInclusive: true }),
+  PlannedDays: Object.freeze({
+    minimum: 0,
+    minimumInclusive: false,
+    increment: 0.5,
+  }),
+});
+
+// Additive tri-state contract for planning-day values. Existing callers keep
+// using parseKnownNumber() until later slices deliberately adopt this stricter
+// distinction between an unset value and malformed data.
+export function parsePlanningDayValue(value) {
+  if (value === null || value === undefined) {
+    return { state: "unknown", value: null };
+  }
+
+  if (typeof value === "string") {
+    const trimmedValue = value.trim();
+
+    if (trimmedValue === "") {
+      return { state: "unknown", value: null };
+    }
+
+    const number = Number(trimmedValue);
+
+    return Number.isFinite(number)
+      ? { state: "known", value: number }
+      : { state: "invalid", raw: value };
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return { state: "known", value };
+  }
+
+  return { state: "invalid", raw: value };
+}
+
+export function parsePlanningDayValueWithPolicy(value, policy) {
+  const parsed = parsePlanningDayValue(value);
+  if (parsed.state !== "known") return parsed;
+
+  const { minimum, minimumInclusive, increment } = policy;
+  const belowMinimum = minimumInclusive
+    ? parsed.value < minimum
+    : parsed.value <= minimum;
+  const violatesIncrement =
+    increment !== undefined &&
+    !Number.isInteger(parsed.value / increment);
+
+  return belowMinimum || violatesIncrement
+    ? { state: "invalid", raw: value }
+    : parsed;
+}
+
+export function parseRequiredDays(value) {
+  return parsePlanningDayValueWithPolicy(
+    value,
+    PLANNING_DAY_POLICIES.RequiredDays,
+  );
+}
+
+export function parseOptionalDays(value) {
+  return parsePlanningDayValueWithPolicy(
+    value,
+    PLANNING_DAY_POLICIES.OptionalDays,
+  );
+}
+
+export function parsePlannedDays(value) {
+  return parsePlanningDayValueWithPolicy(
+    value,
+    PLANNING_DAY_POLICIES.PlannedDays,
+  );
+}
+
+// Empty input is explicitly incomplete: a zero total is only an accumulation
+// identity here, never an assertion that an empty plan contains zero days.
+export function aggregatePlanningDayValues(
+  values,
+  parseValue = parsePlanningDayValue,
+) {
+  let total = 0;
+  let knownCount = 0;
+  let unknownCount = 0;
+  let invalidCount = 0;
+
+  for (const value of values) {
+    const parsed = parseValue(value);
+
+    if (parsed.state === "known") {
+      total += parsed.value;
+      knownCount += 1;
+    } else if (parsed.state === "unknown") {
+      unknownCount += 1;
+    } else {
+      invalidCount += 1;
+    }
+  }
+
+  const count = knownCount + unknownCount + invalidCount;
+
+  return {
+    total,
+    count,
+    knownCount,
+    unknownCount,
+    invalidCount,
+    empty: count === 0,
+    complete: count > 0 && unknownCount === 0 && invalidCount === 0,
+    hasInvalidValues: invalidCount > 0,
+  };
+}
+
+export function formatPlanningDayValue(parsed) {
+  if (parsed.state === "unknown") return "Not planned";
+  if (parsed.state === "invalid") return "Invalid value";
+  return String(parsed.value);
+}
+
+export function formatPlanningDayValueCompact(parsed) {
+  if (parsed.state === "unknown") return "—";
+  if (parsed.state === "invalid") return "Invalid value";
+  return String(parsed.value);
+}
+
+export function getCompactPlanningDayDisplay(parsed) {
+  return {
+    text: formatPlanningDayValueCompact(parsed),
+    accessibleText: formatPlanningDayValue(parsed),
+  };
+}
+
 const DEFAULT_INSTRUCTIONAL_ITEM_TYPE = "Lesson";
 
 // A blank or missing Type means an ordinary Lesson — true of every row in
