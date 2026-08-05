@@ -64,6 +64,16 @@ test("known Unit planning values calculate remaining days and progress", () => {
     requiredDays: { state: "known", value: 4 },
     optionalDays: { state: "known", value: 0 },
     actualDays: 1.5,
+    actualDayValues: {
+      total: 1.5,
+      count: 4,
+      knownCount: 2,
+      unknownCount: 0,
+      invalidCount: 2,
+      empty: false,
+      complete: false,
+      hasInvalidValues: true,
+    },
     requiredDaysComplete: true,
     optionalDaysComplete: true,
     hasInvalidRequiredDays: false,
@@ -75,6 +85,73 @@ test("known Unit planning values calculate remaining days and progress", () => {
   });
   assert.deepEqual(unit, unitSnapshot);
   assert.deepEqual(progress, progressSnapshot);
+});
+
+test("Unit and course models share safe actual-day totals and quality metadata", () => {
+  const values = [
+    1.25,
+    " 2.5 ",
+    0,
+    "",
+    "   ",
+    null,
+    undefined,
+    true,
+    false,
+    [],
+    [1],
+    {},
+    { value: 1 },
+    Symbol("days"),
+    1n,
+    "bad",
+    NaN,
+    Infinity,
+    -Infinity,
+    -0.5,
+  ];
+  const progress = values.map((DayFraction) => ({
+    CourseID: "M8",
+    UnitID: "U1",
+    LessonID: "L1",
+    DayFraction,
+  }));
+  const originalEntries = [...progress];
+  const originalValues = progress.map((entry) => entry.DayFraction);
+  let unitModel;
+  let courseModel;
+
+  assert.doesNotThrow(() => {
+    unitModel = getUnitPlanningModel(progress, completeUnits[0]);
+    courseModel = getCourseStatus(
+      "M8",
+      completeUnits,
+      completeLessons,
+      progress,
+    );
+  });
+
+  const expectedMetadata = {
+    total: 3.75,
+    count: 20,
+    knownCount: 3,
+    unknownCount: 4,
+    invalidCount: 13,
+    empty: false,
+    complete: false,
+    hasInvalidValues: true,
+  };
+  assert.equal(unitModel.actualDays, 3.75);
+  assert.deepEqual(unitModel.actualDayValues, expectedMetadata);
+  assert.equal(courseModel.actualDays, 3.75);
+  assert.equal(courseModel.planning.actualDays, 3.75);
+  assert.deepEqual(courseModel.planning.actualDayValues, expectedMetadata);
+  assert.equal(courseModel.planning.hasInvalidValues, true);
+  assert.deepEqual(progress, originalEntries);
+  assert.deepEqual(
+    progress.map((entry) => entry.DayFraction),
+    originalValues,
+  );
 });
 
 test("Unit calculations are withheld for blank, null, and undefined RequiredDays", () => {

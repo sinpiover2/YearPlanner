@@ -1,4 +1,5 @@
 import {
+  aggregateActualDayValues,
   aggregatePlanningDayValues,
   getActiveCurriculum,
   isUnitArchived,
@@ -39,16 +40,13 @@ export function reconcileUnitSelection({
 function getLessonProgress(lessonId, dailyProgress) {
   const entries = dailyProgress.filter((entry) => entry.LessonID === lessonId);
   return {
-    actualDays: entries.reduce((sum, entry) => sum + Number(entry.DayFraction || 0), 0),
+    actualDays: getActualDayValues(entries).total,
     finished: entries.some((entry) => isTrue(entry.Finished)),
   };
 }
 
-function getSafeActualDays(entries) {
-  return entries.reduce((sum, entry) => {
-    const dayFraction = Number(entry.DayFraction);
-    return Number.isFinite(dayFraction) ? sum + dayFraction : sum;
-  }, 0);
+function getActualDayValues(entries) {
+  return aggregateActualDayValues(entries.map((entry) => entry.DayFraction));
 }
 
 function getActiveCourseCurriculum(courseId, units, lessons) {
@@ -107,9 +105,8 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
     (entry) =>
       entry.CourseID === courseId && activeLessonIds.has(entry.LessonID),
   );
-  const actualDays = activeProgress
-    .reduce((sum, entry) => sum + Number(entry.DayFraction || 0), 0);
-  const safeActualDays = getSafeActualDays(activeProgress);
+  const actualDayValues = getActualDayValues(activeProgress);
+  const actualDays = actualDayValues.total;
   const plannedDaysCompleted = completedLessons.reduce(
     (sum, lesson) => sum + Number(lesson.PlannedDays || 0),
     0,
@@ -117,7 +114,7 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
   const unitDays = getCourseUnitDayPlanning(courseUnits);
   const completedLessonsPlanning = getLessonDayPlanning(
     completedLessons,
-    safeActualDays,
+    actualDays,
   );
 
   return {
@@ -129,7 +126,8 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
     // numeric fields above/below remain until their current UI consumers move
     // together, preserving visible behavior in this foundation slice.
     planning: {
-      actualDays: safeActualDays,
+      actualDays,
+      actualDayValues,
       requiredDays: unitDays.requiredDays,
       optionalDays: unitDays.optionalDays,
       completedPlannedDays: completedLessonsPlanning.plannedDays,
@@ -138,7 +136,9 @@ export function getCourseStatus(courseId, units, lessons, dailyProgress) {
       completedPlannedDaysComplete: completedLessonsPlanning.complete,
       complete: unitDays.complete && completedLessonsPlanning.complete,
       hasInvalidValues:
-        unitDays.hasInvalidValues || completedLessonsPlanning.hasInvalidValues,
+        actualDayValues.hasInvalidValues ||
+        unitDays.hasInvalidValues ||
+        completedLessonsPlanning.hasInvalidValues,
     },
     variance: actualDays - plannedDaysCompleted,
   };
@@ -171,12 +171,12 @@ export function getCourseNavigation(courseId, units, lessons, dailyProgress) {
   const currentUnitLessonIds = new Set(
     currentUnitLessons.map((lesson) => lesson.LessonID),
   );
-  const safeActualDays = getSafeActualDays(
+  const actualDayValues = getActualDayValues(
     dailyProgress.filter((entry) => currentUnitLessonIds.has(entry.LessonID)),
   );
   const currentUnitPlanning = getLessonDayPlanning(
     currentUnitLessons,
-    safeActualDays,
+    actualDayValues.total,
   );
 
   return {
@@ -199,11 +199,13 @@ export function getCourseNavigation(courseId, units, lessons, dailyProgress) {
     // Canonical nullable current-Unit calculation; legacy plannedDays and
     // unitVariance stay numeric until the Unit/Sidebar presentation migration.
     planning: {
-      actualDays: safeActualDays,
+      actualDays: actualDayValues.total,
+      actualDayValues,
       plannedDays: currentUnitPlanning.plannedDays,
       variance: currentUnitPlanning.variance,
       complete: currentUnitPlanning.complete,
-      hasInvalidValues: currentUnitPlanning.hasInvalidValues,
+      hasInvalidValues:
+        actualDayValues.hasInvalidValues || currentUnitPlanning.hasInvalidValues,
     },
     unitVariance: actualDays - plannedDays,
   };

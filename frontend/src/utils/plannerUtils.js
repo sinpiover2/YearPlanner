@@ -203,6 +203,17 @@ export function parsePlannedDays(value) {
   );
 }
 
+// Logged DayFraction values have a separate contract from planned values:
+// zero is meaningful, arbitrary precision is preserved, and negative actual
+// use is invalid.
+export function parseActualDays(value) {
+  const parsed = parsePlanningDayValue(value);
+
+  return parsed.state === "known" && parsed.value < 0
+    ? { state: "invalid", raw: value }
+    : parsed;
+}
+
 // Empty input is explicitly incomplete: a zero total is only an accumulation
 // identity here, never an assertion that an empty plan contains zero days.
 export function aggregatePlanningDayValues(
@@ -239,6 +250,10 @@ export function aggregatePlanningDayValues(
     complete: count > 0 && unknownCount === 0 && invalidCount === 0,
     hasInvalidValues: invalidCount > 0,
   };
+}
+
+export function aggregateActualDayValues(values) {
+  return aggregatePlanningDayValues(values, parseActualDays);
 }
 
 export function formatPlanningDayValue(parsed) {

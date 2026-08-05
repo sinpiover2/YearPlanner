@@ -2,15 +2,97 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  aggregateActualDayValues,
   aggregatePlanningDayValues,
   formatPlanningDayValue,
   formatPlanningDayValueCompact,
   getCompactPlanningDayDisplay,
   parseOptionalDays,
+  parseActualDays,
   parsePlannedDays,
   parsePlanningDayValue,
   parseRequiredDays,
 } from "../src/utils/plannerUtils.js";
+
+test("actual-day parser accepts nonnegative finite values without rounding", () => {
+  for (const [value, expected] of [
+    [0, 0],
+    [1.23456789, 1.23456789],
+    [" 2.75 ", 2.75],
+  ]) {
+    assert.deepEqual(parseActualDays(value), {
+      state: "known",
+      value: expected,
+    });
+  }
+
+  for (const value of [null, undefined, "", " \t\n "]) {
+    assert.deepEqual(parseActualDays(value), {
+      state: "unknown",
+      value: null,
+    });
+  }
+});
+
+test("actual-day parser safely rejects unsupported, non-finite, and negative values", () => {
+  const invalidValues = [
+    true,
+    false,
+    [],
+    [1],
+    {},
+    { value: 1 },
+    Symbol("days"),
+    1n,
+    "not a number",
+    NaN,
+    Infinity,
+    -Infinity,
+    -0.5,
+    " -2 ",
+  ];
+
+  for (const value of invalidValues) {
+    assert.doesNotThrow(() => parseActualDays(value));
+    const parsed = parseActualDays(value);
+    assert.equal(parsed.state, "invalid");
+    assert.equal(parsed.raw, value);
+  }
+});
+
+test("actual-day aggregation sums only known values and reports data quality", () => {
+  const values = [
+    1.23456789,
+    " 2.75 ",
+    0,
+    "",
+    null,
+    undefined,
+    true,
+    [],
+    {},
+    Symbol("days"),
+    1n,
+    "bad",
+    NaN,
+    Infinity,
+    -Infinity,
+    -1,
+  ];
+  const originalValues = [...values];
+
+  assert.deepEqual(aggregateActualDayValues(values), {
+    total: 3.98456789,
+    count: 16,
+    knownCount: 3,
+    unknownCount: 3,
+    invalidCount: 10,
+    empty: false,
+    complete: false,
+    hasInvalidValues: true,
+  });
+  assert.deepEqual(values, originalValues);
+});
 
 test("generic parser distinguishes unknown, known, and invalid values", () => {
   for (const value of [null, undefined, "", "   ", "\t\n"]) {

@@ -1,24 +1,26 @@
-import { parseOptionalDays, parseRequiredDays } from "./plannerUtils.js";
+import {
+  aggregateActualDayValues,
+  parseOptionalDays,
+  parseRequiredDays,
+} from "./plannerUtils.js";
 
-export function getUnitLoggedDays(dailyProgress, unitId) {
-  return dailyProgress
-    .filter((entry) => entry.UnitID === unitId)
-    .reduce((total, entry) => total + Number(entry.DayFraction || 0), 0);
+function getUnitActualDays(dailyProgress, unitId) {
+  return aggregateActualDayValues(
+    dailyProgress
+      .filter((entry) => entry.UnitID === unitId)
+      .map((entry) => entry.DayFraction),
+  );
 }
 
-function getSafeUnitLoggedDays(dailyProgress, unitId) {
-  return dailyProgress
-    .filter((entry) => entry.UnitID === unitId)
-    .reduce((total, entry) => {
-      const dayFraction = Number(entry.DayFraction);
-      return Number.isFinite(dayFraction) ? total + dayFraction : total;
-    }, 0);
+export function getUnitLoggedDays(dailyProgress, unitId) {
+  return getUnitActualDays(dailyProgress, unitId).total;
 }
 
 export function getUnitPlanningModel(dailyProgress, unit) {
   const requiredDays = parseRequiredDays(unit?.RequiredDays);
   const optionalDays = parseOptionalDays(unit?.OptionalDays);
-  const actualDays = getSafeUnitLoggedDays(dailyProgress, unit?.UnitID);
+  const actualDayValues = getUnitActualDays(dailyProgress, unit?.UnitID);
+  const actualDays = actualDayValues.total;
   const requiredDaysComplete = requiredDays.state === "known";
   const optionalDaysComplete = optionalDays.state === "known";
 
@@ -26,6 +28,7 @@ export function getUnitPlanningModel(dailyProgress, unit) {
     requiredDays,
     optionalDays,
     actualDays,
+    actualDayValues,
     requiredDaysComplete,
     optionalDaysComplete,
     hasInvalidRequiredDays: requiredDays.state === "invalid",
