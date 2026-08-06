@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import {
   LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS, LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE,
-  legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_, legacyM8ArchiveExecuteLocked_,
+  legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_, legacyM8ArchiveVerifyRaw_, legacyM8ArchiveExecuteLocked_,
   previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration,
   executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration,
 } from "../../apps-script-planning/LegacyM8ArchiveMigration.js";
@@ -24,6 +25,21 @@ function fixture({ archived = false } = {}) {
 }
 
 function raw(data) { return { Units: [UNIT_HEADERS, ...data.units.map((x) => row(UNIT_HEADERS, x))], Lessons: [LESSON_HEADERS, ...data.lessons.map((x) => row(LESSON_HEADERS, x))] }; }
+function cloneCell(value) { return value instanceof Date ? new Date(value.getTime()) : value; }
+function cloneMatrix(matrix) { return matrix.map((values) => values.map(cloneCell)); }
+function verificationFixture() {
+  const sheets = raw(fixture());
+  const before = { unitsRaw: cloneMatrix(sheets.Units), lessonsRaw: cloneMatrix(sheets.Lessons) };
+  const after = { unitsRaw: cloneMatrix(sheets.Units), lessonsRaw: cloneMatrix(sheets.Lessons) };
+  const archivedIndex = UNIT_HEADERS.indexOf("IsArchived");
+  after.unitsRaw.slice(1).forEach((values) => { if (LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS.includes(values[0])) values[archivedIndex] = true; });
+  return { before, after };
+}
+function assertRawVerificationFails(mutator) {
+  const state = verificationFixture();
+  mutator(state.before, state.after);
+  assert.equal(legacyM8ArchiveVerifyRaw_(state.before, state.after).valid, false);
+}
 function deps(data, options = {}) {
   const spreadsheet = createFakeSpreadsheetFromRawSheets(raw(data));
   const spreadsheetApp = createFakeSpreadsheetApp(spreadsheet);
@@ -102,9 +118,79 @@ test("post-write verification failure is explicit with recovery guidance", () =>
   const report = legacyM8ArchiveExecuteLocked_(LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE, d); assert.equal(report.errorStage, "post-write-verification"); assert.equal(report.success, false); assert.match(report.manualRecoveryGuidance, /backup/);
 });
 
+test("raw verification rejects swapped target Unit rows", () => assertRawVerificationFails((_before, after) => {
+  [after.unitsRaw[1], after.unitsRaw[2]] = [after.unitsRaw[2], after.unitsRaw[1]];
+}));
+
+test("raw verification rejects swapped target and non-target Unit rows", () => assertRawVerificationFails((_before, after) => {
+  [after.unitsRaw[1], after.unitsRaw[10]] = [after.unitsRaw[10], after.unitsRaw[1]];
+}));
+
+test("raw verification rejects Units header reordering", () => assertRawVerificationFails((_before, after) => {
+  [after.unitsRaw[0][2], after.unitsRaw[0][3]] = [after.unitsRaw[0][3], after.unitsRaw[0][2]];
+}));
+
+test("raw verification rejects added, removed, and duplicate Units headers", () => {
+  assertRawVerificationFails((_before, after) => after.unitsRaw.forEach((values, index) => values.push(index ? "added" : "AddedField")));
+  assertRawVerificationFails((_before, after) => after.unitsRaw.forEach((values) => values.splice(3, 1)));
+  assertRawVerificationFails((_before, after) => after.unitsRaw.forEach((values, index) => values.push(index ? "" : "UnitTitle")));
+});
+
+test("planning rejects duplicate Units and Lessons headers", () => {
+  const data = fixture();
+  data.unitsHeaders = UNIT_HEADERS.concat("UnitTitle");
+  data.lessonsHeaders = LESSON_HEADERS.concat("LessonID");
+  const plan = legacyM8ArchiveBuildPlan_(data);
+  assert.deepEqual(plan.duplicateUnitsHeaders, ["UnitTitle"]);
+  assert.deepEqual(plan.duplicateLessonsHeaders, ["LessonID"]);
+  assert.equal(plan.safeToExecute, false);
+});
+
+test("raw verification rejects an added target field/column", () => assertRawVerificationFails((_before, after) => {
+  after.unitsRaw[0].push("Extra"); after.unitsRaw[1].push("target value");
+}));
+
+test("raw verification rejects changed target and non-target cells", () => {
+  assertRawVerificationFails((_before, after) => { after.unitsRaw[1][3] = "changed target title"; });
+  assertRawVerificationFails((_before, after) => { after.unitsRaw[10][3] = "changed AMP title"; });
+});
+
+test("raw verification rejects Lessons header reordering", () => assertRawVerificationFails((_before, after) => {
+  [after.lessonsRaw[0][2], after.lessonsRaw[0][3]] = [after.lessonsRaw[0][3], after.lessonsRaw[0][2]];
+}));
+
+test("raw verification rejects added, removed, and duplicate Lessons headers", () => {
+  assertRawVerificationFails((_before, after) => after.lessonsRaw.forEach((values, index) => values.push(index ? "added" : "AddedField")));
+  assertRawVerificationFails((_before, after) => after.lessonsRaw.forEach((values) => values.splice(3, 1)));
+  assertRawVerificationFails((_before, after) => after.lessonsRaw.forEach((values, index) => values.push(index ? "" : "LessonTitle")));
+});
+
+test("raw verification rejects lesson row reordering and added or removed lesson rows", () => {
+  assertRawVerificationFails((_before, after) => { [after.lessonsRaw[1], after.lessonsRaw[2]] = [after.lessonsRaw[2], after.lessonsRaw[1]]; });
+  assertRawVerificationFails((_before, after) => { after.lessonsRaw.push(after.lessonsRaw[1].slice()); });
+  assertRawVerificationFails((_before, after) => { after.lessonsRaw.pop(); });
+});
+
+test("raw verification rejects changed lesson values and superficially similar cell types", () => {
+  assertRawVerificationFails((_before, after) => { after.lessonsRaw[1][3] = "changed lesson"; });
+  assertRawVerificationFails((before, after) => { before.lessonsRaw[1][5] = 1; after.lessonsRaw[1][5] = "1"; });
+  assertRawVerificationFails((before, after) => { before.unitsRaw[10][8] = false; after.unitsRaw[10][8] = "false"; });
+});
+
+test("raw verification compares Date cells by exact timestamp and preserves Date type", () => {
+  assertRawVerificationFails((before, after) => {
+    before.lessonsRaw[1][7] = new Date("2026-08-05T00:00:00.000Z");
+    after.lessonsRaw[1][7] = new Date("2026-08-05T00:00:00.001Z");
+  });
+  assertRawVerificationFails((before, after) => {
+    before.lessonsRaw[1][7] = new Date("2026-08-05T00:00:00.000Z");
+    after.lessonsRaw[1][7] = "2026-08-05T00:00:00.000Z";
+  });
+});
+
 test("all four live wrappers remain unconditionally DISARMED", () => { for (const wrapper of [previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration]) assert.throws(() => wrapper(LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE), /DISARMED/); });
 
-test("existing IM1 migration source remains unchanged by this dedicated module", () => {
-  const source = readFileSync(new URL("../../apps-script-planning/LegacyIm1CleanupMigration.js", import.meta.url), "utf8");
-  assert.match(source, /DELETE-LEGACY-IM1-CURRICULUM-CONFIRMED-V1/); assert.doesNotMatch(source, /LEGACY_M8_ARCHIVE/);
+test("existing IM1 archive migration is byte-identical to its pre-Math-8 version", () => {
+  const source = readFileSync(new URL("../../apps-script-planning/UnitsArchiveMigration.js", import.meta.url));
+  assert.equal(createHash("sha256").update(source).digest("hex"), "9a4eb6c14d1e78a46429a1af52ef099321052c44e0d50b25419ef9dcc842207d");
 });

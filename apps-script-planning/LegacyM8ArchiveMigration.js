@@ -26,12 +26,35 @@ function legacyM8ArchiveRawEqual_(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+function legacyM8ArchiveCellEqual_(a, b) {
+  const aIsDate = a instanceof Date;
+  const bIsDate = b instanceof Date;
+  if (aIsDate || bIsDate) return aIsDate && bIsDate && Object.is(a.getTime(), b.getTime());
+  return Object.is(a, b);
+}
+
+function legacyM8ArchiveCloneCell_(value) {
+  return value instanceof Date ? new Date(value.getTime()) : value;
+}
+
+function legacyM8ArchiveCloneMatrix_(matrix) {
+  return (matrix || []).map(function (row) {
+    return row.map(legacyM8ArchiveCloneCell_);
+  });
+}
+
+function legacyM8ArchiveDuplicateHeaders_(headers) {
+  return legacyM8ArchiveDuplicates_(headers.map(function (header) { return { header: header }; }), "header");
+}
+
 function legacyM8ArchiveBuildPlan_(data) {
   const units = data.units || [];
   const lessons = data.lessons || [];
   const targetSet = new Set(LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS);
   const duplicateUnitIds = legacyM8ArchiveDuplicates_(units, "UnitID");
   const duplicateLessonIds = legacyM8ArchiveDuplicates_(lessons, "LessonID");
+  const duplicateUnitsHeaders = legacyM8ArchiveDuplicateHeaders_(data.unitsHeaders || []);
+  const duplicateLessonsHeaders = legacyM8ArchiveDuplicateHeaders_(data.lessonsHeaders || []);
   const missingTargetIds = LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS.filter(function (id) {
     return !units.some(function (unit) { return unit.UnitID === id; });
   });
@@ -57,6 +80,8 @@ function legacyM8ArchiveBuildPlan_(data) {
   if (missingTargetIds.length) blockingFindings.push("Missing target UnitID(s): " + missingTargetIds.join(", ") + ".");
   if (duplicateUnitIds.length) blockingFindings.push("Duplicate UnitID(s): " + duplicateUnitIds.join(", ") + ".");
   if (duplicateLessonIds.length) blockingFindings.push("Duplicate LessonID(s): " + duplicateLessonIds.join(", ") + ".");
+  if (duplicateUnitsHeaders.length) blockingFindings.push("Duplicate Units header(s): " + duplicateUnitsHeaders.join(", ") + ".");
+  if (duplicateLessonsHeaders.length) blockingFindings.push("Duplicate Lessons header(s): " + duplicateLessonsHeaders.join(", ") + ".");
   if (identityMismatches.length) blockingFindings.push("Target CourseID mismatch(es): " + identityMismatches.map(function (x) { return x.UnitID; }).join(", ") + ".");
   if (unexpectedLessonOwnership.length) blockingFindings.push("Linked legacy lesson CourseID mismatch(es): " + unexpectedLessonOwnership.map(function (x) { return x.LessonID; }).join(", ") + ".");
   const targets = LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS.map(function (id) {
@@ -68,7 +93,8 @@ function legacyM8ArchiveBuildPlan_(data) {
     targetIds: LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS.slice(), targets: targets,
     targetCount: targetRows.length, linkedLessonCount: linkedLessons.length,
     missingTargetIds: missingTargetIds, duplicateUnitIds: duplicateUnitIds,
-    duplicateLessonIds: duplicateLessonIds, identityMismatches: identityMismatches,
+    duplicateLessonIds: duplicateLessonIds, duplicateUnitsHeaders: duplicateUnitsHeaders,
+    duplicateLessonsHeaders: duplicateLessonsHeaders, identityMismatches: identityMismatches,
     unexpectedLessonOwnership: unexpectedLessonOwnership, nonTargetConflicts: nonTargetConflicts,
     blockingFindings: blockingFindings, alreadyComplete: alreadyComplete,
     safeToExecute: blockingFindings.length === 0 && !alreadyComplete,
@@ -90,24 +116,60 @@ function legacyM8ArchivePlanSignature_(data) {
   });
 }
 
-function legacyM8ArchiveVerify_(before, after) {
+function legacyM8ArchiveVerifyRaw_(before, after) {
   const errors = [];
   const targetSet = new Set(LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS);
-  const afterById = {};
-  (after.units || []).forEach(function (unit) { afterById[unit.UnitID] = unit; });
-  LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS.forEach(function (id) {
-    const oldRow = (before.units || []).find(function (u) { return u.UnitID === id; });
-    const newRow = afterById[id];
-    if (!newRow || newRow.IsArchived !== true) errors.push(id + " is not explicitly archived.");
-    if (oldRow && newRow) Object.keys(oldRow).forEach(function (field) {
-      if (field !== "IsArchived" && !legacyM8ArchiveRawEqual_(oldRow[field], newRow[field])) errors.push(id + "." + field + " changed.");
-    });
-  });
-  const beforeNonTargets = (before.units || []).filter(function (u) { return !targetSet.has(u.UnitID); });
-  const afterNonTargets = (after.units || []).filter(function (u) { return !targetSet.has(u.UnitID); });
-  if (!legacyM8ArchiveRawEqual_(beforeNonTargets, afterNonTargets)) errors.push("A non-target Units row changed.");
-  if (!legacyM8ArchiveRawEqual_(before.lessons || [], after.lessons || [])) errors.push("A Lessons row changed.");
-  return { valid: errors.length === 0, errors: errors, archivedTargetCount: LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS.filter(function (id) { return afterById[id] && afterById[id].IsArchived === true; }).length };
+  const beforeUnits = before.unitsRaw || [];
+  const afterUnits = after.unitsRaw || [];
+  const beforeLessons = before.lessonsRaw || [];
+  const afterLessons = after.lessonsRaw || [];
+  const unitsHeaders = beforeUnits[0] || [];
+  const afterUnitsHeaders = afterUnits[0] || [];
+  const lessonsHeaders = beforeLessons[0] || [];
+  const afterLessonsHeaders = afterLessons[0] || [];
+  const unitIdIndex = unitsHeaders.indexOf("UnitID");
+  const archivedIndex = unitsHeaders.indexOf("IsArchived");
+  let archivedTargetCount = 0;
+
+  function compareExactMatrix_(label, oldMatrix, newMatrix) {
+    if (oldMatrix.length !== newMatrix.length) errors.push(label + " row count changed.");
+    const rows = Math.max(oldMatrix.length, newMatrix.length);
+    for (let r = 0; r < rows; r += 1) {
+      const oldRow = oldMatrix[r] || [];
+      const newRow = newMatrix[r] || [];
+      if (oldRow.length !== newRow.length) errors.push(label + " row " + (r + 1) + " column count changed.");
+      const columns = Math.max(oldRow.length, newRow.length);
+      for (let c = 0; c < columns; c += 1) {
+        if (!legacyM8ArchiveCellEqual_(oldRow[c], newRow[c])) errors.push(label + " R" + (r + 1) + "C" + (c + 1) + " changed.");
+      }
+    }
+  }
+
+  if (legacyM8ArchiveDuplicateHeaders_(unitsHeaders).length || legacyM8ArchiveDuplicateHeaders_(afterUnitsHeaders).length) errors.push("Units contains a duplicate header.");
+  if (legacyM8ArchiveDuplicateHeaders_(lessonsHeaders).length || legacyM8ArchiveDuplicateHeaders_(afterLessonsHeaders).length) errors.push("Lessons contains a duplicate header.");
+  if (unitIdIndex < 0 || archivedIndex < 0 || unitsHeaders.indexOf("UnitID", unitIdIndex + 1) >= 0 || unitsHeaders.indexOf("IsArchived", archivedIndex + 1) >= 0) errors.push("Units target columns are missing or duplicated.");
+
+  if (beforeUnits.length !== afterUnits.length) errors.push("Units row count changed.");
+  const unitRows = Math.max(beforeUnits.length, afterUnits.length);
+  for (let r = 0; r < unitRows; r += 1) {
+    const oldRow = beforeUnits[r] || [];
+    const newRow = afterUnits[r] || [];
+    if (oldRow.length !== newRow.length) errors.push("Units row " + (r + 1) + " column count changed.");
+    const unitId = r > 0 && unitIdIndex >= 0 ? oldRow[unitIdIndex] : null;
+    const isTarget = targetSet.has(unitId);
+    const columns = Math.max(oldRow.length, newRow.length);
+    for (let c = 0; c < columns; c += 1) {
+      if (isTarget && c === archivedIndex) {
+        if (newRow[c] !== true) errors.push(unitId + " IsArchived is not boolean true.");
+      } else if (!legacyM8ArchiveCellEqual_(oldRow[c], newRow[c])) {
+        errors.push("Units R" + (r + 1) + "C" + (c + 1) + " changed.");
+      }
+    }
+    if (isTarget && newRow[unitIdIndex] === unitId && newRow[archivedIndex] === true) archivedTargetCount += 1;
+  }
+  if (archivedTargetCount !== LEGACY_M8_ARCHIVE_EXPECTED_UNIT_COUNT) errors.push("Exactly 9 target Units were not preserved in place and archived.");
+  compareExactMatrix_("Lessons", beforeLessons, afterLessons);
+  return { valid: errors.length === 0, errors: errors, archivedTargetCount: archivedTargetCount };
 }
 
 function legacyM8ArchiveReadSheet_(spreadsheet, name) {
@@ -120,13 +182,20 @@ function legacyM8ArchiveReadSheet_(spreadsheet, name) {
     headers.forEach(function (header, index) { object[header] = row[index]; });
     return object;
   });
-  return { present: true, sheet: sheet, headers: headers, rawRows: values.slice(1), objects: objects };
+  return { present: true, sheet: sheet, headers: headers, rawRows: values.slice(1), rawValues: values, objects: objects };
 }
 
 function legacyM8ArchiveReadData_(spreadsheet) {
   const units = legacyM8ArchiveReadSheet_(spreadsheet, "Units");
   const lessons = legacyM8ArchiveReadSheet_(spreadsheet, "Lessons");
-  return { units: units.objects, lessons: lessons.objects, unitsHeaders: units.headers, unitsSheetInfo: units, lessonsSheetInfo: lessons };
+  return { units: units.objects, lessons: lessons.objects, unitsHeaders: units.headers, lessonsHeaders: lessons.headers, unitsSheetInfo: units, lessonsSheetInfo: lessons };
+}
+
+function legacyM8ArchiveRawSnapshot_(data) {
+  return {
+    unitsRaw: legacyM8ArchiveCloneMatrix_(data.unitsSheetInfo.rawValues),
+    lessonsRaw: legacyM8ArchiveCloneMatrix_(data.lessonsSheetInfo.rawValues),
+  };
 }
 
 function legacyM8ArchiveCreateBackup_(spreadsheet, formatTimestamp) {
@@ -154,6 +223,7 @@ function legacyM8ArchiveExecuteLocked_(confirmation, deps) {
     catch (error) { report.errorStage = "backup"; report.errorMessage = error.message; return report; }
     const revalidated = legacyM8ArchiveReadData_(spreadsheet);
     if (legacyM8ArchivePlanSignature_(before) !== legacyM8ArchivePlanSignature_(revalidated)) { report.errorStage = "revalidation"; report.errorMessage = "Data drifted after backup and before mutation."; return report; }
+    const rawBeforeMutation = legacyM8ArchiveRawSnapshot_(revalidated);
     const info = revalidated.unitsSheetInfo;
     const idIndex = info.headers.indexOf("UnitID");
     const archivedIndex = info.headers.indexOf("IsArchived");
@@ -164,7 +234,7 @@ function legacyM8ArchiveExecuteLocked_(confirmation, deps) {
     });
     if (typeof deps.spreadsheetApp.flush === "function") deps.spreadsheetApp.flush();
     const after = legacyM8ArchiveReadData_(spreadsheet);
-    report.verification = legacyM8ArchiveVerify_(before, after);
+    report.verification = legacyM8ArchiveVerifyRaw_(rawBeforeMutation, legacyM8ArchiveRawSnapshot_(after));
     if (!report.verification.valid) { report.errorStage = "post-write-verification"; report.errorMessage = "Post-write verification failed."; report.manualRecoveryGuidance = "Restore the complete spreadsheet from report.backup, then investigate before retrying. No automatic rollback was attempted."; return report; }
     report.success = true;
     return report;
@@ -188,8 +258,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = {
   LEGACY_M8_ARCHIVE_EXPECTED_UNIT_COUNT, LEGACY_M8_ARCHIVE_EXPECTED_LESSON_COUNT,
   LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE, LEGACY_M8_ARCHIVE_EDITOR_PLACEHOLDER,
   legacyM8ArchiveDuplicates_, legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_,
-  legacyM8ArchivePlanSignature_, legacyM8ArchiveVerify_, legacyM8ArchiveReadSheet_,
-  legacyM8ArchiveReadData_, legacyM8ArchiveCreateBackup_, legacyM8ArchiveExecuteLocked_,
+  legacyM8ArchivePlanSignature_, legacyM8ArchiveCellEqual_, legacyM8ArchiveCloneMatrix_,
+  legacyM8ArchiveVerifyRaw_, legacyM8ArchiveReadSheet_, legacyM8ArchiveReadData_,
+  legacyM8ArchiveRawSnapshot_, legacyM8ArchiveCreateBackup_, legacyM8ArchiveExecuteLocked_,
   previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration,
   executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration,
 };
