@@ -21,9 +21,12 @@ node --test scripts/import-staging/legacy-m8-archive-migration.test.mjs
 
 It targets only the static IDs `M8-U0` through `M8-U8`, requires exactly 50
 lessons linked to those IDs, and can only set their existing `IsArchived`
-cells to boolean `true`. Its preview/planning and injected execution core are
-local-test surfaces; all four live entry points are unconditionally
-`DISARMED`.
+cells to boolean `true`. Its preview entry point contains a production-capable,
+dependency-injected read-only adapter behind an unconditional `DISARMED` throw;
+the adapter opens only the configured spreadsheet, reads only `Units` and
+`Lessons`, logs a structured zero-write report, and acquires no lock or backup.
+The execute, editor-execute, and verify entry points have no live behavior in
+this slice, and all four live entry points remain unconditionally `DISARMED`.
 
 Read-only pipeline that turns `Curriculm/M1/IM1_Curriculum_Extraction.md`
 into a machine-readable staging artifact, validates it, and previews what an

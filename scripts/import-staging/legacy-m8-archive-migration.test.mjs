@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import vm from "node:vm";
 import {
   LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS, LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE,
-  legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_, legacyM8ArchiveVerifyRaw_, legacyM8ArchiveExecuteLocked_, legacyM8ArchiveCloneMatrix_,
+  legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_, legacyM8ArchiveBuildLivePreview_, legacyM8ArchiveVerifyRaw_, legacyM8ArchiveExecuteLocked_, legacyM8ArchiveCloneMatrix_,
   previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration,
   executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration,
 } from "../../apps-script-planning/LegacyM8ArchiveMigration.js";
@@ -60,6 +61,87 @@ test("preview is pure and performs zero writes", () => {
   const data = fixture(); const before = JSON.stringify(data);
   const report = legacyM8ArchivePreview_(data, new Date("2026-08-05T00:00:00Z"));
   assert.equal(report.writesOccurred, false); assert.equal(JSON.stringify(data), before); assert.equal(report.targets.length, 9);
+});
+
+function livePreview(data = fixture(), rawOverrides = {}) {
+  const sheets = { ...raw(data), ...rawOverrides };
+  Object.keys(sheets).forEach((name) => { if (sheets[name] === undefined) delete sheets[name]; });
+  const spreadsheet = createFakeSpreadsheetFromRawSheets(sheets);
+  spreadsheet.getName = () => "Year Planner Database";
+  const openedIds = [];
+  const sheetReads = [];
+  const originalGetSheet = spreadsheet.getSheetByName.bind(spreadsheet);
+  spreadsheet.getSheetByName = (name) => { sheetReads.push(name); return originalGetSheet(name); };
+  for (const method of ["copy", "insertSheet", "deleteSheet", "moveActiveSheet", "toast"]) {
+    spreadsheet[method] = () => { throw new Error(`write-capable method invoked: ${method}`); };
+  }
+  const logs = [];
+  const report = legacyM8ArchiveBuildLivePreview_({
+    sheetId: "configured-sheet-id",
+    spreadsheetApp: { openById(id) { openedIds.push(id); return spreadsheet; }, flush() { throw new Error("flush invoked"); } },
+    logger: { log(value) { logs.push(value); } },
+    lockService: { getScriptLock() { throw new Error("lock invoked"); } },
+    createBackup() { throw new Error("backup invoked"); },
+  }, new Date("2026-08-05T12:34:56.000Z"));
+  return { report, openedIds, sheetReads, logs, spreadsheet };
+}
+
+test("live preview adapter opens only configured ID, reads only Units and Lessons, logs evidence, and cannot write", () => {
+  const result = livePreview();
+  assert.deepEqual(result.openedIds, ["configured-sheet-id"]);
+  assert.deepEqual(result.sheetReads, ["Units", "Lessons"]);
+  assert.equal(result.report.mode, "preview");
+  assert.equal(result.report.timestamp, "2026-08-05T12:34:56.000Z");
+  assert.equal(result.report.spreadsheetIdentity.configuredSheetId, "configured-sheet-id");
+  assert.equal(result.report.spreadsheetIdentity.spreadsheetName, "Year Planner Database");
+  assert.deepEqual(result.report.targetUnitIds, LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS);
+  assert.equal(result.report.targetUnits.length, 9);
+  assert.equal(result.report.currentIsArchivedStates.length, 9);
+  assert.equal(result.report.targetCount, 9);
+  assert.equal(result.report.linkedLegacyLessonCount, 50);
+  assert.deepEqual(result.report.missingOrDuplicateIds, { missingTargetUnitIds: [], duplicateUnitIds: [], duplicateLessonIds: [] });
+  assert.deepEqual(result.report.courseOwnershipMismatches, []);
+  assert.equal(result.report.lessonOwnershipCountProblems.countMatches, true);
+  assert.deepEqual(result.report.nonTargetArchiveConflicts, []);
+  assert.deepEqual(result.report.blockerReasons, []);
+  assert.equal(result.report.safeToExecute, true);
+  assert.equal(result.report.alreadyComplete, false);
+  assert.equal(result.report.confirmationRequired, LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE);
+  assert.equal(result.report.writesOccurred, false);
+  assert.match(result.report.note, /zero writes/);
+  assert.equal(result.logs.length, 1);
+  assert.deepEqual(JSON.parse(result.logs[0]), result.report);
+});
+
+test("live preview adapter fails closed for missing sheets and schema problems", () => {
+  const missing = livePreview(fixture(), { Lessons: undefined }).report;
+  assert.equal(missing.sheetsPresent.Lessons, false);
+  assert.equal(missing.schemaValidation.valid, false);
+  assert.equal(missing.safeToExecute, false);
+  assert.ok(missing.blockerReasons.some((reason) => /Lessons sheet is missing/.test(reason)));
+
+  const data = fixture();
+  const unitsWithoutTitle = raw(data).Units.map((values) => values.filter((_value, index) => index !== UNIT_HEADERS.indexOf("UnitTitle")));
+  const schema = livePreview(data, { Units: unitsWithoutTitle }).report;
+  assert.equal(schema.schemaValidation.sheets.Units.valid, false);
+  assert.deepEqual(schema.schemaValidation.sheets.Units.missingHeaders, ["UnitTitle"]);
+  assert.equal(schema.safeToExecute, false);
+});
+
+test("live preview adapter reports and blocks target and lesson-count or ownership problems", () => {
+  const targetMismatch = fixture();
+  targetMismatch.units[0].CourseID = "IM1";
+  const targetReport = livePreview(targetMismatch).report;
+  assert.equal(targetReport.safeToExecute, false);
+  assert.equal(targetReport.courseOwnershipMismatches[0].UnitID, "M8-U0");
+
+  const lessonProblems = fixture();
+  lessonProblems.lessons.splice(1, 1);
+  lessonProblems.lessons[0].CourseID = "IM1";
+  const lessonReport = livePreview(lessonProblems).report;
+  assert.equal(lessonReport.safeToExecute, false);
+  assert.equal(lessonReport.lessonOwnershipCountProblems.countMatches, false);
+  assert.equal(lessonReport.lessonOwnershipCountProblems.ownershipMismatches.length, 1);
 });
 
 test("missing and duplicate target IDs block", () => {
@@ -246,7 +328,17 @@ test("raw snapshot cloning preserves holes, explicit undefined, and independent 
   assert.notEqual(clone[3][0], stamp);
 });
 
-test("all four live wrappers remain unconditionally DISARMED", () => { for (const wrapper of [previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration]) assert.throws(() => wrapper(LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE), /DISARMED/); });
+test("all four live wrappers remain unconditionally DISARMED before Apps Script global access", () => {
+  const source = readFileSync(new URL("../../apps-script-planning/LegacyM8ArchiveMigration.js", import.meta.url), "utf8");
+  let globalAccesses = 0;
+  const context = { module: { exports: {} }, exports: {} };
+  for (const name of ["SpreadsheetApp", "LockService", "Logger", "SHEET_ID"]) {
+    Object.defineProperty(context, name, { get() { globalAccesses += 1; throw new Error(`unexpected access: ${name}`); } });
+  }
+  vm.runInNewContext(`${source}\nthis.__liveFunctions = { previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration };`, context);
+  for (const name of Object.keys(context.__liveFunctions)) assert.throws(() => context.__liveFunctions[name](LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE), /^Error: DISARMED:/, name);
+  assert.equal(globalAccesses, 0);
+});
 
 test("existing IM1 archive migration is byte-identical to its pre-Math-8 version", () => {
   const source = readFileSync(new URL("../../apps-script-planning/UnitsArchiveMigration.js", import.meta.url));

@@ -256,6 +256,91 @@ function legacyM8ArchiveReadData_(spreadsheet) {
   return { units: units.objects, lessons: lessons.objects, unitsHeaders: units.headers, lessonsHeaders: lessons.headers, unitsSheetInfo: units, lessonsSheetInfo: lessons };
 }
 
+function legacyM8ArchiveValidatePreviewSchema_(data) {
+  const required = {
+    Units: ["UnitID", "CourseID", "UnitTitle", "IsArchived"],
+    Lessons: ["LessonID", "CourseID", "UnitID"],
+  };
+  const sheetInfo = { Units: data.unitsSheetInfo, Lessons: data.lessonsSheetInfo };
+  const sheets = {};
+  const errors = [];
+  Object.keys(required).forEach(function (name) {
+    const info = sheetInfo[name];
+    const headers = info.headers || [];
+    const missingHeaders = required[name].filter(function (header) { return headers.indexOf(header) === -1; });
+    const duplicateHeaders = legacyM8ArchiveDuplicateHeaders_(headers);
+    sheets[name] = {
+      present: info.present,
+      requiredHeaders: required[name].slice(),
+      actualHeaders: headers.slice(),
+      missingHeaders: missingHeaders,
+      duplicateHeaders: duplicateHeaders,
+      valid: info.present && missingHeaders.length === 0 && duplicateHeaders.length === 0,
+    };
+    if (!info.present) errors.push(name + " sheet is missing.");
+    if (missingHeaders.length) errors.push(name + " required header(s) missing: " + missingHeaders.join(", ") + ".");
+    if (duplicateHeaders.length) errors.push(name + " duplicate header(s): " + duplicateHeaders.join(", ") + ".");
+  });
+  return { valid: errors.length === 0, sheets: sheets, errors: errors };
+}
+
+// Read-only live-preview adapter. Dependencies keep the production Apps Script
+// globals out of the testable implementation and make its allowed surface
+// explicit: open one configured spreadsheet, read Units/Lessons, and log.
+function legacyM8ArchiveBuildLivePreview_(deps, now) {
+  const spreadsheet = deps.spreadsheetApp.openById(deps.sheetId);
+  const data = legacyM8ArchiveReadData_(spreadsheet);
+  const plan = legacyM8ArchiveBuildPlan_(data);
+  const schemaValidation = legacyM8ArchiveValidatePreviewSchema_(data);
+  const blockerReasons = plan.blockingFindings.concat(schemaValidation.errors.filter(function (reason) {
+    return plan.blockingFindings.indexOf(reason) === -1;
+  }));
+  const alreadyComplete = blockerReasons.length === 0 && plan.alreadyComplete;
+  const report = {
+    mode: "preview",
+    timestamp: now.toISOString(),
+    spreadsheetIdentity: {
+      configuredSheetId: deps.sheetId,
+      spreadsheetId: spreadsheet.getId(),
+      spreadsheetName: spreadsheet.getName(),
+      spreadsheetUrl: spreadsheet.getUrl(),
+    },
+    sheetsPresent: {
+      Units: data.unitsSheetInfo.present,
+      Lessons: data.lessonsSheetInfo.present,
+    },
+    schemaValidation: schemaValidation,
+    targetUnitIds: plan.targetIds,
+    targetUnits: plan.targets,
+    currentIsArchivedStates: plan.targets.map(function (target) {
+      return { UnitID: target.UnitID, UnitTitle: target.UnitTitle, IsArchived: target.currentIsArchived, missing: target.missing === true };
+    }),
+    targetCount: plan.targetCount,
+    linkedLegacyLessonCount: plan.linkedLessonCount,
+    missingOrDuplicateIds: {
+      missingTargetUnitIds: plan.missingTargetIds,
+      duplicateUnitIds: plan.duplicateUnitIds,
+      duplicateLessonIds: plan.duplicateLessonIds,
+    },
+    courseOwnershipMismatches: plan.identityMismatches,
+    lessonOwnershipCountProblems: {
+      expectedLinkedLessonCount: LEGACY_M8_ARCHIVE_EXPECTED_LESSON_COUNT,
+      actualLinkedLessonCount: plan.linkedLessonCount,
+      countMatches: plan.linkedLessonCount === LEGACY_M8_ARCHIVE_EXPECTED_LESSON_COUNT,
+      ownershipMismatches: plan.unexpectedLessonOwnership,
+    },
+    nonTargetArchiveConflicts: plan.nonTargetConflicts,
+    blockerReasons: blockerReasons,
+    safeToExecute: blockerReasons.length === 0 && !alreadyComplete,
+    alreadyComplete: alreadyComplete,
+    confirmationRequired: LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE,
+    writesOccurred: false,
+    note: "This preview performed zero writes. It acquired no lock, created no backup or copy, and modified nothing.",
+  };
+  deps.logger.log(JSON.stringify(report, null, 2));
+  return report;
+}
+
 function legacyM8ArchiveRawSnapshot_(data) {
   return {
     unitsRaw: legacyM8ArchiveCloneMatrix_(data.unitsSheetInfo.rawValues),
@@ -311,9 +396,14 @@ function legacyM8ArchiveExecuteLocked_(confirmation, deps) {
   } finally { try { lock.releaseLock(); } catch (ignored) {} }
 }
 
-// All live entry points remain unconditionally disarmed. Local tests call
-// only the pure/dependency-injected functions above.
-function previewLegacyM8ArchiveMigration() { throw new Error("DISARMED: legacy Math 8 archive preview is local-only."); }
+// All live entry points remain unconditionally disarmed. The preview's
+// production-capable read-only adapter is deliberately unreachable until a
+// later, separately authorized procedure temporarily removes the throw.
+function previewLegacyM8ArchiveMigration() {
+  throw new Error("DISARMED: legacy Math 8 archive preview is local-only.");
+  /* istanbul ignore next */
+  return legacyM8ArchiveBuildLivePreview_({ spreadsheetApp: SpreadsheetApp, sheetId: SHEET_ID, logger: Logger }, new Date());
+}
 function executeLegacyM8ArchiveMigration() { throw new Error("DISARMED: legacy Math 8 archive execution is local-only."); }
 function executeLegacyM8ArchiveMigrationFromEditor() { throw new Error("DISARMED: legacy Math 8 archive editor execution is local-only."); }
 function verifyLegacyM8ArchiveMigration() { throw new Error("DISARMED: legacy Math 8 archive verification is local-only."); }
@@ -325,6 +415,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = {
   legacyM8ArchiveDuplicates_, legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_,
   legacyM8ArchivePlanSignature_, legacyM8ArchiveCellEqual_, legacyM8ArchiveCloneMatrix_,
   legacyM8ArchiveVerifyRaw_, legacyM8ArchiveReadSheet_, legacyM8ArchiveReadData_,
+  legacyM8ArchiveValidatePreviewSchema_, legacyM8ArchiveBuildLivePreview_,
   legacyM8ArchiveRawSnapshot_, legacyM8ArchiveCreateBackup_, legacyM8ArchiveExecuteLocked_,
   previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration,
   executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration,
