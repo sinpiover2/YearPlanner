@@ -61,6 +61,9 @@ function UnitsView({
   const activeCourse =
     courses.find((course) => course.CourseID === selectedCourseId) ??
     courses[0];
+  const selectedUnitCourse = selectedUnit
+    ? courses.find((course) => course.CourseID === selectedUnit.CourseID)
+    : null;
 
   const activeCourseUnits = activeCourse
     ? units.filter((unit) => unit.CourseID === activeCourse.CourseID)
@@ -250,6 +253,7 @@ function UnitsView({
               <div className="units-summary-title-block">
                 <span className="units-summary-unit-number">
                   U{selectedUnit.UnitNumber}
+                  {selectedUnitCourse ? ` · ${selectedUnitCourse.CourseName}` : ""}
                 </span>
 
                 <div>

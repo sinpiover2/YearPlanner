@@ -1188,10 +1188,6 @@ button {
   text-transform: uppercase;
 }
 
-.units-summary-unit-number::after {
-  content: " · MATH 8";
-}
-
 .units-summary-title-block h3 {
   margin: 0;
   color: #111827;

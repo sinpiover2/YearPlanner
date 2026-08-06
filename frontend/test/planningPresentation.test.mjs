@@ -10,6 +10,7 @@ import {
   getCourseNavigation,
   getCourseStatus,
   getSidebarCoursePresentation,
+  reconcileUnitSelection,
 } from "../src/utils/courseCurriculumModel.js";
 import {
   getOptionalDaysPresentation,
@@ -281,6 +282,78 @@ test("UnitsView renders complete, unknown, invalid, archive, and indeterminate b
   assert.match(siblingOutput, /<strong>Active<\/strong>/);
   assert.match(siblingOutput, /class="units-map-card-state current">Current<\/span>/);
   assert.match(siblingOutput, /1 \/ 4 days/);
+});
+
+test("Units detail renders the selected Unit's canonical course across course switches", () => {
+  const courses = [
+    { CourseID: "M8", CourseName: "Math 8" },
+    { CourseID: "IM1", CourseName: "Integrated Math 1" },
+  ];
+  const courseUnits = [
+    { UnitID: "M8-U1", CourseID: "M8", UnitNumber: 1, SortOrder: 1, UnitTitle: "Rigid Transformations" },
+    { UnitID: "M8-OLD", CourseID: "M8", UnitNumber: 9, SortOrder: 9, UnitTitle: "Archived Math 8", IsArchived: true },
+    { UnitID: "IM1-U1", CourseID: "IM1", UnitNumber: 1, SortOrder: 1, UnitTitle: "Patterns and Sequences" },
+    { UnitID: "IM1-OLD", CourseID: "IM1", UnitNumber: 9, SortOrder: 9, UnitTitle: "Archived IM1", IsArchived: true },
+  ];
+
+  const renderCourse = (selectedCourseId, staleSelectedUnitId, showArchivedUnits) => {
+    const selectedCourseUnits = courseUnits.filter(
+      (unit) => unit.CourseID === selectedCourseId,
+    );
+    const selectedUnitId = reconcileUnitSelection({
+      selectedUnitId: staleSelectedUnitId,
+      courseUnits: selectedCourseUnits,
+      showArchivedUnits,
+    });
+    const selectedUnit = selectedCourseUnits.find(
+      (unit) => unit.UnitID === selectedUnitId,
+    );
+
+    return renderUnitsComponent({
+      courses,
+      units: courseUnits,
+      schoolCalendar: [],
+      getProjectedUnits: (value) => value,
+      selectedCourseId,
+      selectedUnit,
+      selectedUnitLessons: [],
+      setSelectedCourseId: () => {},
+      setSelectedUnitId: () => {},
+      showArchivedUnits,
+      setShowArchivedUnits: () => {},
+      selectedDailyProgress: [],
+      selectedNavigation: { currentLesson: null, nextLesson: null },
+      activeProgressLessonId: null,
+      progressInputs: {},
+      editingLessonId: null,
+      editLessonDraft: null,
+      reorderingUnitId: null,
+      isAddingLesson: false,
+      isAddingLessonSaving: false,
+      newLesson: {},
+      getLessonProgress: () => ({ actualDays: 0, finished: false }),
+      getOutcomeList: () => [],
+      formatVarianceCompact: String,
+      formatDate: String,
+    });
+  };
+
+  for (const showArchivedUnits of [false, true]) {
+    const math8 = renderCourse("M8", "IM1-U1", showArchivedUnits);
+    const im1 = renderCourse("IM1", "M8-U1", showArchivedUnits);
+    const math8Again = renderCourse("M8", "IM1-U1", showArchivedUnits);
+
+    assert.match(math8, />U1 · Math 8<\/span>/);
+    assert.doesNotMatch(math8, /U1 · Integrated Math 1/);
+    assert.equal((math8.match(/U1 · Math 8/g) ?? []).length, 1);
+
+    assert.match(im1, />U1 · Integrated Math 1<\/span>/);
+    assert.doesNotMatch(im1, /U1 · Math 8/);
+    assert.equal((im1.match(/U1 · Integrated Math 1/g) ?? []).length, 1);
+
+    assert.match(math8Again, />U1 · Math 8<\/span>/);
+    assert.doesNotMatch(math8Again, /U1 · Integrated Math 1/);
+  }
 });
 
 function renderSidebar(courseUnits, courseLessons = lessons) {
