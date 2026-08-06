@@ -12,6 +12,19 @@ node --test scripts/import-staging/amplify-m8.test.mjs scripts/import-staging/am
 
 The generated `apps-script-planning/AmplifyM8ImportData.js` preserves schema `2.0.0`, profile `amplify-m8`, artifact/extraction hashes, evidence-bearing nulls, provenance, 8 units, 163 items (161 fixed and 2 flexible), and the artifact-derived confirmation phrase. The core in `apps-script-planning/AmplifyM8Importer.js` is locally dependency-injected and its live spreadsheet entry points explicitly throw `DISARMED`. See `apps-script-planning/AMPLIFY_M8_IMPORTER_README.md`.
 
+The separate legacy Math 8 archival migration is implemented in
+`apps-script-planning/LegacyM8ArchiveMigration.js` and tested with:
+
+```bash
+node --test scripts/import-staging/legacy-m8-archive-migration.test.mjs
+```
+
+It targets only the static IDs `M8-U0` through `M8-U8`, requires exactly 50
+lessons linked to those IDs, and can only set their existing `IsArchived`
+cells to boolean `true`. Its preview/planning and injected execution core are
+local-test surfaces; all four live entry points are unconditionally
+`DISARMED`.
+
 Read-only pipeline that turns `Curriculm/M1/IM1_Curriculum_Extraction.md`
 into a machine-readable staging artifact, validates it, and previews what an
 eventual write to Year Planner's `Units`/`Lessons` sheets would do — without
