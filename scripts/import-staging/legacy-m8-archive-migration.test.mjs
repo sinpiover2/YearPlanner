@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import vm from "node:vm";
 import {
   LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS, LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE,
-  legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_, legacyM8ArchiveBuildLivePreview_, legacyM8ArchiveVerifyRaw_, legacyM8ArchiveExecuteLocked_, legacyM8ArchiveCloneMatrix_,
+  legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_, legacyM8ArchiveBuildLivePreview_, legacyM8ArchiveVerifyRaw_, legacyM8ArchiveExecuteLocked_, legacyM8ArchiveCloneMatrix_, legacyM8ArchiveReadSheet_,
   previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration,
   executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration,
 } from "../../apps-script-planning/LegacyM8ArchiveMigration.js";
@@ -63,15 +63,30 @@ test("preview is pure and performs zero writes", () => {
   assert.equal(report.writesOccurred, false); assert.equal(JSON.stringify(data), before); assert.equal(report.targets.length, 9);
 });
 
-function livePreview(data = fixture(), rawOverrides = {}) {
+function livePreview(data = fixture(), rawOverrides = {}, dimensionOverrides = {}) {
   const sheets = { ...raw(data), ...rawOverrides };
   Object.keys(sheets).forEach((name) => { if (sheets[name] === undefined) delete sheets[name]; });
   const spreadsheet = createFakeSpreadsheetFromRawSheets(sheets);
   spreadsheet.getName = () => "Year Planner Database";
   const openedIds = [];
   const sheetReads = [];
+  const rangeCalls = [];
   const originalGetSheet = spreadsheet.getSheetByName.bind(spreadsheet);
   spreadsheet.getSheetByName = (name) => { sheetReads.push(name); return originalGetSheet(name); };
+  Object.keys(spreadsheet.sheetsByName).forEach((name) => {
+    const sheet = spreadsheet.sheetsByName[name];
+    const dimensions = dimensionOverrides[name];
+    if (dimensions) {
+      sheet.getLastRow = () => dimensions.rows;
+      sheet.getLastColumn = () => dimensions.columns;
+    }
+    const originalGetRange = sheet.getRange.bind(sheet);
+    sheet.getRange = (...args) => {
+      rangeCalls.push({ name, args });
+      if (args[2] === 0 || args[3] === 0) throw new Error(`invalid zero-dimension getRange on ${name}`);
+      return originalGetRange(...args);
+    };
+  });
   for (const method of ["copy", "insertSheet", "deleteSheet", "moveActiveSheet", "toast"]) {
     spreadsheet[method] = () => { throw new Error(`write-capable method invoked: ${method}`); };
   }
@@ -83,7 +98,7 @@ function livePreview(data = fixture(), rawOverrides = {}) {
     lockService: { getScriptLock() { throw new Error("lock invoked"); } },
     createBackup() { throw new Error("backup invoked"); },
   }, new Date("2026-08-05T12:34:56.000Z"));
-  return { report, openedIds, sheetReads, logs, spreadsheet };
+  return { report, openedIds, sheetReads, rangeCalls, logs, spreadsheet };
 }
 
 test("live preview adapter opens only configured ID, reads only Units and Lessons, logs evidence, and cannot write", () => {
@@ -126,6 +141,59 @@ test("live preview adapter fails closed for missing sheets and schema problems",
   assert.equal(schema.schemaValidation.sheets.Units.valid, false);
   assert.deepEqual(schema.schemaValidation.sheets.Units.missingHeaders, ["UnitTitle"]);
   assert.equal(schema.safeToExecute, false);
+});
+
+function assertEmptyExistingSheetPreview({ rawOverrides, dimensionOverrides = {}, emptySheets, populatedSheets }) {
+  const result = livePreview(fixture(), rawOverrides, dimensionOverrides);
+  assert.equal(result.report.writesOccurred, false);
+  assert.equal(result.report.safeToExecute, false);
+  assert.equal(result.logs.length, 1);
+  assert.deepEqual(JSON.parse(result.logs[0]), JSON.parse(JSON.stringify(result.report)));
+  for (const name of emptySheets) {
+    assert.equal(result.report.sheetsPresent[name], true);
+    assert.equal(result.report.schemaValidation.sheets[name].present, true);
+    assert.deepEqual(result.report.schemaValidation.sheets[name].actualHeaders, []);
+    assert.deepEqual(result.report.schemaValidation.sheets[name].missingHeaders, name === "Units" ? ["UnitID", "CourseID", "UnitTitle", "IsArchived"] : ["LessonID", "CourseID", "UnitID"]);
+    assert.ok(result.report.blockerReasons.some((reason) => reason.startsWith(`${name} required header(s) missing:`)));
+  }
+  for (const name of populatedSheets) assert.equal(result.report.schemaValidation.sheets[name].valid, true);
+  assert.equal(result.rangeCalls.some(({ args }) => args[2] === 0 || args[3] === 0), false);
+  for (const name of emptySheets) assert.equal(result.rangeCalls.some((call) => call.name === name), false);
+  return result;
+}
+
+test("empty existing sheet reader preserves the sheet reference and returns empty schema and data", () => {
+  const spreadsheet = createFakeSpreadsheetFromRawSheets({ Units: [] });
+  const sheet = spreadsheet.getSheetByName("Units");
+  sheet.getRange = () => { throw new Error("getRange invoked for empty sheet"); };
+  assert.deepEqual(legacyM8ArchiveReadSheet_(spreadsheet, "Units"), {
+    present: true,
+    sheet,
+    headers: [],
+    objects: [],
+    rawRows: [],
+    rawValues: [],
+  });
+});
+
+test("existing empty Units with populated Lessons returns and logs a blocked zero-write preview", () => {
+  assertEmptyExistingSheetPreview({ rawOverrides: { Units: [] }, emptySheets: ["Units"], populatedSheets: ["Lessons"] });
+});
+
+test("populated Units with existing empty Lessons returns and logs a blocked zero-write preview", () => {
+  assertEmptyExistingSheetPreview({ rawOverrides: { Lessons: [] }, emptySheets: ["Lessons"], populatedSheets: ["Units"] });
+});
+
+test("both existing sheets empty remain present and return a structured blocked zero-write preview", () => {
+  assertEmptyExistingSheetPreview({ rawOverrides: { Units: [], Lessons: [] }, emptySheets: ["Units", "Lessons"], populatedSheets: [] });
+});
+
+test("zero rows with nonzero columns does not call getRange and remains an existing sheet", () => {
+  assertEmptyExistingSheetPreview({ rawOverrides: { Units: [] }, dimensionOverrides: { Units: { rows: 0, columns: UNIT_HEADERS.length } }, emptySheets: ["Units"], populatedSheets: ["Lessons"] });
+});
+
+test("nonzero rows with zero columns does not call getRange and remains an existing sheet", () => {
+  assertEmptyExistingSheetPreview({ rawOverrides: { Lessons: [] }, dimensionOverrides: { Lessons: { rows: 4, columns: 0 } }, emptySheets: ["Lessons"], populatedSheets: ["Units"] });
 });
 
 test("live preview adapter reports and blocks target and lesson-count or ownership problems", () => {

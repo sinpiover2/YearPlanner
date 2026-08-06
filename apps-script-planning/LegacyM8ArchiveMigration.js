@@ -240,7 +240,12 @@ function legacyM8ArchiveVerifyRaw_(before, after) {
 function legacyM8ArchiveReadSheet_(spreadsheet, name) {
   const sheet = spreadsheet.getSheetByName(name);
   if (!sheet) return { present: false, headers: [], objects: [], rawRows: [] };
-  const values = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  if (lastRow === 0 || lastColumn === 0) {
+    return { present: true, sheet: sheet, headers: [], objects: [], rawRows: [], rawValues: [] };
+  }
+  const values = sheet.getRange(1, 1, lastRow, lastColumn).getValues();
   const headers = values[0].map(String);
   const objects = values.slice(1).map(function (row) {
     const object = {};
