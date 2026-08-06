@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import {
   LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS, LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE,
-  legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_, legacyM8ArchiveVerifyRaw_, legacyM8ArchiveExecuteLocked_,
+  legacyM8ArchiveBuildPlan_, legacyM8ArchivePreview_, legacyM8ArchiveVerifyRaw_, legacyM8ArchiveExecuteLocked_, legacyM8ArchiveCloneMatrix_,
   previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration,
   executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration,
 } from "../../apps-script-planning/LegacyM8ArchiveMigration.js";
@@ -186,6 +186,64 @@ test("raw verification compares Date cells by exact timestamp and preserves Date
     before.lessonsRaw[1][7] = new Date("2026-08-05T00:00:00.000Z");
     after.lessonsRaw[1][7] = "2026-08-05T00:00:00.000Z";
   });
+});
+
+test("raw verification rejects sparse cell hole becoming explicit undefined", () => assertRawVerificationFails((before, after) => {
+  delete before.lessonsRaw[1][3];
+  after.lessonsRaw[1][3] = undefined;
+}));
+
+test("raw verification rejects explicit undefined becoming sparse hole", () => assertRawVerificationFails((before, after) => {
+  before.lessonsRaw[1][3] = undefined;
+  delete after.lessonsRaw[1][3];
+}));
+
+test("raw verification rejects missing sparse row becoming explicit empty row", () => assertRawVerificationFails((before, after) => {
+  delete before.lessonsRaw[5];
+  after.lessonsRaw[5] = [];
+}));
+
+test("raw verification rejects explicit empty row becoming missing sparse row", () => assertRawVerificationFails((before, after) => {
+  before.lessonsRaw[6] = [];
+  delete after.lessonsRaw[6];
+}));
+
+test("raw verification accepts equivalent sparse structures", () => {
+  const state = verificationFixture();
+  delete state.before.lessonsRaw[7];
+  delete state.after.lessonsRaw[7];
+  state.before.lessonsRaw[8] = [];
+  state.after.lessonsRaw[8] = [];
+  delete state.before.lessonsRaw[9][2];
+  delete state.after.lessonsRaw[9][2];
+  state.before.lessonsRaw[10][4] = undefined;
+  state.after.lessonsRaw[10][4] = undefined;
+  assert.equal(legacyM8ArchiveVerifyRaw_(state.before, state.after).valid, true);
+});
+
+test("raw snapshot cloning preserves holes, explicit undefined, and independent Dates", () => {
+  const source = [];
+  source.length = 4;
+  source[0] = [];
+  source[1] = [];
+  source[1].length = 4;
+  source[1][0] = "header";
+  source[1][2] = undefined;
+  const stamp = new Date("2026-08-05T00:00:00.000Z");
+  source[3] = [stamp];
+
+  const clone = legacyM8ArchiveCloneMatrix_(source);
+  assert.equal(clone.length, source.length);
+  assert.equal(Object.prototype.hasOwnProperty.call(clone, 2), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(clone, 1), true);
+  assert.equal(Array.isArray(clone[1]), true);
+  assert.equal(clone[1].length, 4);
+  assert.equal(Object.prototype.hasOwnProperty.call(clone[1], 1), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(clone[1], 2), true);
+  assert.equal(clone[1][2], undefined);
+  assert.equal(clone[3][0] instanceof Date, true);
+  assert.equal(clone[3][0].getTime(), stamp.getTime());
+  assert.notEqual(clone[3][0], stamp);
 });
 
 test("all four live wrappers remain unconditionally DISARMED", () => { for (const wrapper of [previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration]) assert.throws(() => wrapper(LEGACY_M8_ARCHIVE_CONFIRMATION_PHRASE), /DISARMED/); });

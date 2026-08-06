@@ -38,9 +38,23 @@ function legacyM8ArchiveCloneCell_(value) {
 }
 
 function legacyM8ArchiveCloneMatrix_(matrix) {
-  return (matrix || []).map(function (row) {
-    return row.map(legacyM8ArchiveCloneCell_);
-  });
+  if (!Array.isArray(matrix)) return [];
+  const clone = new Array(matrix.length);
+  for (let r = 0; r < matrix.length; r += 1) {
+    if (!Object.prototype.hasOwnProperty.call(matrix, r)) continue;
+    const row = matrix[r];
+    if (!Array.isArray(row)) {
+      clone[r] = legacyM8ArchiveCloneCell_(row);
+      continue;
+    }
+    const rowClone = new Array(row.length);
+    for (let c = 0; c < row.length; c += 1) {
+      if (!Object.prototype.hasOwnProperty.call(row, c)) continue;
+      rowClone[c] = legacyM8ArchiveCloneCell_(row[c]);
+    }
+    clone[r] = rowClone;
+  }
+  return clone;
 }
 
 function legacyM8ArchiveDuplicateHeaders_(headers) {
@@ -131,15 +145,37 @@ function legacyM8ArchiveVerifyRaw_(before, after) {
   const archivedIndex = unitsHeaders.indexOf("IsArchived");
   let archivedTargetCount = 0;
 
+  function hasOwn_(arrayValue, index) {
+    return Object.prototype.hasOwnProperty.call(arrayValue, index);
+  }
+
   function compareExactMatrix_(label, oldMatrix, newMatrix) {
     if (oldMatrix.length !== newMatrix.length) errors.push(label + " row count changed.");
     const rows = Math.max(oldMatrix.length, newMatrix.length);
     for (let r = 0; r < rows; r += 1) {
-      const oldRow = oldMatrix[r] || [];
-      const newRow = newMatrix[r] || [];
+      const oldHasRow = hasOwn_(oldMatrix, r);
+      const newHasRow = hasOwn_(newMatrix, r);
+      if (oldHasRow !== newHasRow) {
+        errors.push(label + " row " + (r + 1) + " presence changed.");
+        continue;
+      }
+      if (!oldHasRow) continue;
+      const oldRow = oldMatrix[r];
+      const newRow = newMatrix[r];
+      if (!Array.isArray(oldRow) || !Array.isArray(newRow)) {
+        errors.push(label + " row " + (r + 1) + " is not an array in both snapshots.");
+        continue;
+      }
       if (oldRow.length !== newRow.length) errors.push(label + " row " + (r + 1) + " column count changed.");
       const columns = Math.max(oldRow.length, newRow.length);
       for (let c = 0; c < columns; c += 1) {
+        const oldHasCell = hasOwn_(oldRow, c);
+        const newHasCell = hasOwn_(newRow, c);
+        if (oldHasCell !== newHasCell) {
+          errors.push(label + " R" + (r + 1) + "C" + (c + 1) + " presence changed.");
+          continue;
+        }
+        if (!oldHasCell) continue;
         if (!legacyM8ArchiveCellEqual_(oldRow[c], newRow[c])) errors.push(label + " R" + (r + 1) + "C" + (c + 1) + " changed.");
       }
     }
@@ -152,20 +188,49 @@ function legacyM8ArchiveVerifyRaw_(before, after) {
   if (beforeUnits.length !== afterUnits.length) errors.push("Units row count changed.");
   const unitRows = Math.max(beforeUnits.length, afterUnits.length);
   for (let r = 0; r < unitRows; r += 1) {
-    const oldRow = beforeUnits[r] || [];
-    const newRow = afterUnits[r] || [];
+    const oldHasRow = hasOwn_(beforeUnits, r);
+    const newHasRow = hasOwn_(afterUnits, r);
+    if (oldHasRow !== newHasRow) {
+      errors.push("Units row " + (r + 1) + " presence changed.");
+      continue;
+    }
+    if (!oldHasRow) continue;
+    const oldRow = beforeUnits[r];
+    const newRow = afterUnits[r];
+    if (!Array.isArray(oldRow) || !Array.isArray(newRow)) {
+      errors.push("Units row " + (r + 1) + " is not an array in both snapshots.");
+      continue;
+    }
     if (oldRow.length !== newRow.length) errors.push("Units row " + (r + 1) + " column count changed.");
-    const unitId = r > 0 && unitIdIndex >= 0 ? oldRow[unitIdIndex] : null;
-    const isTarget = targetSet.has(unitId);
+    const oldHasUnitIdCell = r > 0 && unitIdIndex >= 0 && hasOwn_(oldRow, unitIdIndex);
+    const newHasUnitIdCell = r > 0 && unitIdIndex >= 0 && hasOwn_(newRow, unitIdIndex);
+    const unitId = oldHasUnitIdCell ? oldRow[unitIdIndex] : null;
+    const unitIdPreserved = oldHasUnitIdCell && newHasUnitIdCell && legacyM8ArchiveCellEqual_(oldRow[unitIdIndex], newRow[unitIdIndex]);
+    const isTarget = unitIdPreserved && targetSet.has(unitId);
     const columns = Math.max(oldRow.length, newRow.length);
     for (let c = 0; c < columns; c += 1) {
-      if (isTarget && c === archivedIndex) {
-        if (newRow[c] !== true) errors.push(unitId + " IsArchived is not boolean true.");
-      } else if (!legacyM8ArchiveCellEqual_(oldRow[c], newRow[c])) {
+      const oldHasCell = hasOwn_(oldRow, c);
+      const newHasCell = hasOwn_(newRow, c);
+      if (oldHasCell !== newHasCell) {
+        errors.push("Units R" + (r + 1) + "C" + (c + 1) + " presence changed.");
+        continue;
+      }
+      if (!oldHasCell) continue;
+      if (!(isTarget && c === archivedIndex) && !legacyM8ArchiveCellEqual_(oldRow[c], newRow[c])) {
         errors.push("Units R" + (r + 1) + "C" + (c + 1) + " changed.");
       }
     }
-    if (isTarget && newRow[unitIdIndex] === unitId && newRow[archivedIndex] === true) archivedTargetCount += 1;
+    if (isTarget) {
+      const oldHasArchivedCell = archivedIndex >= 0 && hasOwn_(oldRow, archivedIndex);
+      const newHasArchivedCell = archivedIndex >= 0 && hasOwn_(newRow, archivedIndex);
+      if (!oldHasArchivedCell || !newHasArchivedCell) {
+        errors.push(unitId + " IsArchived cell presence changed.");
+      } else if (newRow[archivedIndex] !== true) {
+        errors.push(unitId + " IsArchived is not boolean true.");
+      } else {
+        archivedTargetCount += 1;
+      }
+    }
   }
   if (archivedTargetCount !== LEGACY_M8_ARCHIVE_EXPECTED_UNIT_COUNT) errors.push("Exactly 9 target Units were not preserved in place and archived.");
   compareExactMatrix_("Lessons", beforeLessons, afterLessons);
