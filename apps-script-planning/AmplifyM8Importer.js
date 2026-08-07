@@ -223,6 +223,9 @@ function amplifyM8ValidateDestinationSchema_(headers) {
   const missingCourseHeaders = validateCourses ? AMPLIFY_M8_REQUIRED_COURSE_HEADERS.filter(function (h) {
     return (headers.courses || []).indexOf(h) === -1;
   }) : [];
+  const duplicateCourseHeaders = validateCourses ? AMPLIFY_M8_REQUIRED_COURSE_HEADERS.filter(function (h) {
+    return (headers.courses || []).filter(function (header) { return header === h; }).length > 1;
+  }) : [];
   const missingUnitHeaders = AMPLIFY_M8_REQUIRED_UNIT_HEADERS.filter(function (h) {
     return (headers.units || []).indexOf(h) === -1;
   });
@@ -234,6 +237,9 @@ function amplifyM8ValidateDestinationSchema_(headers) {
   if (missingCourseHeaders.length > 0) {
     errors.push(`Courses sheet is missing required column(s): ${missingCourseHeaders.join(", ")}.`);
   }
+  if (duplicateCourseHeaders.length > 0) {
+    errors.push(`Courses sheet has duplicate required column(s): ${duplicateCourseHeaders.join(", ")}.`);
+  }
   if (missingUnitHeaders.length > 0) {
     errors.push(`Units sheet is missing required column(s): ${missingUnitHeaders.join(", ")}.`);
   }
@@ -241,7 +247,7 @@ function amplifyM8ValidateDestinationSchema_(headers) {
     errors.push(`Lessons sheet is missing required column(s): ${missingLessonHeaders.join(", ")}.`);
   }
 
-  return { valid: errors.length === 0, errors, missingCourseHeaders, missingUnitHeaders, missingLessonHeaders };
+  return { valid: errors.length === 0, errors, missingCourseHeaders, duplicateCourseHeaders, missingUnitHeaders, missingLessonHeaders };
 }
 
 // --- Import plan (ports the exact decision table already proven in
@@ -1061,12 +1067,12 @@ function executeAmplifyM8ImportFromEditor() {
 //  1. validate confirmation
 //  2. validate embedded payload (integrity + structure)
 //  3. acquire lock
-//  4. validate destination sheet schema
-//  5. read current state (planning pass) + build plan
+//  4. read and validate Courses, Units, and Lessons schema under the lock
+//  5. validate the live M8 course identity + build the planning-pass plan
 //  6. refuse if plan is blocked
 //  7. create backup
-//  8. re-read current state (revalidation pass) + rebuild plan
-//  9. abort if planning-pass and revalidation-pass plans differ
+//  8. re-read and revalidate all three sheets + rebuild the plan
+//  9. abort if Courses identity/schema or the import plan changed
 // 10. apply Unit writes
 // 11. apply Instructional Item writes
 // 12. flush (implicit — Apps Script writes are synchronous per call)
@@ -1100,14 +1106,6 @@ function amplifyM8ExecuteLocked_(confirmation, deps) {
   }
   report.confirmationAccepted = true;
 
-  const courseValidation = amplifyM8ValidateCourse_(deps.courses);
-  if (!courseValidation.valid) {
-    report.errorStage = "course";
-    report.errorMessage = courseValidation.errors[0] + " No data was touched.";
-    report.courseValidation = courseValidation;
-    return report;
-  }
-
   // 2. payload validation
   const integrity = amplifyM8ValidatePayloadIntegrity_(payload, metadata, deps.computeSha256Hex);
   const structure = amplifyM8ValidatePayloadStructure_(payload);
@@ -1138,18 +1136,27 @@ function amplifyM8ExecuteLocked_(confirmation, deps) {
     const spreadsheet = deps.spreadsheetApp.openById(deps.sheetId);
 
     // 4. schema validation
+    const coursesSheetInfo = amplifyM8ReadProjectedSheet_(spreadsheet, "Courses", AMPLIFY_M8_REQUIRED_COURSE_HEADERS);
     const unitsSheetInfo = amplifyM8ReadSheet_(spreadsheet, "Units");
     const lessonsSheetInfo = amplifyM8ReadSheet_(spreadsheet, "Lessons");
-    if (!unitsSheetInfo.present || !lessonsSheetInfo.present) {
+    if (!coursesSheetInfo.present || !unitsSheetInfo.present || !lessonsSheetInfo.present) {
       report.errorStage = "schema";
-      report.errorMessage = "Units and/or Lessons sheet not found. No data was touched.";
+      report.errorMessage = "Courses, Units, and/or Lessons sheet not found. No data was touched.";
       return report;
     }
-    const schema = amplifyM8ValidateDestinationSchema_({ units: unitsSheetInfo.headers, lessons: lessonsSheetInfo.headers });
+    const schema = amplifyM8ValidateDestinationSchema_({ courses: coursesSheetInfo.headers, units: unitsSheetInfo.headers, lessons: lessonsSheetInfo.headers });
     if (!schema.valid) {
       report.errorStage = "schema";
-      report.errorMessage = "Destination schema is missing required columns. No data was touched.";
+      report.errorMessage = "Destination schema has missing or duplicate required columns. No data was touched.";
       report.destinationSchema = schema;
+      return report;
+    }
+
+    const courseValidation = amplifyM8ValidateCourse_(coursesSheetInfo.objects);
+    report.courseValidation = courseValidation;
+    if (!courseValidation.valid) {
+      report.errorStage = "course";
+      report.errorMessage = courseValidation.errors[0] + " No data was touched.";
       return report;
     }
 
@@ -1176,14 +1183,28 @@ function amplifyM8ExecuteLocked_(confirmation, deps) {
     report.backup = backup;
 
     // 8. revalidation pass
+    const revalCoursesInfo = amplifyM8ReadProjectedSheet_(spreadsheet, "Courses", AMPLIFY_M8_REQUIRED_COURSE_HEADERS);
     const revalUnitsInfo = amplifyM8ReadSheet_(spreadsheet, "Units");
     const revalLessonsInfo = amplifyM8ReadSheet_(spreadsheet, "Lessons");
+    const revalidationSchema = amplifyM8ValidateDestinationSchema_({
+      courses: revalCoursesInfo.headers,
+      units: revalUnitsInfo.headers,
+      lessons: revalLessonsInfo.headers,
+    });
+    const revalidationCourse = revalidationSchema.valid
+      ? amplifyM8ValidateCourse_(revalCoursesInfo.objects)
+      : { valid: false, errors: ["Course identity was not evaluated because required sheet schema validation failed."] };
     const revalidationPass = amplifyM8BuildImportPlan_(payload, { units: revalUnitsInfo.objects, lessons: revalLessonsInfo.objects });
 
     // 9. abort if state changed
-    if (!amplifyM8PlansEqual_(planningPass, revalidationPass)) {
+    if (!revalidationSchema.valid || !revalidationCourse.valid ||
+        JSON.stringify(coursesSheetInfo.headers) !== JSON.stringify(revalCoursesInfo.headers) ||
+        JSON.stringify(courseValidation.course) !== JSON.stringify(revalidationCourse.course) ||
+        !amplifyM8PlansEqual_(planningPass, revalidationPass)) {
       report.errorStage = "revalidation";
-      report.errorMessage = "Destination state changed between planning and mutation. Aborted before writing anything.";
+      report.errorMessage = "Courses schema/identity or destination state changed between planning and mutation. Aborted before writing anything.";
+      report.revalidationSchema = revalidationSchema;
+      report.revalidationCourse = revalidationCourse;
       return report;
     }
 

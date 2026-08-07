@@ -47,7 +47,7 @@ function payload() {
 }
 
 function spreadsheet(destination = { units: [], lessons: [] }) {
-  return createFakeSpreadsheetFromFixture(destination, { units: UNIT_HEADERS, lessons: LESSON_HEADERS });
+  return previewSpreadsheet({ courses: destination.courses || [{ CourseID: "M8" }], units: destination.units || [], lessons: destination.lessons || [] });
 }
 function previewSpreadsheet({ courses = [{ CourseID: "M8" }], units = [], lessons = [],
   courseHeaders = COURSE_HEADERS, unitHeaders = UNIT_HEADERS, lessonHeaders = LESSON_HEADERS, omit = [] } = {}) {
@@ -67,7 +67,7 @@ function deps(overrides = {}) {
   const p = overrides.payload || payload();
   return { spreadsheetApp: createFakeSpreadsheetApp(overrides.spreadsheet || spreadsheet()), lockService: createFakeLockService(),
     sheetId: "local-only", computeSha256Hex: sha256, payload: p, metadata: overrides.metadata || metadata(p),
-    courses: [{ CourseID: "M8" }], formatTimestamp: () => "2026-08-02 000000", ...overrides };
+    formatTimestamp: () => "2026-08-02 000000", ...overrides };
 }
 
 test("generated payload preserves schema/profile/hash/counts and exact confirmation phrase", () => {
@@ -317,6 +317,113 @@ test("confirmation, lock, and backup guards fail before writes", () => {
   const s = spreadsheet(); s.copy = () => { throw new Error("backup failed"); };
   const backupFail = deps({ spreadsheet: s });
   assert.equal(importer.amplifyM8ExecuteLocked_(backupFail.metadata.confirmationPhrase, backupFail).errorStage, "backup");
+});
+
+test("live-wrapper-shaped execution reads Courses and accepts exactly one M8 row", () => {
+  const s = spreadsheet();
+  const requestedSheets = [];
+  const originalGetSheet = s.getSheetByName.bind(s);
+  s.getSheetByName = (name) => { requestedSheets.push(name); return originalGetSheet(name); };
+  const d = deps({ spreadsheet: s });
+  assert.equal(Object.prototype.hasOwnProperty.call(d, "courses"), false, "the live wrapper does not inject course objects");
+  const report = importer.amplifyM8ExecuteLocked_(d.metadata.confirmationPhrase, d);
+  assert.equal(report.success, true, report.errorMessage);
+  assert.deepEqual(report.courseValidation.course, { _rowNumber: 2, CourseID: "M8" });
+  assert.ok(requestedSheets.includes("Courses"), "execution must read the Courses sheet itself");
+});
+
+test("invalid confirmation performs no lock, spreadsheet read, or backup", () => {
+  let lockCalls = 0; let openCalls = 0; let backupCalls = 0;
+  const s = spreadsheet();
+  s.copy = () => { backupCalls += 1; throw new Error("must not copy"); };
+  const d = deps({ spreadsheet: s,
+    spreadsheetApp: { openById() { openCalls += 1; return s; } },
+    lockService: { getScriptLock() { lockCalls += 1; throw new Error("must not lock"); } },
+  });
+  const report = importer.amplifyM8ExecuteLocked_("wrong", d);
+  assert.equal(report.errorStage, "confirmation");
+  assert.deepEqual([lockCalls, openCalls, backupCalls], [0, 0, 0]);
+  assert.equal(report.writesOccurred, false);
+});
+
+test("initial Courses identity and schema failures block before backup or writes", () => {
+  const cases = [
+    { name: "missing M8", options: { courses: [] }, stage: "course" },
+    { name: "duplicate M8", options: { courses: [{ CourseID: "M8" }, { CourseID: "M8" }] }, stage: "course" },
+    { name: "missing CourseID header", options: { courseHeaders: ["CourseName"], courses: [{ CourseName: "Math 8" }] }, stage: "schema" },
+    { name: "duplicate CourseID header", options: { courseHeaders: ["CourseID", "CourseID"], courses: [{ CourseID: "M8" }] }, stage: "schema" },
+  ];
+  for (const entry of cases) {
+    const s = previewSpreadsheet(entry.options);
+    const before = JSON.stringify(s.sheetsByName);
+    let backupCalls = 0;
+    s.copy = () => { backupCalls += 1; throw new Error("must not copy"); };
+    const d = deps({ spreadsheet: s });
+    const report = importer.amplifyM8ExecuteLocked_(d.metadata.confirmationPhrase, d);
+    assert.equal(report.errorStage, entry.stage, entry.name);
+    assert.equal(report.writesOccurred, false, entry.name);
+    assert.equal(backupCalls, 0, entry.name);
+    assert.equal(JSON.stringify(s.sheetsByName), before, entry.name);
+  }
+});
+
+test("Courses identity drift after backup blocks before curriculum mutation", () => {
+  for (const replacementRows of [[], [["M8"], ["M8"]]]) {
+    const s = spreadsheet();
+    const beforeUnits = JSON.stringify(s.getSheetByName("Units").values);
+    const beforeLessons = JSON.stringify(s.getSheetByName("Lessons").values);
+    let backupCalls = 0;
+    const originalCopy = s.copy.bind(s);
+    s.copy = (...args) => {
+      backupCalls += 1;
+      const backup = originalCopy(...args);
+      s.getSheetByName("Courses").values = [["CourseID"], ...replacementRows];
+      return backup;
+    };
+    const d = deps({ spreadsheet: s });
+    const report = importer.amplifyM8ExecuteLocked_(d.metadata.confirmationPhrase, d);
+    assert.equal(report.errorStage, "revalidation");
+    assert.equal(report.writesOccurred, false);
+    assert.equal(backupCalls, 1);
+    assert.equal(JSON.stringify(s.getSheetByName("Units").values), beforeUnits);
+    assert.equal(JSON.stringify(s.getSheetByName("Lessons").values), beforeLessons);
+  }
+});
+
+test("Courses schema drift after backup blocks before curriculum mutation", () => {
+  const s = spreadsheet();
+  const beforeUnits = JSON.stringify(s.getSheetByName("Units").values);
+  const beforeLessons = JSON.stringify(s.getSheetByName("Lessons").values);
+  const originalCopy = s.copy.bind(s);
+  s.copy = (...args) => {
+    const backup = originalCopy(...args);
+    s.getSheetByName("Courses").values = [["CourseID", "CourseID"], ["M8", "M8"]];
+    return backup;
+  };
+  const d = deps({ spreadsheet: s });
+  const report = importer.amplifyM8ExecuteLocked_(d.metadata.confirmationPhrase, d);
+  assert.equal(report.errorStage, "revalidation");
+  assert.equal(report.revalidationSchema.valid, false);
+  assert.equal(report.writesOccurred, false);
+  assert.equal(JSON.stringify(s.getSheetByName("Units").values), beforeUnits);
+  assert.equal(JSON.stringify(s.getSheetByName("Lessons").values), beforeLessons);
+});
+
+test("real payload simulation creates 8 Units and 163 Lessons while preserving 9 legacy Units and 50 linked Lessons", () => {
+  const legacyUnits = Array.from({ length: 9 }, (_, index) => ({ UnitID: `M8-U${index + 1}`, CourseID: "M8", UnitTitle: `Legacy ${index + 1}`, IsArchived: true }));
+  const legacyLessons = Array.from({ length: 50 }, (_, index) => ({ LessonID: `M8-U${(index % 9) + 1}-L${index + 1}`, UnitID: `M8-U${(index % 9) + 1}`, CourseID: "M8", LessonTitle: `Legacy lesson ${index + 1}` }));
+  const s = spreadsheet({ units: legacyUnits, lessons: legacyLessons });
+  const legacyBefore = JSON.stringify({ units: s.getSheetByName("Units").values, lessons: s.getSheetByName("Lessons").values });
+  const d = deps({ spreadsheet: s, payload: data.AMPLIFY_M8_IMPORT_PAYLOAD, metadata: data.AMPLIFY_M8_IMPORT_METADATA });
+  const report = importer.amplifyM8ExecuteLocked_(d.metadata.confirmationPhrase, d);
+  assert.equal(report.success, true, report.errorMessage);
+  assert.deepEqual(report.writeCounts, { unitsCreated: 8, unitsUpdated: 0, itemsCreated: 163, itemsUpdated: 0 });
+  assert.equal(report.verification.valid, true);
+  const units = s.getSheetByName("Units").values;
+  const lessons = s.getSheetByName("Lessons").values;
+  assert.equal(units.filter((row) => /^AMP-M8-U/.test(String(row[UNIT_HEADERS.indexOf("UnitID")]))).length, 8);
+  assert.equal(lessons.filter((row) => /^AMP-M8-U/.test(String(row[LESSON_HEADERS.indexOf("LessonID")]))).length, 163);
+  assert.equal(JSON.stringify({ units: units.slice(0, 10), lessons: lessons.slice(0, 51) }), legacyBefore);
 });
 
 test("full simulation performs narrow writes, verifies, and is idempotent", () => {
