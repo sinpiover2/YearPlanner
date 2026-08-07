@@ -401,6 +401,83 @@ function legacyM8ArchiveExecuteLocked_(confirmation, deps) {
   } finally { try { lock.releaseLock(); } catch (ignored) {} }
 }
 
+function legacyM8ArchiveReportSucceeded_(report) {
+  return report && report.success === true && report.errorStage === null;
+}
+
+function legacyM8ArchiveBuildHumanSummaryLine_(report) {
+  if (legacyM8ArchiveReportSucceeded_(report)) {
+    return report.alreadyComplete
+      ? "LEGACY MATH 8 ARCHIVE: SUCCESS — all nine target Units were already archived; nothing was written."
+      : "LEGACY MATH 8 ARCHIVE: SUCCESS — archived exactly " + report.cellsWritten +
+          " Unit cell(s). Backup: " + (report.backup ? report.backup.url : "(missing)");
+  }
+  return "LEGACY MATH 8 ARCHIVE: FAILED at stage '" + (report && report.errorStage) + "' — " +
+    (report && report.errorMessage) + " NOTHING WAS CONFIRMED COMPLETE.";
+}
+
+// The editor-only adapter owns presentation and failure signaling, never the
+// migration sequence. It delegates exactly once, logs the complete report
+// with an unmistakable summary, and converts a failed returned report into
+// an exception so Apps Script cannot display a misleading "Execution completed".
+function legacyM8ArchiveRunEditorWrapper_(confirmation, deps) {
+  const report = deps.executeMigration(confirmation);
+  const summary = legacyM8ArchiveBuildHumanSummaryLine_(report);
+  const completeLog = summary + "\n" + JSON.stringify(report, null, 2);
+  (deps.logFns || [deps.log]).forEach(function (logFn) {
+    if (typeof logFn === "function") logFn(completeLog);
+  });
+  if (!legacyM8ArchiveReportSucceeded_(report)) throw new Error(summary);
+  return report;
+}
+
+// Standalone verification evaluates only the current Units/Lessons state.
+// Its deliberately narrow dependency surface makes locks, copies, flushes,
+// and writes unavailable to this adapter.
+function legacyM8ArchiveBuildLiveVerification_(deps, now) {
+  const spreadsheet = deps.spreadsheetApp.openById(deps.sheetId);
+  const data = legacyM8ArchiveReadData_(spreadsheet);
+  const plan = legacyM8ArchiveBuildPlan_(data);
+  const schemaValidation = legacyM8ArchiveValidatePreviewSchema_(data);
+  const blockers = plan.blockingFindings.concat(schemaValidation.errors.filter(function (reason) {
+    return plan.blockingFindings.indexOf(reason) === -1;
+  }));
+  const unarchivedTargetUnitIds = plan.targets.filter(function (target) {
+    return !target.missing && target.currentIsArchived !== true;
+  }).map(function (target) { return target.UnitID; });
+  if (unarchivedTargetUnitIds.length) {
+    blockers.push("Target UnitID(s) not explicitly archived: " + unarchivedTargetUnitIds.join(", ") + ".");
+  }
+  const report = {
+    mode: "verify",
+    timestamp: now.toISOString(),
+    valid: blockers.length === 0,
+    targetUnitIds: plan.targetIds,
+    counts: {
+      targetUnits: plan.targetCount,
+      explicitlyArchivedTargetUnits: plan.targets.filter(function (target) { return target.currentIsArchived === true; }).length,
+      linkedLegacyLessons: plan.linkedLessonCount,
+    },
+    schemaValidation: schemaValidation,
+    missingOrDuplicateIds: {
+      missingTargetUnitIds: plan.missingTargetIds,
+      duplicateUnitIds: plan.duplicateUnitIds,
+      duplicateLessonIds: plan.duplicateLessonIds,
+      duplicateUnitsHeaders: plan.duplicateUnitsHeaders,
+      duplicateLessonsHeaders: plan.duplicateLessonsHeaders,
+    },
+    ownershipMismatches: {
+      targetUnits: plan.identityMismatches,
+      linkedLessons: plan.unexpectedLessonOwnership,
+    },
+    unarchivedTargetUnitIds: unarchivedTargetUnitIds,
+    blockers: blockers,
+    writesOccurred: false,
+  };
+  deps.logger.log(JSON.stringify(report, null, 2));
+  return report;
+}
+
 // All live entry points remain unconditionally disarmed. The preview's
 // production-capable read-only adapter is deliberately unreachable until a
 // later, separately authorized procedure temporarily removes the throw.
@@ -409,9 +486,39 @@ function previewLegacyM8ArchiveMigration() {
   /* istanbul ignore next */
   return legacyM8ArchiveBuildLivePreview_({ spreadsheetApp: SpreadsheetApp, sheetId: SHEET_ID, logger: Logger }, new Date());
 }
-function executeLegacyM8ArchiveMigration() { throw new Error("DISARMED: legacy Math 8 archive execution is local-only."); }
-function executeLegacyM8ArchiveMigrationFromEditor() { throw new Error("DISARMED: legacy Math 8 archive editor execution is local-only."); }
-function verifyLegacyM8ArchiveMigration() { throw new Error("DISARMED: legacy Math 8 archive verification is local-only."); }
+function executeLegacyM8ArchiveMigration(confirmation) {
+  throw new Error("DISARMED: legacy Math 8 archive execution requires separate temporary authorization.");
+  /* istanbul ignore next */
+  return legacyM8ArchiveExecuteLocked_(confirmation, {
+    spreadsheetApp: SpreadsheetApp,
+    lockService: LockService,
+    sheetId: SHEET_ID,
+    formatTimestamp: function () {
+      return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HHmmss");
+    },
+  });
+}
+
+function executeLegacyM8ArchiveMigrationFromEditor() {
+  throw new Error("DISARMED: legacy Math 8 archive editor execution requires separate temporary authorization.");
+  // Change only this placeholder during the separately authorized live procedure.
+  /* istanbul ignore next */
+  const CONFIRMATION = LEGACY_M8_ARCHIVE_EDITOR_PLACEHOLDER;
+  /* istanbul ignore next */
+  return legacyM8ArchiveRunEditorWrapper_(CONFIRMATION, {
+    executeMigration: executeLegacyM8ArchiveMigration,
+    logFns: [Logger.log, console.log],
+  });
+}
+
+function verifyLegacyM8ArchiveMigration() {
+  throw new Error("DISARMED: legacy Math 8 archive verification requires separate temporary authorization.");
+  /* istanbul ignore next */
+  return legacyM8ArchiveBuildLiveVerification_(
+    { spreadsheetApp: SpreadsheetApp, sheetId: SHEET_ID, logger: Logger },
+    new Date(),
+  );
+}
 
 if (typeof module !== "undefined" && module.exports) module.exports = {
   LEGACY_M8_ARCHIVE_TARGET_UNIT_IDS, LEGACY_M8_ARCHIVE_COURSE_ID,
@@ -422,6 +529,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = {
   legacyM8ArchiveVerifyRaw_, legacyM8ArchiveReadSheet_, legacyM8ArchiveReadData_,
   legacyM8ArchiveValidatePreviewSchema_, legacyM8ArchiveBuildLivePreview_,
   legacyM8ArchiveRawSnapshot_, legacyM8ArchiveCreateBackup_, legacyM8ArchiveExecuteLocked_,
+  legacyM8ArchiveReportSucceeded_, legacyM8ArchiveBuildHumanSummaryLine_,
+  legacyM8ArchiveRunEditorWrapper_, legacyM8ArchiveBuildLiveVerification_,
   previewLegacyM8ArchiveMigration, executeLegacyM8ArchiveMigration,
   executeLegacyM8ArchiveMigrationFromEditor, verifyLegacyM8ArchiveMigration,
 };
