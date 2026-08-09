@@ -72,6 +72,14 @@ export async function updateLesson(lesson) {
   return postPlanningAction("updateLesson", lesson, "Failed to update lesson");
 }
 
+export async function updateUnitPlanning(unitPlanning) {
+  return postPlanningAction(
+    "updateUnitPlanning",
+    unitPlanning,
+    "Failed to update unit planning",
+  );
+}
+
 export async function deleteLesson(payload) {
   return postPlanningAction(
     "deleteLesson",

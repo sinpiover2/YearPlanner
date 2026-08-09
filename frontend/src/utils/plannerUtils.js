@@ -186,6 +186,34 @@ export function parsePlannedDays(value) {
 
 export const PLANNED_DAYS_VALIDATION_MESSAGE =
   "Planned days must be blank or a positive number in 0.5-day increments.";
+export const REQUIRED_DAYS_VALIDATION_MESSAGE =
+  "Required days must be blank or a positive number.";
+export const OPTIONAL_DAYS_VALIDATION_MESSAGE =
+  "Optional days must be blank, zero, or a positive number.";
+
+function serializePlanningDayValue(value, parser, error) {
+  const parsed = parser(value);
+
+  if (parsed.state === "known") return { ok: true, value: parsed.value };
+  if (parsed.state === "unknown") return { ok: true, value: "" };
+  return { ok: false, error };
+}
+
+export function serializeRequiredDays(value) {
+  return serializePlanningDayValue(
+    value,
+    parseRequiredDays,
+    REQUIRED_DAYS_VALIDATION_MESSAGE,
+  );
+}
+
+export function serializeOptionalDays(value) {
+  return serializePlanningDayValue(
+    value,
+    parseOptionalDays,
+    OPTIONAL_DAYS_VALIDATION_MESSAGE,
+  );
+}
 
 export function serializePlannedDays(value) {
   const parsed = parsePlannedDays(value);

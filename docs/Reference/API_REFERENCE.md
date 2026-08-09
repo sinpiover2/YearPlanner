@@ -238,6 +238,48 @@ On failure (e.g. the lesson no longer exists):
 
 ---
 
+## updateUnitPlanning()
+
+Purpose:
+
+Save teacher-owned Unit pacing totals used by Units, Sidebar, Forecast, and
+projected dates.
+
+Responsibilities:
+
+- Require an exact UnitID and CourseID match.
+- Update only `RequiredDays` and `OptionalDays` on that Unit row.
+- Accept blank values, positive required days, and zero-or-positive optional
+  days.
+- Reject missing/duplicate schema headers or ambiguous Unit identity before
+  writing.
+
+Example payload:
+
+```json
+{
+  "action": "updateUnitPlanning",
+  "token": "<WRITE_TOKEN value>",
+  "unitId": "AMP-M8-U2",
+  "courseId": "M8",
+  "requiredDays": 16,
+  "optionalDays": 1
+}
+```
+
+Returns:
+
+```json
+{
+  "ok": true,
+  "unitId": "AMP-M8-U2",
+  "requiredDays": 16,
+  "optionalDays": 1
+}
+```
+
+---
+
 ## deleteLesson()
 
 Purpose:

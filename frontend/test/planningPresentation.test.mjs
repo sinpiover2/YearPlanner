@@ -245,6 +245,7 @@ function renderUnits(
     getOutcomeList: () => [],
     formatVarianceCompact: String,
     formatDate: String,
+    handleUpdateUnitPlanning: async () => {},
   });
 }
 
@@ -253,6 +254,9 @@ test("UnitsView renders complete, unknown, invalid, archive, and indeterminate b
   assert.match(fullyPlanned, /Current/);
   assert.match(fullyPlanned, /1 \/ 4 days/);
   assert.match(fullyPlanned, /aria-label="25% complete"/);
+  assert.match(fullyPlanned, /Set Unit time/);
+  assert.match(fullyPlanned, /Required days/);
+  assert.match(fullyPlanned, /Optional days/);
 
   const unknown = renderUnits("");
   assert.match(unknown, /1 logged · —/);

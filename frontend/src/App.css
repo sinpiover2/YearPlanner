@@ -486,6 +486,45 @@ button {
   font-weight: 800;
 }
 
+.unit-planning-editor {
+  width: min(100%, 520px);
+  margin: 14px auto 0;
+  color: #475569;
+}
+
+.unit-planning-editor summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.unit-planning-editor form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.unit-planning-editor label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-align: left;
+}
+
+.unit-planning-editor input {
+  width: 110px;
+}
+
+.unit-planning-editor p {
+  flex-basis: 100%;
+  margin: 0;
+  font-weight: 700;
+  text-align: center;
+}
+
 .lesson-row > strong {
   text-align: center;
 }

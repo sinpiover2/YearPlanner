@@ -401,6 +401,10 @@ function doPost(e) {
     return updateLesson(payload);
   }
 
+  if (payload.action === "updateUnitPlanning") {
+    return updateUnitPlanning(payload);
+  }
+
   if (payload.action === "deleteLesson") {
     return deleteLesson(payload);
   }
@@ -509,6 +513,113 @@ function parsePlannedDaysForWrite_(value) {
 function planningErrorResponse_(message) {
   return ContentService.createTextOutput(
     JSON.stringify({ ok: false, error: message }),
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function parseUnitDaysForWrite_(value, fieldName, allowZero) {
+  if (
+    value === null ||
+    value === undefined ||
+    (typeof value === "string" && value.trim() === "")
+  ) {
+    return { ok: true, value: "" };
+  }
+
+  const number =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value.trim())
+        : NaN;
+  const validMinimum = allowZero ? number >= 0 : number > 0;
+
+  if (!Number.isFinite(number) || !validMinimum) {
+    const requirement = allowZero
+      ? "blank, zero, or a positive number"
+      : "blank or a positive number";
+    return { ok: false, error: `${fieldName} must be ${requirement}.` };
+  }
+
+  return { ok: true, value: number };
+}
+
+function updateUnitPlanning(payload) {
+  const requiredDays = parseUnitDaysForWrite_(
+    payload.requiredDays,
+    "Required days",
+    false,
+  );
+  if (!requiredDays.ok) return planningErrorResponse_(requiredDays.error);
+
+  const optionalDays = parseUnitDaysForWrite_(
+    payload.optionalDays,
+    "Optional days",
+    true,
+  );
+  if (!optionalDays.ok) return planningErrorResponse_(optionalDays.error);
+
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName("Units");
+  if (!sheet) return planningErrorResponse_("Units sheet not found.");
+
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0] || [];
+  const requiredHeaders = [
+    "UnitID",
+    "CourseID",
+    "RequiredDays",
+    "OptionalDays",
+  ];
+  const missingHeaders = requiredHeaders.filter(
+    (header) => headers.indexOf(header) === -1,
+  );
+  const duplicateHeaders = requiredHeaders.filter(
+    (header) => headers.indexOf(header) !== headers.lastIndexOf(header),
+  );
+
+  if (missingHeaders.length > 0 || duplicateHeaders.length > 0) {
+    return planningErrorResponse_(
+      `Units schema is incompatible. Missing: ${missingHeaders.join(", ") || "none"}; duplicate: ${duplicateHeaders.join(", ") || "none"}.`,
+    );
+  }
+
+  const requiredDaysIndex = headers.indexOf("RequiredDays");
+  const optionalDaysIndex = headers.indexOf("OptionalDays");
+  if (optionalDaysIndex !== requiredDaysIndex + 1) {
+    return planningErrorResponse_(
+      "Units schema is incompatible. RequiredDays and OptionalDays must be adjacent in canonical order.",
+    );
+  }
+
+  const unitIdIndex = headers.indexOf("UnitID");
+  const courseIdIndex = headers.indexOf("CourseID");
+  const matches = values
+    .map((row, index) => ({ row, index }))
+    .filter(
+      ({ row, index }) =>
+        index > 0 &&
+        row[unitIdIndex] === payload.unitId &&
+        row[courseIdIndex] === payload.courseId,
+    );
+
+  if (matches.length !== 1) {
+    return planningErrorResponse_(
+      `Expected exactly one Unit row for ${payload.courseId}/${payload.unitId}; found ${matches.length}.`,
+    );
+  }
+
+  const rowNumber = matches[0].index + 1;
+  sheet
+    .getRange(rowNumber, requiredDaysIndex + 1, 1, 2)
+    .setValues([[requiredDays.value, optionalDays.value]]);
+
+  return ContentService.createTextOutput(
+    JSON.stringify({
+      ok: true,
+      unitId: payload.unitId,
+      requiredDays: requiredDays.value,
+      optionalDays: optionalDays.value,
+    }),
   ).setMimeType(ContentService.MimeType.JSON);
 }
 

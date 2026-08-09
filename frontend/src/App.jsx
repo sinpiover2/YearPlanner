@@ -33,6 +33,7 @@ import {
   reorderLessons,
   saveDailyProgress,
   updateLesson,
+  updateUnitPlanning,
 } from "./api";
 import { loadRosterSortBy, saveRosterSortBy } from "./utils/rosterSortPreference";
 
@@ -789,6 +790,41 @@ function App() {
     }
   }
 
+  async function handleUpdateUnitPlanning(unit, planning) {
+    const originalUnit = { ...unit };
+
+    setPlannerData((prev) => ({
+      ...prev,
+      units: prev.units.map((entry) =>
+        entry.UnitID === unit.UnitID
+          ? {
+              ...entry,
+              RequiredDays: planning.requiredDays,
+              OptionalDays: planning.optionalDays,
+            }
+          : entry,
+      ),
+    }));
+
+    try {
+      await updateUnitPlanning({
+        unitId: unit.UnitID,
+        courseId: unit.CourseID,
+        requiredDays: planning.requiredDays,
+        optionalDays: planning.optionalDays,
+      });
+    } catch (error) {
+      console.error(error);
+      setPlannerData((prev) => ({
+        ...prev,
+        units: prev.units.map((entry) =>
+          entry.UnitID === originalUnit.UnitID ? originalUnit : entry,
+        ),
+      }));
+      throw error;
+    }
+  }
+
   function renderUnitChips(courseId, courseUnits) {
     return (
       <div className="unit-chip-grid">
@@ -842,6 +878,7 @@ function App() {
     removeGoal,
     addGoal,
     handleUpdateLesson,
+    handleUpdateUnitPlanning,
     handleMoveLessonToPosition,
     reorderingUnitId,
     handleDeleteLesson,

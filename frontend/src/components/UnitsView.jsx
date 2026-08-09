@@ -5,7 +5,77 @@ import {
   getUnitPlanningPresentation,
   getUnitState,
 } from "../utils/unitUtils";
-import { getActiveCurriculum, isUnitArchived } from "../utils/plannerUtils";
+import {
+  getActiveCurriculum,
+  isUnitArchived,
+  serializeOptionalDays,
+  serializeRequiredDays,
+} from "../utils/plannerUtils";
+
+function UnitPlanningEditor({ unit, onSave }) {
+  const [requiredDays, setRequiredDays] = useState(unit.RequiredDays ?? "");
+  const [optionalDays, setOptionalDays] = useState(unit.OptionalDays ?? "");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const required = serializeRequiredDays(requiredDays);
+    const optional = serializeOptionalDays(optionalDays);
+
+    if (!required.ok || !optional.ok) {
+      setMessage(required.error || optional.error);
+      return;
+    }
+
+    setSaving(true);
+    setMessage("");
+
+    try {
+      await onSave(unit, {
+        requiredDays: required.value,
+        optionalDays: optional.value,
+      });
+      setMessage("Unit plan saved.");
+    } catch {
+      setMessage("Could not save the Unit plan.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <details className="unit-planning-editor">
+      <summary>Set Unit time</summary>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Required days
+          <input
+            type="number"
+            min="0.5"
+            step="0.5"
+            value={requiredDays}
+            onChange={(event) => setRequiredDays(event.target.value)}
+          />
+        </label>
+        <label>
+          Optional days
+          <input
+            type="number"
+            min="0"
+            step="0.5"
+            value={optionalDays}
+            onChange={(event) => setOptionalDays(event.target.value)}
+          />
+        </label>
+        <button type="submit" disabled={saving}>
+          {saving ? "Saving…" : "Save Unit time"}
+        </button>
+        {message && <p role="status">{message}</p>}
+      </form>
+    </details>
+  );
+}
 
 function getUnitPurpose(unit) {
   return [unit?.Purpose, unit?.UnitPurpose, unit?.purpose, unit?.unitPurpose]
@@ -41,6 +111,7 @@ function UnitsView({
   removeGoal,
   addGoal,
   handleUpdateLesson,
+  handleUpdateUnitPlanning,
   handleMoveLessonToPosition,
   reorderingUnitId,
   handleDeleteLesson,
@@ -275,6 +346,12 @@ function UnitsView({
                   <span style={{ width: `${selectedUnitPresentation.progressPercent}%` }} />
                 </div>
               )}
+
+              <UnitPlanningEditor
+                key={selectedUnit.UnitID}
+                unit={selectedUnit}
+                onSave={handleUpdateUnitPlanning}
+              />
             </div>
 
             <div className="units-summary-brief">
