@@ -122,15 +122,20 @@ test("Apps Script preserves blank on add and title-only existing lesson update",
   assert.equal(plannedDaysWrite.value, "");
 });
 
-async function loadUnitPlanningServer(unitRows) {
+async function loadUnitPlanningServer(
+  unitRows,
+  { expectedToken = "test-token", failWrite = false } = {},
+) {
   const source = await readFile(new URL("../../apps-script-planning/Code.js", import.meta.url), "utf8");
   const writes = [];
   let openCount = 0;
   const sheet = {
     getDataRange: () => ({ getValues: () => unitRows.map((row) => [...row]) }),
     getRange: (row, column, rowCount, columnCount) => ({
-      setValues: (values) =>
-        writes.push({ row, column, rowCount, columnCount, values }),
+      setValues: (values) => {
+        if (failWrite) throw new Error("simulated batch write failure");
+        writes.push({ row, column, rowCount, columnCount, values });
+      },
     }),
   };
   const context = {
@@ -141,7 +146,7 @@ async function loadUnitPlanningServer(unitRows) {
       },
     },
     PropertiesService: {
-      getScriptProperties: () => ({ getProperty: () => "test-token" }),
+      getScriptProperties: () => ({ getProperty: () => expectedToken }),
     },
     ContentService: {
       MimeType: { JSON: "JSON" },
@@ -210,6 +215,7 @@ test("Apps Script Unit planning validation fails before spreadsheet access", asy
 test("Apps Script Unit planning blocks incompatible schema and ambiguous identity", async () => {
   for (const rows of [
     [["UnitID", "CourseID", "RequiredDays"]],
+    [["UnitID", "CourseID", "RequiredDays", "RequiredDays", "OptionalDays"]],
     [
       ["UnitID", "CourseID", "RequiredDays", "OptionalDays"],
       ["AMP-M8-U1", "M8", "", ""],
@@ -226,4 +232,62 @@ test("Apps Script Unit planning blocks incompatible schema and ambiguous identit
     assert.equal(JSON.parse(response.text).ok, false);
     assert.deepEqual(writes, []);
   }
+});
+
+test("Apps Script rejects missing, incorrect, and unconfigured Unit-write tokens", async () => {
+  const rows = [
+    ["UnitID", "CourseID", "RequiredDays", "OptionalDays"],
+    ["U1", "M8", "", ""],
+  ];
+
+  for (const { expectedToken, suppliedToken } of [
+    { expectedToken: "test-token", suppliedToken: undefined },
+    { expectedToken: "test-token", suppliedToken: "wrong" },
+    { expectedToken: null, suppliedToken: "test-token" },
+  ]) {
+    const { context, writes, getOpenCount } = await loadUnitPlanningServer(
+      rows,
+      { expectedToken },
+    );
+    const response = context.doPost({
+      postData: {
+        contents: JSON.stringify({
+          action: "updateUnitPlanning",
+          token: suppliedToken,
+          unitId: "U1",
+          courseId: "M8",
+          requiredDays: 12,
+          optionalDays: 0,
+        }),
+      },
+    });
+
+    assert.deepEqual(JSON.parse(response.text), {
+      ok: false,
+      error: "Unauthorized",
+    });
+    assert.equal(getOpenCount(), 0);
+    assert.deepEqual(writes, []);
+  }
+});
+
+test("Apps Script batch-write failure cannot partially save Unit totals", async () => {
+  const rows = [
+    ["UnitID", "CourseID", "RequiredDays", "OptionalDays"],
+    ["U1", "M8", "", ""],
+  ];
+  const { context, writes } = await loadUnitPlanningServer(rows, {
+    failWrite: true,
+  });
+
+  assert.throws(
+    () => context.updateUnitPlanning({
+      unitId: "U1",
+      courseId: "M8",
+      requiredDays: 12,
+      optionalDays: 0,
+    }),
+    /simulated batch write failure/,
+  );
+  assert.deepEqual(writes, []);
 });

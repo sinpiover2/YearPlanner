@@ -257,6 +257,9 @@ test("UnitsView renders complete, unknown, invalid, archive, and indeterminate b
   assert.match(fullyPlanned, /Set Unit time/);
   assert.match(fullyPlanned, /Required days/);
   assert.match(fullyPlanned, /Optional days/);
+  assert.match(fullyPlanned, /min="0\.5" step="any" value="4"/);
+  assert.match(fullyPlanned, /min="0" step="any" value="0"/);
+  assert.match(fullyPlanned, /Save Unit time/);
 
   const unknown = renderUnits("");
   assert.match(unknown, /1 logged · —/);

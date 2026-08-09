@@ -5,7 +5,11 @@ const API_URL =
 // isAuthorizedWrite_). Reads (fetchPlannerData) stay anonymous — only writes
 // are gated. Sourced from an env var, never committed, so the token can be
 // rotated without a code change. See frontend/.env.example.
-const WRITE_TOKEN = import.meta.env.VITE_PLANNING_WRITE_TOKEN ?? "";
+const WRITE_TOKEN = import.meta.env?.VITE_PLANNING_WRITE_TOKEN ?? "";
+
+export function buildPlanningWritePayload(action, payload, token = WRITE_TOKEN) {
+  return { ...payload, action, token };
+}
 
 export async function fetchPlannerData() {
   const response = await fetch(API_URL);
@@ -24,17 +28,18 @@ export async function fetchPlannerData() {
 // Every caller gets the same behavior: a real, readable response, and a
 // thrown Error whenever the write did not actually succeed server-side —
 // there is no fire-and-forget path left for any planning write.
-async function postPlanningAction(action, payload, failureMessage) {
-  const response = await fetch(API_URL, {
+export async function postPlanningAction(
+  action,
+  payload,
+  failureMessage,
+  { token = WRITE_TOKEN, fetchImpl = fetch } = {},
+) {
+  const response = await fetchImpl(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "text/plain;charset=utf-8",
     },
-    body: JSON.stringify({
-      action,
-      token: WRITE_TOKEN,
-      ...payload,
-    }),
+    body: JSON.stringify(buildPlanningWritePayload(action, payload, token)),
   });
 
   if (!response.ok) {

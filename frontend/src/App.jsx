@@ -36,6 +36,7 @@ import {
   updateUnitPlanning,
 } from "./api";
 import { loadRosterSortBy, saveRosterSortBy } from "./utils/rosterSortPreference";
+import { saveUnitPlanningOptimistically } from "./utils/unitPlanningMutation";
 
 function getLessonProgress(lessonId, dailyProgress) {
   const entries = dailyProgress.filter((entry) => entry.LessonID === lessonId);
@@ -791,38 +792,12 @@ function App() {
   }
 
   async function handleUpdateUnitPlanning(unit, planning) {
-    const originalUnit = { ...unit };
-
-    setPlannerData((prev) => ({
-      ...prev,
-      units: prev.units.map((entry) =>
-        entry.UnitID === unit.UnitID
-          ? {
-              ...entry,
-              RequiredDays: planning.requiredDays,
-              OptionalDays: planning.optionalDays,
-            }
-          : entry,
-      ),
-    }));
-
-    try {
-      await updateUnitPlanning({
-        unitId: unit.UnitID,
-        courseId: unit.CourseID,
-        requiredDays: planning.requiredDays,
-        optionalDays: planning.optionalDays,
-      });
-    } catch (error) {
-      console.error(error);
-      setPlannerData((prev) => ({
-        ...prev,
-        units: prev.units.map((entry) =>
-          entry.UnitID === originalUnit.UnitID ? originalUnit : entry,
-        ),
-      }));
-      throw error;
-    }
+    return saveUnitPlanningOptimistically({
+      unit,
+      planning,
+      setPlannerData,
+      request: updateUnitPlanning,
+    });
   }
 
   function renderUnitChips(courseId, courseUnits) {

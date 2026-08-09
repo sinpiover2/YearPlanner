@@ -8,9 +8,8 @@ import {
 import {
   getActiveCurriculum,
   isUnitArchived,
-  serializeOptionalDays,
-  serializeRequiredDays,
 } from "../utils/plannerUtils";
+import { buildUnitPlanningSubmission } from "../utils/unitPlanningMutation";
 
 function UnitPlanningEditor({ unit, onSave }) {
   const [requiredDays, setRequiredDays] = useState(unit.RequiredDays ?? "");
@@ -20,11 +19,10 @@ function UnitPlanningEditor({ unit, onSave }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const required = serializeRequiredDays(requiredDays);
-    const optional = serializeOptionalDays(optionalDays);
+    const submission = buildUnitPlanningSubmission(requiredDays, optionalDays);
 
-    if (!required.ok || !optional.ok) {
-      setMessage(required.error || optional.error);
+    if (!submission.ok) {
+      setMessage(submission.error);
       return;
     }
 
@@ -32,10 +30,7 @@ function UnitPlanningEditor({ unit, onSave }) {
     setMessage("");
 
     try {
-      await onSave(unit, {
-        requiredDays: required.value,
-        optionalDays: optional.value,
-      });
+      await onSave(unit, submission.value);
       setMessage("Unit plan saved.");
     } catch {
       setMessage("Could not save the Unit plan.");
@@ -53,7 +48,7 @@ function UnitPlanningEditor({ unit, onSave }) {
           <input
             type="number"
             min="0.5"
-            step="0.5"
+            step="any"
             value={requiredDays}
             onChange={(event) => setRequiredDays(event.target.value)}
           />
@@ -63,7 +58,7 @@ function UnitPlanningEditor({ unit, onSave }) {
           <input
             type="number"
             min="0"
-            step="0.5"
+            step="any"
             value={optionalDays}
             onChange={(event) => setOptionalDays(event.target.value)}
           />
