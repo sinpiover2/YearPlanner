@@ -273,6 +273,30 @@ Skipping steps 4–6 leaves either the real confirmation phrase live in
 production (a single accidental Run click away from re-executing) or the
 repository silently out of sync with what Apps Script actually runs.
 
+## Temporary Source-Push Arming
+
+When a live preview, execute, or verify wrapper is unconditionally
+`DISARMED` and the function cannot be invoked through `clasp run`, use a
+two-push ceremony instead of editing Apps Script HEAD by hand:
+
+1. Confirm local committed source and Apps Script HEAD are byte-identical,
+   the intended wrapper is disarmed, and the working-tree diff is understood.
+2. Remove only that wrapper's single unconditional `DISARMED` throw. Do not
+   change the underlying preview, execute, or verification logic.
+3. Perform one ordinary, non-force `clasp push`, then pull into an isolated
+   temporary directory and confirm the remote diff is exactly the authorized
+   one-line arming change.
+4. Invoke only the authorized function, exactly the authorized number of
+   times, and preserve its complete report before doing anything else.
+5. Restore the local file byte-for-byte to committed source immediately and
+   perform the second ordinary, non-force `clasp push`.
+6. Pull remotely again into an isolated directory and confirm complete parity
+   with committed source and that every live-facing wrapper is `DISARMED`.
+
+Treat the two pushes as one transaction. The work is not complete when the
+function finishes; it is complete only after restoration and remote parity
+are proven. A failed or ambiguous invocation never authorizes a retry.
+
 ---
 
 # Definition of Done

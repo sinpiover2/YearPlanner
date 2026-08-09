@@ -59,25 +59,25 @@ polish, and further classroom validation.
 
 ## Next Classroom Milestone: Load the Real School
 
-**Next Classroom-Readiness Priority:** Real Data (see Section A) — the school
-calendar and curriculum currently powering Planning and Weekly Communication
-are working data, not yet the verified official import; roster import,
-audit, cleanup, and printing tooling now exists, but real class lists have
-not yet been loaded through it. This is the largest remaining gap between
-"the workflow works" and "the workflow is trustworthy for daily use." Note
-that `docs/Development/PROJECT_CONTEXT.md` now lists Protect Teacher Work
-ahead of Real Data in overall project priority; this checklist tracks
+**Next Classroom-Readiness Priority:** Real Data (see Section A) — Math 8's
+supplied curriculum is now imported and verified, but its teacher-owned day
+estimates remain to be entered. The school calendar still requires official
+verification, and real class lists have not yet been loaded through the
+existing roster import/audit/cleanup tooling. These are the largest remaining
+gaps between "the workflow works" and "the workflow is trustworthy for daily
+use." Note that `docs/Development/PROJECT_CONTEXT.md` lists Protect Teacher
+Work ahead of Real Data in overall project priority; this checklist tracks
 classroom-readiness gaps specifically and remains accurate on its own terms.
 
-**Active curriculum objective: Amplify Math 8.** With the Amplify IM1 import
-pipeline generalized into a reusable, documented process
-(`docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`), the active curriculum
-work is now extracting and importing Amplify Math 8 using that same
-canonical workflow. Amplify IM1's own production import is **not yet
-complete** — the `Lessons` schema migration and the importer itself remain
-undeployed (see the Integrated Math 1 checklist below) — but it is no longer
-the sprint-to-sprint focus; it is tracked as deferred, still-open work
-rather than abandoned or considered finished.
+**Amplify Math 8 production import is complete.** Supplied Units 1–8 were
+fully extracted and source-validated, then 8 canonical Units and 163
+Lesson/item rows were imported and independently verified in production in
+Sprint 6.7. The 9 prior Math 8 Units are archived; their 50 Lessons and all
+historical data remain intact. Publisher summaries are present, but the
+publisher source supplied no unit or item durations, so planning time remains
+teacher-owned work rather than inferred import data. Authoritative course
+completeness remains unconfirmed because no publisher course overview/index
+was supplied. Amplify IM1's own production import remains deferred and open.
 
 Loading the real school means importing and verifying:
 
@@ -137,24 +137,26 @@ now considered classroom-ready.
 
 ## Curriculum
 
-### Math 8 (active curriculum objective)
+### Math 8
 
-- [ ] Extract and import complete curriculum — using the canonical process in
-      `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`, generalized from the
-      Amplify IM1 pipeline built in Sprints 6.1–6.6
-- [ ] Verify units
-- [ ] Verify lessons
+- [x] Extract and import supplied Units 1–8 using the canonical process in
+      `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`
+- [x] Verify units — 8 canonical `AMP-M8-*` Units in production
+- [x] Verify lessons — 163 canonical `AMP-M8-*` Lesson/item rows in production
 - [ ] Verify required instructional days
-- [ ] Verify learning goals
+- [ ] Review imported publisher summaries and add teacher-owned learning goals
+      where needed
+- [x] Archive prior Math 8 curriculum — 9 legacy Units archived; all 50 linked
+      Lessons and historical records preserved
 
 ### Integrated Math 1 (deferred, not abandoned)
 
 - [ ] Import complete curriculum — guarded tooling now exists
       (`apps-script-planning/AmplifyIm1Importer.js`, `LessonsSchemaMigration.js`)
       for Amplify Math 1; this item is about running it against production, not
-      building it. **Not yet deployed or executed.** No longer the active
-      sprint objective (Math 8 is, above) — see
-      `docs/History/SPRINT_HANDOFF_6.6.md`.
+      building it. **Not yet deployed or executed.** It remains deferred until
+      Math 8 planning-time entry is stable; see
+      `docs/History/SPRINT_HANDOFF_6.7.md`.
 - [ ] Verify units
 - [ ] Verify lessons
 - [ ] Verify required instructional days

@@ -8,6 +8,13 @@ It is not a changelog of features. Each entry should describe a lesson that gene
 
 ---
 
+## Sprint 6.7
+
+- **Temporary arming is a two-push transaction, not a one-push deployment.** Math 8 required several read-only previews and two guarded production writes while every live-facing wrapper remained normally `DISARMED`. The safe ceremony was consistent: prove local/remote parity, remove exactly one unconditional throw, push once, invoke exactly the authorized function, restore committed source immediately, push a second time, and prove remote parity and complete disarming. Stopping after the invocation would leave Apps Script HEAD armed even if the data operation itself succeeded. This procedure now lives in `DEVELOPMENT_WORKFLOW.md` under Temporary Source-Push Arming.
+- **A successful import can still expose a product-completeness gap that is not an importer defect.** The Math 8 source explicitly omitted unit and item durations, so the correct import preserved them as unknown. Production verification proved the 8 units and 163 items landed correctly, while the UI correctly displayed `Not planned`. The follow-up is a teacher-owned planning-time workflow, not invented publisher data or a relaxed importer. Preserve this distinction whenever source truth and classroom planning needs diverge.
+
+---
+
 ## Sprint 6.6
 
 - **Treat curriculum extraction as its own deliverable, checked against the source, before writing any importer code against it.** Across Sprints 6.1–6.6, every serious data-fidelity problem in the Amplify IM1 import (a unit's day totals reported "not provided" when they were actually elsewhere on the page; a Units field mapped to the wrong header name; a "same duplicate curriculum" assumption that turned out not to hold record-by-record) was caught by re-reading the extraction or the schema directly against the source — never by the importer's own code catching it at runtime. An importer built against an unreviewed extraction just encodes the extraction's mistakes faithfully. This generalizes into `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`'s steps 2–3 (extract, then validate against the source) as mandatory phases before step 5 (build the importable artifact) begins.

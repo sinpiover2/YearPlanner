@@ -88,7 +88,13 @@ This preview must be genuinely read-only, runnable at any time, and safe to run 
 
 ### 7. Execute the guarded import
 
-Follow `DEVELOPMENT_WORKFLOW.md`'s Guarded Production Migration Execution Procedure exactly: preview, execute (with an exact-match confirmation phrase, never a default or a truthy check), verify, restore the editor's placeholder confirmation, sync the repository to match what actually ran, and confirm the repository is clean afterward.
+Follow `DEVELOPMENT_WORKFLOW.md`'s Guarded Production Migration Execution
+Procedure exactly: preview, execute (with an exact-match confirmation phrase,
+never a default or a truthy check), verify, restore the disarmed source, sync
+the repository to match what actually ran, and confirm remote parity
+afterward. When the live wrapper is unconditionally `DISARMED` and `clasp run`
+is unavailable, use that document's Temporary Source-Push Arming procedure;
+the two pushes are one transaction and restoration is mandatory.
 
 Inside the execute step itself, the guarded write sequence should: validate the confirmation; acquire a lock; re-read and re-classify the destination immediately before writing (never trusting an earlier preview's snapshot); create a backup before any mutation; abort if the destination changed between the planning read and the write; write only the specific fields that actually changed, never a whole-row rewrite; and report an explicit, single-computed `success` signal that a disarmed editor wrapper can act on — see Safety Rules, below.
 
@@ -118,8 +124,14 @@ Confirm the imported curriculum renders correctly in the running application —
 - **Backup before mutation, every time.** A guarded write never mutates production without a backup already existing that could restore the prior state.
 - **Teacher-owned fields are never written by an importer**, once a row exists — never merged, never partially updated alongside a publisher-field change on the same row.
 - **A refusal must be impossible to mistake for success.** An Apps Script function that returns normally is reported by the editor as "Execution completed" regardless of what the returned value says. Every guarded execute report must carry one explicit `success` boolean, computed once from the report's own final state, and the interactive editor wrapper must log through every available logger and then throw when the outcome was not a genuine success — so a refusal is visibly reported as a failure, not read as a completed run.
-- **Restore the disarmed state after every real run.** A guarded migration's editor wrapper carries a placeholder confirmation string during normal repository state. It is armed with the real phrase only for the duration of an actual execution, in the same sitting, and restored to the placeholder immediately after — the live source must never be left armed.
-- **Sync the repository to match what actually executed.** An interactive execution against production happens directly against the live script, not through a normal code push. Pull the resulting source back into the repository afterward and confirm the only diff is the migration's own legitimate change — not a stray armed confirmation phrase, not unrelated drift.
+- **Restore the disarmed state after every real run.** Whether arming uses an
+  editor confirmation placeholder or removal of one unconditional `DISARMED`
+  throw, it lasts only for the authorized invocation and is restored in the
+  same sitting. The live source must never be left armed.
+- **Prove remote source parity after restoration.** Pull Apps Script HEAD into
+  an isolated directory and confirm it is byte-identical to the intended
+  committed source, contains no armed confirmation, and leaves every
+  live-facing wrapper `DISARMED`.
 
 ---
 
