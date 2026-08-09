@@ -481,6 +481,11 @@ button {
   text-align: left;
 }
 
+.lesson-publisher-summary span {
+  color: #334155;
+  font-weight: 800;
+}
+
 .lesson-row > strong {
   text-align: center;
 }

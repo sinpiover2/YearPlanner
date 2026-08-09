@@ -65,6 +65,8 @@ function LessonTable({
         const variance =
           plannedDays.state === "known" ? actualDays - plannedDays.value : null;
         const outcomes = getOutcomeList(lesson.KeyOutcome);
+        const publisherSummary =
+          typeof lesson.Description === "string" ? lesson.Description.trim() : "";
         const isTemporaryLesson = lesson.LessonID.startsWith("temp-");
         const isReorderDisabled =
           isTemporaryLesson || reorderingUnitId === lesson.UnitID;
@@ -113,6 +115,10 @@ function LessonTable({
                     <p key={`${lesson.LessonID}-${index}`}>{outcome}</p>
                   ))}
                 </div>
+              ) : publisherSummary ? (
+                <p className="lesson-publisher-summary">
+                  <span>Publisher summary:</span> {publisherSummary}
+                </p>
               ) : (
                 <p>No outcome entered.</p>
               )}

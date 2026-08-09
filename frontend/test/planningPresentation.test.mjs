@@ -401,9 +401,13 @@ test("Sidebar renders fully planned, unknown, and invalid canonical branches", (
   assert.doesNotMatch(invalid, /Planning (?:days )?incomplete|actual of 0 days|On pace|ahead|behind|d buffer/);
 });
 
-function renderLessonPlan(PlannedDays, actualDays = 1) {
+function renderLessonPlan(
+  PlannedDays,
+  actualDays = 1,
+  { lesson = {}, outcomes = [] } = {},
+) {
   return renderLessonTableComponent({
-    lessonList: [{ LessonID: "L1", UnitID: "U1", LessonNumber: 1, LessonTitle: "Lesson", PlannedDays }],
+    lessonList: [{ LessonID: "L1", UnitID: "U1", LessonNumber: 1, LessonTitle: "Lesson", PlannedDays, ...lesson }],
     selectedDailyProgress: [],
     selectedNavigation: { currentLesson: null, nextLesson: null },
     activeProgressLessonId: null,
@@ -415,7 +419,7 @@ function renderLessonPlan(PlannedDays, actualDays = 1) {
     isAddingLessonSaving: false,
     newLesson: { lessonTitle: "", plannedDays: 1, keyOutcomes: [""] },
     getLessonProgress: () => ({ actualDays, finished: false }),
-    getOutcomeList: () => [],
+    getOutcomeList: () => outcomes,
     formatVarianceCompact: (value) => String(value),
   });
 }
@@ -432,6 +436,24 @@ test("Lesson table renders known, unknown, and invalid PlannedDays without unsaf
   const invalid = renderLessonPlan(0);
   assert.match(invalid, /aria-label="Invalid value">Invalid value<\/strong>/);
   assert.doesNotMatch(invalid, />1<\/strong>[\s\S]*class="variance-warning"/);
+});
+
+test("Lesson table shows publisher summaries when teacher outcomes are absent", () => {
+  const summary = renderLessonPlan("", 0, {
+    lesson: { Description: "Let's explore scaled copies and dilations." },
+  });
+
+  assert.match(summary, /Publisher summary:/);
+  assert.match(summary, /Let&#x27;s explore scaled copies and dilations\./);
+  assert.doesNotMatch(summary, /No outcome entered/);
+
+  const teacherOutcome = renderLessonPlan("", 0, {
+    lesson: { Description: "Publisher text" },
+    outcomes: ["I can identify a dilation."],
+  });
+
+  assert.match(teacherOutcome, /I can identify a dilation\./);
+  assert.doesNotMatch(teacherOutcome, /Publisher summary:|Publisher text/);
 });
 
 test("Forecast cards and timeline render a withheld incomplete-planning state", () => {
