@@ -3,6 +3,10 @@ import {
   serializeRequiredDays,
 } from "./plannerUtils.js";
 
+export function getUnitPlanningEditorKey(unit) {
+  return `${unit.CourseID}\u0000${unit.UnitID}`;
+}
+
 export function buildUnitPlanningSubmission(requiredDays, optionalDays) {
   const required = serializeRequiredDays(requiredDays);
   const optional = serializeOptionalDays(optionalDays);

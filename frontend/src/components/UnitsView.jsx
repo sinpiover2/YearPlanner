@@ -9,7 +9,10 @@ import {
   getActiveCurriculum,
   isUnitArchived,
 } from "../utils/plannerUtils";
-import { buildUnitPlanningSubmission } from "../utils/unitPlanningMutation";
+import {
+  buildUnitPlanningSubmission,
+  getUnitPlanningEditorKey,
+} from "../utils/unitPlanningMutation";
 
 function UnitPlanningEditor({ unit, onSave }) {
   const [requiredDays, setRequiredDays] = useState(unit.RequiredDays ?? "");
@@ -343,7 +346,7 @@ function UnitsView({
               )}
 
               <UnitPlanningEditor
-                key={selectedUnit.UnitID}
+                key={getUnitPlanningEditorKey(selectedUnit)}
                 unit={selectedUnit}
                 onSave={handleUpdateUnitPlanning}
               />

@@ -7,9 +7,21 @@ import {
 } from "../src/api.js";
 import {
   buildUnitPlanningSubmission,
+  getUnitPlanningEditorKey,
   saveUnitPlanningOptimistically,
   updateUnitPlanningRecords,
 } from "../src/utils/unitPlanningMutation.js";
+
+test("Unit planning editor identity includes both CourseID and UnitID", () => {
+  assert.notEqual(
+    getUnitPlanningEditorKey({ CourseID: "M8", UnitID: "U1" }),
+    getUnitPlanningEditorKey({ CourseID: "IM1", UnitID: "U1" }),
+  );
+  assert.equal(
+    getUnitPlanningEditorKey({ CourseID: "M8", UnitID: "U1" }),
+    getUnitPlanningEditorKey({ CourseID: "M8", UnitID: "U1" }),
+  );
+});
 
 test("Unit planning form submission accepts documented decimal policies", () => {
   assert.deepEqual(buildUnitPlanningSubmission("12.25", "0.25"), {
