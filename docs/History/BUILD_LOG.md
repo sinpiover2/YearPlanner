@@ -445,3 +445,33 @@ Projection answers:
 > What happens if nothing changes?
 
 Both are required for effective decision support.
+
+---
+
+## August 2026 — Sprints 6.7–6.8: Math 8 Curriculum and Planning Data
+
+Implemented and verified:
+
+- Imported 8 canonical Amplify Math 8 Units and 163 curriculum items through
+  the guarded preview/execute/verify workflow.
+- Archived 9 legacy Math 8 Units while preserving 50 linked Lessons and all
+  historical records.
+- Added publisher-summary fallbacks and teacher-owned Unit planning-time
+  editing.
+- Corrected the Unit editor's composite identity so writes target the exact
+  CourseID + UnitID.
+- Deployed and verified the correction through a real production save and
+  reload.
+- Entered teacher-owned estimates for every Math 8 Unit: 147 required days
+  plus 21 optional days.
+- Entered a current one-day editable estimate for each of the 163 imported
+  items.
+- Reviewed all supplied Math 8 source pages and entered 303 source-grounded,
+  editable learning goals across all 163 imported items; multiple goals per
+  lesson remain supported.
+
+Result:
+
+Math 8 now has a complete canonical production structure, teacher-owned
+planning-time data, and verified learning goals. The next operational work is
+official calendar and roster data, followed by continued classroom validation.
