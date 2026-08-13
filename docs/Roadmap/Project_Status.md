@@ -2,284 +2,52 @@
 
 ## Current Status
 
-**June 2026**
+**August 2026 â€” Sprint 6.8 in progress**
 
----
+Year Planner's core classroom workflow is operational in production. Math 8's imported curriculum, teacher-owned planning time, and source-grounded learning goals are verified; the current focus is loading the remaining real-school data.
 
-# Current Phase
+## Production Health
 
-**Phase 2 Ð Forecast Visualizations**
+- Frontend and Apps Script production deployments are current through the Sprint 6.8 composite-editor identity correction.
+- Unit planning writes use the exact CourseID + UnitID identity and have been verified through a real save and reload.
+- The canonical Math 8 curriculum contains 8 Units and 163 imported items.
+- The 9 legacy Math 8 Units remain archived; their 50 Lessons and historical records remain preserved.
+- Importer and archive entry points remain disarmed and out of scope.
 
----
+## Math 8 Planning Data
 
-# Current Sprint
+| Unit | Required | Optional |
+| --- | ---: | ---: |
+| U1 | 18 days | 3 days |
+| U2 | 16 days | 2 days |
+| U3 | 18 days | 3 days |
+| U4 | 19 days | 3 days |
+| U5 | 19 days | 4 days |
+| U6 | 18 days | 1 day |
+| U7 | 19 days | 3 days |
+| U8 | 20 days | 2 days |
+| **Total** | **147 days** | **21 days** |
 
-**Sprint 2.2c Ð Timeline Integration**
+All 163 imported Math 8 items currently have a one-day planning estimate. These are editable teacher estimates, not publisher-supplied durations.
 
----
+All 163 Math 8 items have source-grounded, editable learning goals: 303 goals in total, with multiple goals per lesson supported. The complete review and verification record is in `docs/Reference/AMPLIFY_M8_GOAL_REVIEW.md`.
 
-# Overall Status
+## Current Focus
 
-Forecast logic is considered trustworthy.
+1. Verify and load the official 2026â€“2027 school calendar.
+2. Load and verify real student rosters when district data is available.
+3. Continue classroom validation through actual planning and teaching.
 
-Visual design is converging.
+## Deferred but Open
 
-The project is transitioning from experimentation toward the timeline's final form.
+- Amplify Integrated Math 1 production import.
+- Remaining Protect Teacher Work phases: concurrency safeguards, visible local-save failure signals, backup/recovery, and canonical enactment data.
+- Workflow polish that does not block classroom use.
 
----
+## Permanent References
 
-# Current Focus
-
-Improve the Year Timeline while preserving forecast cards as the interpretation layer.
-
-Primary goals:
-
-- Remove separate break row.
-- Integrate school breaks directly into tracks.
-- Tighten vertical spacing.
-- Add dark progress fill inside units.
-- Move toward squared track geometry.
-- Soften unit boundaries.
-- Preserve stable period rows.
-
----
-
-# Major Components
-
-## Forecast Banner
-
-Provides overall context and acknowledges unlogged sections.
-
----
-
-## Year Outlook
-
-Provides high-level pacing summaries.
-
-Includes:
-
-- Buffer meter
-- Remaining runway
-- Buffer Exhausted state
-
----
-
-## Year Timeline
-
-Provides orientation.
-
-Shows:
-
-- Unit lengths
-- Month axis
-- Course grouping
-- Section synchronization summaries
-- Current position marker
-- Expected pace marker
-- Optional buffers
-
-Timeline answers:
-
-> Where am I?
-
----
-
-## Forecast Cards
-
-Provide interpretation.
-
-Cards answer:
-
-- Should I care?
-- What happens if nothing changes?
-- Can I fix this?
-
-Cards remain the interpretation layer.
-
----
-
-# Forecast Status States
-
-### On Track
-
-Green.
-
-No action needed.
-
----
-
-### Monitoring
-
-Amber.
-
-Using some buffer.
-
-Recoverable.
-
----
-
-### Needs Attention
-
-Amber.
-
-Significant buffer consumption.
-
-Consider compressing optional lessons.
-
----
-
-### Buffer Exhausted
-
-Red.
-
-Schedule adjustment required.
-
-Red is reserved for true problems.
-
----
-
-# Major Discoveries
-
-### Drift is geometric.
-
-Teachers understand position better than numerical variance.
-
----
-
-### The timeline behaves like a map.
-
-Rows stay.
-
-The year stays.
-
-The teacher moves.
-
----
-
-### Timeline = orientation.
-
-Cards = interpretation.
-
----
-
-### One dot and one line are better than two dots.
-
----
-
-### Stability is kindness.
-
----
-
-# Completed
-
-## Forecast Foundations
-
-? Forecast engine
-
-? Buffer model
-
-? Section-aware pacing
-
-? Threshold calibration
-
-? Banner messaging
-
-? Empty states
-
-? Forecast card ordering
-
-? Forecast card refinement
-
----
-
-## Year Outlook
-
-? Year Outlook strip
-
-? Buffer meter
-
-? Remaining-buffer visualization
-
-? Buffer Exhausted state
-
----
-
-## Timeline Foundations
-
-? Unit timeline bars
-
-? Month axis
-
-? Buffer regions
-
-? School break scaffolding
-
-? Course grouping
-
-? Synchronization summaries
-
-? Current position marker
-
-? Expected pace marker
-
-? Hierarchical spacing refinement
-
----
-
-# Removed From The Roadmap
-
-- Section compression
-- Shared rows
-- Dynamic collapsing
-- Colored position markers
-- Separate break row
-
----
-
-# Current Architecture
-
-Forecast page structure:
-
-Banner
-
-?
-
-Year Outlook
-
-?
-
-Year Timeline
-
-?
-
-Forecast Cards
-
-Cards remain the interpretation layer.
-
-Timeline provides orientation.
-
----
-
-# Guiding Philosophy
-
-Year Planner is a teacher decision-support tool.
-
-The organizing question is:
-
-> Am I OK?
-
-Information order:
-
-1. Reality
-2. Consequence
-3. Recommendation
-
-Default emotional state:
-
-Calm.
-
-Most teachers are fine most of the time.
-
-Build depth before breadth.
-
-Major milestone: Established the documentation architecture for Year Planner, including philosophy, architecture, decision records, vision, workflow, and reference documentation. Future development will treat documentation as part of the system architecture rather than ancillary notes.
+- `docs/Development/CLASSROOM_READINESS.md`
+- `docs/Development/PROJECT_CONTEXT.md`
+- `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`
+- `docs/Architecture/CURRICULUM_INFORMATION_MODEL.md`
+- `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md`

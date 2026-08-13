@@ -60,22 +60,20 @@ polish, and further classroom validation.
 ## Next Classroom Milestone: Load the Real School
 
 **Next Classroom-Readiness Priority:** Real Data (see Section A) — Math 8's
-supplied curriculum is now imported and verified, but its teacher-owned day
-estimates remain to be entered. The school calendar still requires official
-verification, and real class lists have not yet been loaded through the
-existing roster import/audit/cleanup tooling. These are the largest remaining
-gaps between "the workflow works" and "the workflow is trustworthy for daily
-use." Note that `docs/Development/PROJECT_CONTEXT.md` lists Protect Teacher
-Work ahead of Real Data in overall project priority; this checklist tracks
-classroom-readiness gaps specifically and remains accurate on its own terms.
+supplied curriculum is imported and verified. Teacher-owned planning time is
+entered for all 8 Units and all 163 items, and source-grounded, editable
+learning goals are verified for all 163 items. The school calendar still
+requires official verification, and real class lists have not yet been loaded
+through the existing roster import/audit/cleanup tooling.
 
 **Amplify Math 8 production import is complete.** Supplied Units 1–8 were
 fully extracted and source-validated, then 8 canonical Units and 163
 Lesson/item rows were imported and independently verified in production in
 Sprint 6.7. The 9 prior Math 8 Units are archived; their 50 Lessons and all
-historical data remain intact. Publisher summaries are present, but the
-publisher source supplied no unit or item durations, so planning time remains
-teacher-owned work rather than inferred import data. Authoritative course
+historical data remain intact. Publisher summaries are present. The publisher
+source supplied no unit or item durations, so the entered planning time is
+explicitly teacher-owned: 147 required Unit days plus 21 optional days, with
+a current one-day estimate on every imported item. Authoritative course
 completeness remains unconfirmed because no publisher course overview/index
 was supplied. Amplify IM1's own production import remains deferred and open.
 
@@ -143,9 +141,12 @@ now considered classroom-ready.
       `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`
 - [x] Verify units — 8 canonical `AMP-M8-*` Units in production
 - [x] Verify lessons — 163 canonical `AMP-M8-*` Lesson/item rows in production
-- [ ] Verify required instructional days
-- [ ] Review imported publisher summaries and add teacher-owned learning goals
-      where needed
+- [x] Enter and verify teacher-owned instructional time — all 8 Units total
+      147 required days plus 21 optional days; all 163 imported items
+      currently have a one-day editable planning estimate
+- [x] Review Amplify source pages and enter source-grounded, teacher-owned
+      learning goals — 303 editable goals verified across all 163 items;
+      multiple goals per lesson are supported
 - [x] Archive prior Math 8 curriculum — 9 legacy Units archived; all 50 linked
       Lessons and historical records preserved
 

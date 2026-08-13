@@ -11,6 +11,22 @@ Math 8's production curriculum import is complete. Sprint 6.8 is not an
 importer redesign and must not rewrite the 8 imported Units, 163 imported
 items, 9 archived legacy Units, or 50 preserved legacy Lessons.
 
+## Current Sprint Checkpoint
+
+The deployment and end-to-end write proof are complete. The composite Unit
+editor identity correction is live, and Unit planning values persist across
+reload. Teacher-owned estimates have been entered and verified for all 8 Math
+8 Units (147 required days plus 21 optional days) and all 163 imported items
+(currently one day each).
+
+All 163 Math 8 items now have source-grounded, editable learning goals: 303
+goals in total, with multiple goals per lesson supported. The complete review
+and verification record is in `docs/Reference/AMPLIFY_M8_GOAL_REVIEW.md`.
+
+The current safe stopping point is after verified production data entry and a
+read-only local application spot-check. No importer, archive migration,
+curriculum source, or preserved historical data was changed.
+
 ## Working Context
 
 - **Terminal:** PROJECT for inspection; BUILD for verification; GIT only for
@@ -25,7 +41,7 @@ items, 9 archived legacy Units, or 50 preserved legacy Lessons.
   real Unit-time save has survived reload. Do not bulk-enter planning time
   until that end-to-end write is proven.
 
-## First-Hour Plan
+## Completed First-Hour Plan
 
 1. Read Layer 1 of `docs/History/SPRINT_HANDOFF_6.7.md`.
 2. Verify Git state and preserve the unrelated task-board, Obsidian, assets,
@@ -41,6 +57,16 @@ items, 9 archived legacy Units, or 50 preserved legacy Lessons.
    `Not planned` states, and the Unit-time editor in the live UI.
 7. With separate write authorization, save one real Unit estimate, reload,
    and confirm persistence before planning the remaining Units and Lessons.
+
+All seven steps are complete. Subsequent authorized work also entered and
+verified the remaining Unit and item estimates, reviewed all supplied Math 8
+source pages, and entered and verified 303 learning goals across all 163 items.
+
+## Next Work
+
+1. Verify and load the official school calendar.
+2. Load real rosters when district data is available.
+3. Continue classroom validation through actual planning and teaching.
 
 ## Success Criteria
 

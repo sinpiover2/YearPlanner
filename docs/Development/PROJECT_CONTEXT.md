@@ -579,14 +579,17 @@ permanent, curriculum-agnostic process:
 
 ## Next Major Milestone
 
-Extract and Import Amplify Math 8 — apply the canonical
-`CURRICULUM_IMPORT_WORKFLOW.md` process to a second curriculum (Sprint 6.7's
-objective; see `docs/WORKFLOW/START_SPRINT.md`). Amplify Math 1's own
-production import is not finished — the `Lessons` schema migration and the
-importer itself still need to be deployed and executed — but that work no
-longer gates starting Math 8; it is tracked as deferred, still-open work
-rather than abandoned. See `docs/Development/CLASSROOM_READINESS.md`,
-Section A.
+Load the remaining real-school data. The canonical Math 8 import is complete:
+8 Units and 163 items are verified in production, all Unit and item planning-
+day estimates are entered, and 303 source-grounded, editable learning goals
+are verified across all 163 items. The next operational step is to verify the
+official school calendar and load real rosters when available. See
+`docs/WORKFLOW/START_SPRINT.md` and
+`docs/Development/CLASSROOM_READINESS.md`, Section A.
+
+Amplify Math 1's production import remains deferred and open. Its `Lessons`
+schema migration and importer still need to be deployed and executed, but do
+not gate completion of Math 8 classroom preparation.
 
 Protect Teacher Work — partially shipped in Sprint 6.0 (write authorization,
 in full, plus one write-reliability fix; see
