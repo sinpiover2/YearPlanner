@@ -54,6 +54,33 @@ non-goal fields were preserved; Units 2-8 remained unchanged.
 | 8.1 Performance Task | I can demonstrate proficiency with the concepts and skills developed in this unit. |
 | Unit Synthesis and Reflection | I can be purposeful, strategic, and goal-oriented about my learning.<br>I can connect ideas within this unit and across units.<br>I can revisit and revise my thinking and reflect on my growth. |
 
+## Unit 2: Dilations, Similarity, and Slope
+
+Source reviewed locally: `Curriculm/M8/Unit 2/Unit 2.pdf`
+
+Production verification: all 33 goals persisted across 17 items; all
+non-goal fields were preserved; Units 1 and 3-8 remained unchanged.
+
+| Item | Reviewed learning goals |
+| --- | --- |
+| 8.2 Pre-Unit Check | I can show what I already understand about ideas that will support this unit. |
+| Explore: Standard Paper Sizes | I can identify rectangles that are scaled copies of one another.<br>I can describe the features of scaled copies of a rectangle. |
+| 1. Sketchy Dilations | I can connect dilations with scaled copies.<br>I can describe how a dilation affects a figure. |
+| 2. Dilation Mini Golf | I can identify the center and scale factor of a dilation.<br>I can dilate a point or figure using distance measurements.<br>I can describe how the pre-image, image, and scale factor are related in a dilation. |
+| 3. Transformation Targets With Dilations | I can use a sequence of transformations, including dilations, to map one figure onto another.<br>I can describe a transformation sequence using dilate, translate, reflect, rotate, image, and pre-image. |
+| 4. Match My Dilation | I can dilate a figure on a grid using a center of dilation and scale factor.<br>I can describe how scale factors greater than 1, between 0 and 1, and equal to 1 affect an image. |
+| 5. Dilations on a Plane | I can dilate a figure using its coordinates, a center of dilation, and a scale factor.<br>I can explain how a dilation affects coordinates when its center is the origin or another point. |
+| 8.2 Practice Day 1 | I can apply what I have learned about dilations, scale factors, and coordinates. |
+| 8.2 Sub-Unit Quiz | I can demonstrate my understanding of dilations, scale factors, and coordinates. |
+| 6. Social Scavenger Hunt | I can recognize that figures are similar when a sequence of transformations maps one onto the other.<br>I can recognize that similar figures have congruent corresponding angles and proportional corresponding side lengths.<br>I can justify whether figures are similar, congruent, or neither using transformations. |
+| 7. Are Angles Enough? | I can explain why two pairs of congruent corresponding angles are enough to establish that triangles are similar.<br>I can justify that two triangles are similar using their angle measures. |
+| 8. Shadows | I can recognize equal ratios among corresponding side lengths in similar triangles.<br>I can determine missing side lengths in similar triangles.<br>I can describe a strategy for determining missing side lengths in similar triangles. |
+| 9. Water Slide | I can use similar triangles to reason about the slope of a line.<br>I can explain how similar triangles and the slopes of lines are connected. |
+| 10. Slope Challenges | I can use slope triangles to determine the slope of a line.<br>I can describe a strategy for determining a line's slope. |
+| 8.2 Practice Day 2 | I can apply the dilation, similarity, and slope ideas developed in this unit. |
+| 8.2 Performance Task | I can demonstrate proficiency with the concepts and skills developed in this unit. |
+| Unit Synthesis and Reflection | I can be purposeful, strategic, and goal-oriented about my learning.<br>I can connect ideas within this unit and across units.<br>I can revisit and revise my thinking and reflect on my growth. |
+
 ## Unit 3: Proportional and Linear Relationships
 
 Source reviewed locally: `Curriculm/M8/Unit 3/Unit 3.pdf`
@@ -82,33 +109,6 @@ non-goal fields were preserved; Units 1-2 and 4-8 remained unchanged.
 | 13. Pennies and Quarters | I can connect a real-world situation with its table, equation, graph, and solutions.<br>I can describe how to determine solutions in a real-world situation. |
 | 8.3 Practice Day 2 | I can apply the proportional relationships, linear equations, slope, and solution ideas developed in this unit. |
 | 8.3 Performance Task | I can demonstrate proficiency with the concepts and skills developed in this unit. |
-| Unit Synthesis and Reflection | I can be purposeful, strategic, and goal-oriented about my learning.<br>I can connect ideas within this unit and across units.<br>I can revisit and revise my thinking and reflect on my growth. |
-
-## Unit 2: Dilations, Similarity, and Slope
-
-Source reviewed locally: `Curriculm/M8/Unit 2/Unit 2.pdf`
-
-Production verification: all 33 goals persisted across 17 items; all
-non-goal fields were preserved; Units 1 and 3-8 remained unchanged.
-
-| Item | Reviewed learning goals |
-| --- | --- |
-| 8.2 Pre-Unit Check | I can show what I already understand about ideas that will support this unit. |
-| Explore: Standard Paper Sizes | I can identify rectangles that are scaled copies of one another.<br>I can describe the features of scaled copies of a rectangle. |
-| 1. Sketchy Dilations | I can connect dilations with scaled copies.<br>I can describe how a dilation affects a figure. |
-| 2. Dilation Mini Golf | I can identify the center and scale factor of a dilation.<br>I can dilate a point or figure using distance measurements.<br>I can describe how the pre-image, image, and scale factor are related in a dilation. |
-| 3. Transformation Targets With Dilations | I can use a sequence of transformations, including dilations, to map one figure onto another.<br>I can describe a transformation sequence using dilate, translate, reflect, rotate, image, and pre-image. |
-| 4. Match My Dilation | I can dilate a figure on a grid using a center of dilation and scale factor.<br>I can describe how scale factors greater than 1, between 0 and 1, and equal to 1 affect an image. |
-| 5. Dilations on a Plane | I can dilate a figure using its coordinates, a center of dilation, and a scale factor.<br>I can explain how a dilation affects coordinates when its center is the origin or another point. |
-| 8.2 Practice Day 1 | I can apply what I have learned about dilations, scale factors, and coordinates. |
-| 8.2 Sub-Unit Quiz | I can demonstrate my understanding of dilations, scale factors, and coordinates. |
-| 6. Social Scavenger Hunt | I can recognize that figures are similar when a sequence of transformations maps one onto the other.<br>I can recognize that similar figures have congruent corresponding angles and proportional corresponding side lengths.<br>I can justify whether figures are similar, congruent, or neither using transformations. |
-| 7. Are Angles Enough? | I can explain why two pairs of congruent corresponding angles are enough to establish that triangles are similar.<br>I can justify that two triangles are similar using their angle measures. |
-| 8. Shadows | I can recognize equal ratios among corresponding side lengths in similar triangles.<br>I can determine missing side lengths in similar triangles.<br>I can describe a strategy for determining missing side lengths in similar triangles. |
-| 9. Water Slide | I can use similar triangles to reason about the slope of a line.<br>I can explain how similar triangles and the slopes of lines are connected. |
-| 10. Slope Challenges | I can use slope triangles to determine the slope of a line.<br>I can describe a strategy for determining a line's slope. |
-| 8.2 Practice Day 2 | I can apply the dilation, similarity, and slope ideas developed in this unit. |
-| 8.2 Performance Task | I can demonstrate proficiency with the concepts and skills developed in this unit. |
 | Unit Synthesis and Reflection | I can be purposeful, strategic, and goal-oriented about my learning.<br>I can connect ideas within this unit and across units.<br>I can revisit and revise my thinking and reflect on my growth. |
 
 ## Unit 4: Linear Equations and Linear Systems
