@@ -83,6 +83,17 @@ export function buildCalendar() {
   return rows;
 }
 
+export function buildDayTypeUpdatePreview(rows = buildCalendar()) {
+  return rows
+    .filter((row) => row.InstructionalDay === "TRUE")
+    .map((row) => ({
+      Date: row.Date,
+      CurrentDayType: "School",
+      ProposedDayType: row.DayType,
+      Action: "UPDATE DayType ONLY",
+    }));
+}
+
 function csvCell(value) {
   return `"${String(value).replaceAll('"', '""')}"`;
 }
@@ -98,5 +109,12 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   fs.mkdirSync(path.dirname(output), { recursive: true });
   const rows = buildCalendar();
   fs.writeFileSync(output, toCsv(rows));
-  console.log(JSON.stringify({ output, rows: rows.length, instructionalDays: rows.filter((row) => row.InstructionalDay === "TRUE").length }));
+  const previewOutput = path.resolve(path.dirname(output), "svusd-2026-27-day-type-update-preview.csv");
+  const previewHeaders = ["Date", "CurrentDayType", "ProposedDayType", "Action"];
+  const preview = buildDayTypeUpdatePreview(rows);
+  fs.writeFileSync(
+    previewOutput,
+    `${previewHeaders.join(",")}\n${preview.map((row) => previewHeaders.map((header) => csvCell(row[header])).join(",")).join("\n")}\n`,
+  );
+  console.log(JSON.stringify({ output, previewOutput, rows: rows.length, instructionalDays: preview.length }));
 }

@@ -31,6 +31,16 @@ The meeting-pattern columns are intentionally period-based. Before a live
 values and map the five active course sections explicitly; do not assume the
 current block-group names.
 
+Read-only production snapshot (August 13, 2026): all five active sections
+already map correctly to `Odd` or `Even`, and the five `SchedulePatterns` rows
+already match the published meeting pattern. No change to either sheet is
+needed. `SchoolCalendar` already contains the same 211 dates, 180 school-day
+numbers, instructional flags, and richer event/closure notes. The generated
+day-type preview therefore proposes exactly 180 cell changes: replace `School`
+only on instructional rows with the verified SVMS day type. It deliberately
+preserves all 31 non-instructional `DayType` values and every Event and Notes
+cell.
+
 Generate and verify:
 
 ```bash

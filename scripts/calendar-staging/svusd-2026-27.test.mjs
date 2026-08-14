@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildCalendar, NON_STUDENT_RANGES, SOURCE, toCsv } from "./generate-svusd-2026-27.mjs";
+import { buildCalendar, buildDayTypeUpdatePreview, NON_STUDENT_RANGES, SOURCE, toCsv } from "./generate-svusd-2026-27.mjs";
 
 const rows = buildCalendar();
 const byDate = new Map(rows.map((row) => [row.Date, row]));
@@ -35,4 +35,14 @@ test("SVMS-specific dated markers are preserved without inventing TBD events", (
   assert.equal(byDate.get("2027-02-19").Notes, "SVMS End of Trimester 2");
   assert.match(byDate.get("2027-05-27").Notes, /SVMS End of Trimester 3/);
   assert.doesNotMatch(toCsv(rows), /CAASPP|Back to School Night|Open House/);
+});
+
+test("production preview changes only the 180 instructional DayType values", () => {
+  const preview = buildDayTypeUpdatePreview(rows);
+  assert.equal(preview.length, 180);
+  assert.ok(preview.every((row) => row.CurrentDayType === "School"));
+  assert.ok(preview.every((row) => row.Action === "UPDATE DayType ONLY"));
+  assert.ok(preview.every((row) => row.ProposedDayType !== "No School"));
+  assert.equal(preview[0].Date, "2026-08-06");
+  assert.equal(preview.at(-1).Date, "2027-05-27");
 });
