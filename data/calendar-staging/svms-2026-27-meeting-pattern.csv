@@ -1,0 +1,6 @@
+DayOfWeek,DayType,Period1,Period2,Period3,Period4,Period5,Period6
+"Monday","Block Day - Odd Periods","TRUE","FALSE","TRUE","FALSE","TRUE","FALSE"
+"Tuesday","Block Day - Even Periods","FALSE","TRUE","FALSE","TRUE","FALSE","TRUE"
+"Wednesday","Short Day","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"
+"Thursday","Full Day","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"
+"Friday","Full Day","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"

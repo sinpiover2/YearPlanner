@@ -17,15 +17,26 @@ non-instructional weekdays.
 
 SVMS trimester dates are included as notes. Site events listed as TBD—Back to
 School Night, CAASPP minimum-day dates, and Open House—are intentionally not
-invented. The official student calendar also does not define the recurring
-SVMS bell schedule, so `SchedulePatterns` requires a separate authoritative
-source and review.
+invented.
+
+The recurring schedule is sourced from Scotts Valley Middle School's
+`2026-27 Bell Schedule`, preserved locally as
+`Shared Resources/Extended - SVMS Bell Schedule 26.27.jpg`. The staged bell
+table preserves every published time. The meeting-pattern table expresses the
+verified period pattern: odd periods Monday, even periods Tuesday, and all six
+periods Wednesday through Friday. Calendar `DayType` values use the same names.
+
+The meeting-pattern columns are intentionally period-based. Before a live
+`SchedulePatterns` update, compare them with the production `Sections.BlockGroup`
+values and map the five active course sections explicitly; do not assume the
+current block-group names.
 
 Generate and verify:
 
 ```bash
 node scripts/calendar-staging/generate-svusd-2026-27.mjs
-node --test scripts/calendar-staging/svusd-2026-27.test.mjs
+node scripts/calendar-staging/generate-svms-2026-27-bell-schedule.mjs
+node --test scripts/calendar-staging/*.test.mjs
 ```
 
 Before any production import, perform a read-only snapshot and comparison of

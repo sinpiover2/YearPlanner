@@ -32,6 +32,14 @@ const NOTES = new Map([
   ["2027-05-27", "Last Student Day; SVMS End of Trimester 3"],
 ]);
 
+export const SVMS_DAY_TYPES = {
+  1: "Block Day - Odd Periods",
+  2: "Block Day - Even Periods",
+  3: "Short Day",
+  4: "Full Day",
+  5: "Full Day",
+};
+
 function date(value) {
   return new Date(`${value}T12:00:00Z`);
 }
@@ -67,7 +75,7 @@ export function buildCalendar() {
       Date: dateKey,
       InstructionalDay: event ? "FALSE" : "TRUE",
       SchoolDay: event ? "" : String(schoolDay),
-      DayType: event ? "No School" : "Regular",
+      DayType: event ? "No School" : SVMS_DAY_TYPES[weekday],
       Event: event,
       Notes: NOTES.get(dateKey) || "",
     });
