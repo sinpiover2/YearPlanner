@@ -41,6 +41,12 @@ only on instructional rows with the verified SVMS day type. It deliberately
 preserves all 31 non-instructional `DayType` values and every Event and Notes
 cell.
 
+Production update completed and verified August 13, 2026: the 180 authorized
+instructional `SchoolCalendar.DayType` cells were updated from `School` to the
+verified SVMS day type. A complete post-write read confirmed persistence and
+confirmed that Date, SchoolDay, InstructionalDay, Event, Notes, all 31
+non-instructional DayType cells, Sections, and SchedulePatterns were unchanged.
+
 Generate and verify:
 
 ```bash
