@@ -143,7 +143,17 @@ export function buildPacing() {
     })),
   ];
 
-  return { assignments, boundaries, buffers, unscheduled, requiredItems, optionalItems };
+  const sectionPacingRows = assignments.map((row) => ({
+    PacingID: `${row.SectionID}|${row.Date}|1`,
+    SectionID: row.SectionID,
+    PlannedDate: row.Date,
+    Sequence: "1",
+    LessonID: row.LessonID,
+    Locked: "FALSE",
+    Notes: "",
+  }));
+
+  return { assignments, boundaries, buffers, unscheduled, sectionPacingRows, requiredItems, optionalItems };
 }
 
 function csvCell(value) { return `"${String(value ?? "").replaceAll('"', '""')}"`; }
@@ -166,6 +176,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
     write("m8-unit-boundaries-2026-27.csv", result.boundaries, ["SectionID", "BlockGroup", "UnitID", "UnitNumber", "UnitTitle", "RequiredItems", "PlannedStartDate", "PlannedEndDate"]),
     write("m8-buffer-days-2026-27.csv", result.buffers, ["SectionID", "BlockGroup", "BufferNumber", "Date", "SchoolDay", "DayType", "Status"]),
     write("m8-unscheduled-items-2026-27.csv", result.unscheduled, ["Category", "UnitID", "LessonID", "Type", "Title", "Reason"]),
+    write("m8-section-pacing-import-preview.csv", result.sectionPacingRows, ["PacingID", "SectionID", "PlannedDate", "Sequence", "LessonID", "Locked", "Notes"]),
   ];
   console.log(JSON.stringify({ outputs, assignments: result.assignments.length, boundaries: result.boundaries.length, buffers: result.buffers.length, unscheduled: result.unscheduled.length }));
 }

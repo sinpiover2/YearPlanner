@@ -43,3 +43,19 @@ test("uses the reviewed production title for Unit 6 Practice Day 1", () => {
   assert.equal(rows.length, 3);
   assert.ok(rows.every((row) => row.LessonTitle === "8.6 Practice Day 1"));
 });
+
+test("builds a minimal, unique SectionPacing import preview", () => {
+  assert.equal(result.sectionPacingRows.length, 417);
+  assert.equal(new Set(result.sectionPacingRows.map((row) => row.PacingID)).size, 417);
+  assert.deepEqual(Object.keys(result.sectionPacingRows[0]), [
+    "PacingID", "SectionID", "PlannedDate", "Sequence", "LessonID", "Locked", "Notes",
+  ]);
+  assert.ok(result.sectionPacingRows.every((row) => row.PacingID === `${row.SectionID}|${row.PlannedDate}|${row.Sequence}`));
+  assert.ok(result.sectionPacingRows.every((row) => row.Sequence === "1" && row.Locked === "FALSE" && row.Notes === ""));
+});
+
+test("SectionPacing preview leaves buffers and optional or added assessment days unassigned", () => {
+  const scheduledIds = new Set(result.sectionPacingRows.map((row) => row.LessonID));
+  assert.ok(result.optionalItems.every((item) => !scheduledIds.has(item.LessonID)));
+  assert.equal(result.sectionPacingRows.some((row) => row.LessonID === ""), false);
+});

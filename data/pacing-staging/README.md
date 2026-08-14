@@ -20,6 +20,8 @@ Artifacts:
 - `m8-unit-boundaries-2026-27.csv`: start and end dates for each unit/section
 - `m8-buffer-days-2026-27.csv`: remaining unassigned section meetings
 - `m8-unscheduled-items-2026-27.csv`: 24 optional items plus 8 assessment days
+- `m8-section-pacing-import-preview.csv`: the same 417 assignments reduced to
+  the proposed production `SectionPacing` schema
 
 Generate and verify:
 
@@ -31,3 +33,6 @@ node --test scripts/pacing-staging/*.test.mjs
 Production note: the current `YearPlan` schema is course-level and cannot
 represent section-specific dates. Do not import these previews into `YearPlan`
 without a reviewed schema or an explicit policy for collapsing odd/even dates.
+The proposed additive schema and write safeguards are documented in
+`docs/Architecture/SECTION_PACING.md`. No production sheet has been created or
+written by this staging workflow.
