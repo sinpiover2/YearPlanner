@@ -56,9 +56,11 @@ Before any write, a migration/import must:
 4. Verify unique `PacingID` values and unique `(SectionID, PlannedDate, Sequence)` tuples.
 5. Validate every section, lesson, course relationship, date, and section meeting.
 6. Acquire a script lock and re-read the target immediately before writing.
-7. Write the complete payload in one rectangular operation, then read it back and
+7. Create a named full-spreadsheet backup before the revalidation pass and any
+   mutation; refuse the import if backup creation fails.
+8. Write the complete payload in one rectangular operation, then read it back and
    require exact equality.
-8. Roll back a newly created sheet, or clear only rows written into a previously
+9. Roll back a newly created sheet, or clear only rows written into a previously
    validated empty sheet, if the write or verification fails.
 
 The first production authorization should cover only creating this sheet and

@@ -127,11 +127,15 @@ test("authorized execution creates, writes, and exactly verifies the initial she
     lockService,
     sheetId: "fake",
     payload: SECTION_PACING_M8_ROWS,
+    formatTimestamp: () => "2026-08-15 120000",
   });
   assert.equal(report.success, true);
   assert.equal(report.writesOccurred, true);
   assert.equal(report.verification.valid, true);
   assert.equal(report.verification.rowCount, 417);
+  assert.match(report.backup.name, /pre-section-pacing-import 2026-08-15 120000$/);
+  assert.ok(report.backup.id);
+  assert.ok(report.backup.url);
   assert.equal(lockService.wasReleased(), true);
   assert.deepEqual(spreadsheet.getSheetByName("SectionPacing").values, [migration.SECTION_PACING_HEADERS, ...SECTION_PACING_M8_ROWS]);
 });
@@ -144,6 +148,7 @@ test("a second execution is refused and preserves the first import exactly", () 
     lockService: createFakeLockService(),
     sheetId: "fake",
     payload: SECTION_PACING_M8_ROWS,
+    formatTimestamp: () => "2026-08-15 120000",
   });
   assert.equal(report.success, false);
   assert.equal(report.errorStage, "planning");
@@ -161,6 +166,7 @@ test("failed read-back deletes a newly created sheet and reports rollback", () =
     lockService: createFakeLockService(),
     sheetId: "fake",
     payload: SECTION_PACING_M8_ROWS,
+    formatTimestamp: () => "2026-08-15 120000",
   });
   assert.equal(report.success, false);
   assert.equal(report.errorStage, "write-or-verify");
@@ -181,7 +187,25 @@ test("failed read-back restores a pre-existing empty sheet to completely empty",
     lockService: createFakeLockService(),
     sheetId: "fake",
     payload: SECTION_PACING_M8_ROWS,
+    formatTimestamp: () => "2026-08-15 120000",
   });
   assert.equal(report.rolledBack, true);
   assert.deepEqual(spreadsheet.getSheetByName("SectionPacing").values, []);
+});
+
+test("backup failure refuses before creating or writing SectionPacing", () => {
+  const spreadsheet = createFakeSpreadsheetFromRawSheets(sourceSheets());
+  spreadsheet.copy = function () { throw new Error("simulated backup failure"); };
+  const report = migration.sectionPacingExecuteLocked_(migration.SECTION_PACING_CONFIRMATION_PHRASE, {
+    spreadsheetApp: createFakeSpreadsheetApp(spreadsheet),
+    lockService: createFakeLockService(),
+    sheetId: "fake",
+    payload: SECTION_PACING_M8_ROWS,
+    formatTimestamp: () => "2026-08-15 120000",
+  });
+  assert.equal(report.success, false);
+  assert.equal(report.errorStage, "backup");
+  assert.equal(report.writesOccurred, false);
+  assert.equal(report.backup, null);
+  assert.equal(spreadsheet.getSheetByName("SectionPacing"), null);
 });

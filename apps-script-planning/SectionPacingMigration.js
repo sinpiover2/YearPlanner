@@ -138,6 +138,16 @@ function sectionPacingPlansMatch_(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function sectionPacingCreateBackup_(spreadsheet, formatTimestamp) {
+  const timestamp = formatTimestamp();
+  const backupName = "Year Planner Database — pre-section-pacing-import " + timestamp;
+  const backupSpreadsheet = spreadsheet.copy(backupName);
+  if (!backupSpreadsheet || !backupSpreadsheet.getId()) {
+    throw new Error("Spreadsheet.copy() did not return a usable backup spreadsheet.");
+  }
+  return { id: backupSpreadsheet.getId(), url: backupSpreadsheet.getUrl(), name: backupName };
+}
+
 function sectionPacingVerify_(spreadsheet, payload) {
   const target = sectionPacingReadSheet_(spreadsheet, SECTION_PACING_SHEET_NAME);
   return {
@@ -147,7 +157,7 @@ function sectionPacingVerify_(spreadsheet, payload) {
 }
 
 function sectionPacingExecuteLocked_(confirmation, deps) {
-  const report = { mode: "execute", confirmationAccepted: false, lockAcquired: false, writesOccurred: false, success: false };
+  const report = { mode: "execute", confirmationAccepted: false, lockAcquired: false, backup: null, writesOccurred: false, success: false };
   if (confirmation !== SECTION_PACING_CONFIRMATION_PHRASE) {
     report.errorStage = "confirmation"; report.errorMessage = "Confirmation did not match exactly. Nothing was read or written."; return report;
   }
@@ -166,6 +176,11 @@ function sectionPacingExecuteLocked_(confirmation, deps) {
     report.plan = firstPlan;
     originalTargetState = firstPlan.targetState;
     if (!firstPlan.safeToExecute) { report.errorStage = "planning"; report.errorMessage = "Preflight refused the import."; return report; }
+    try {
+      report.backup = sectionPacingCreateBackup_(spreadsheet, deps.formatTimestamp);
+    } catch (error) {
+      report.errorStage = "backup"; report.errorMessage = "Backup creation failed: " + error.message + ". Nothing was written."; return report;
+    }
     const secondPlan = sectionPacingBuildLivePlan_(spreadsheet, deps.payload);
     if (!sectionPacingPlansMatch_(firstPlan, secondPlan)) { report.errorStage = "revalidation"; report.errorMessage = "Workbook changed during preflight."; return report; }
     let sheet = spreadsheet.getSheetByName(SECTION_PACING_SHEET_NAME);
@@ -202,7 +217,15 @@ function previewSectionPacingImport() {
 }
 
 function executeSectionPacingImport(confirmation) {
-  return sectionPacingExecuteLocked_(confirmation, { spreadsheetApp: SpreadsheetApp, lockService: LockService, sheetId: SHEET_ID, payload: SECTION_PACING_M8_ROWS });
+  return sectionPacingExecuteLocked_(confirmation, {
+    spreadsheetApp: SpreadsheetApp,
+    lockService: LockService,
+    sheetId: SHEET_ID,
+    payload: SECTION_PACING_M8_ROWS,
+    formatTimestamp: function () {
+      return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HHmmss");
+    },
+  });
 }
 
 function executeSectionPacingImportFromEditor() {
@@ -225,6 +248,6 @@ if (typeof module !== "undefined" && module.exports) {
     SECTION_PACING_SHEET_NAME, SECTION_PACING_HEADERS, SECTION_PACING_EXPECTED_ROW_COUNT,
     SECTION_PACING_CONFIRMATION_PHRASE, SECTION_PACING_EDITOR_PLACEHOLDER,
     sectionPacingIsTrue_, sectionPacingDateKey_, sectionPacingReadSheet_, sectionPacingBuildPlan_,
-    sectionPacingBuildLivePlan_, sectionPacingPlansMatch_, sectionPacingVerify_, sectionPacingExecuteLocked_,
+    sectionPacingBuildLivePlan_, sectionPacingPlansMatch_, sectionPacingCreateBackup_, sectionPacingVerify_, sectionPacingExecuteLocked_,
   };
 }
