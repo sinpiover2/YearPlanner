@@ -1,6 +1,7 @@
 # Section Pacing
 
-Status: proposed and locally verified; not deployed and not written to production.
+Status: proposed with a guarded, locally simulated importer; not deployed and
+not written to production.
 
 ## Decision
 
@@ -63,3 +64,8 @@ Before any write, a migration/import must:
 The first production authorization should cover only creating this sheet and
 writing this exact reviewed payload. Exposing it through `doGet` and projecting
 it into the planning interface should be a later, separately reviewed change.
+
+The local production candidate is split between the generated immutable payload
+in `apps-script-planning/SectionPacingPayload.js` and the disarmed migration in
+`apps-script-planning/SectionPacingMigration.js`. Its Node tests use only
+in-memory spreadsheet fakes and never contact Google.

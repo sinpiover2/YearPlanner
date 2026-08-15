@@ -42,6 +42,15 @@ export class FakeRange {
   setValue(value) {
     this.setValues([[value]]);
   }
+
+  clearContent() {
+    for (let r = 0; r < this.numRows; r += 1) {
+      for (let c = 0; c < this.numCols; c += 1) {
+        const row = this.sheet.values[this.row - 1 + r];
+        if (row) row[this.col - 1 + c] = "";
+      }
+    }
+  }
 }
 
 export class FakeSheet {
@@ -64,6 +73,10 @@ export class FakeSheet {
 
   getDataRange() {
     return this.getRange(1, 1, this.getLastRow(), this.getLastColumn());
+  }
+
+  clearContents() {
+    this.values = [];
   }
 
   deleteRow(rowNumber) {
@@ -104,6 +117,17 @@ export class FakeSpreadsheet {
 
   getSheetByName(name) {
     return this.sheetsByName[name] || null;
+  }
+
+  insertSheet(name) {
+    if (this.sheetsByName[name]) throw new Error(`Sheet already exists: ${name}`);
+    const sheet = new FakeSheet(name, []);
+    this.sheetsByName[name] = sheet;
+    return sheet;
+  }
+
+  deleteSheet(sheet) {
+    delete this.sheetsByName[sheet.name];
   }
 
   getId() {

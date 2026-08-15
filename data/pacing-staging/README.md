@@ -27,6 +27,7 @@ Generate and verify:
 
 ```bash
 node scripts/pacing-staging/generate-m8-required-pacing.mjs
+node scripts/pacing-staging/generate-section-pacing-payload.mjs
 node --test scripts/pacing-staging/*.test.mjs
 ```
 
@@ -36,3 +37,8 @@ without a reviewed schema or an explicit policy for collapsing odd/even dates.
 The proposed additive schema and write safeguards are documented in
 `docs/Architecture/SECTION_PACING.md`. No production sheet has been created or
 written by this staging workflow.
+
+The generated `apps-script-planning/SectionPacingPayload.js` and the disarmed
+`SectionPacingMigration.js` form the locally simulated production candidate.
+The editor wrapper retains a placeholder confirmation and cannot run the live
+write successfully unless a separately authorized operator deliberately arms it.
