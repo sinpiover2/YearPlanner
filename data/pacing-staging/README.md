@@ -21,7 +21,7 @@ Artifacts:
 - `m8-buffer-days-2026-27.csv`: remaining unassigned section meetings
 - `m8-unscheduled-items-2026-27.csv`: 24 optional items plus 8 assessment days
 - `m8-section-pacing-import-preview.csv`: the same 417 assignments reduced to
-  the proposed production `SectionPacing` schema
+  the production `SectionPacing` schema
 
 Generate and verify:
 
@@ -34,11 +34,11 @@ node --test scripts/pacing-staging/*.test.mjs
 Production note: the current `YearPlan` schema is course-level and cannot
 represent section-specific dates. Do not import these previews into `YearPlan`
 without a reviewed schema or an explicit policy for collapsing odd/even dates.
-The proposed additive schema and write safeguards are documented in
-`docs/Architecture/SECTION_PACING.md`. No production sheet has been created or
-written by this staging workflow.
+The additive schema, write safeguards, and verified 2026-08-15 production
+completion are documented in `docs/Architecture/SECTION_PACING.md`. The local
+staging workflow itself remains inert and never performs a production write.
 
 The generated `apps-script-planning/SectionPacingPayload.js` and the disarmed
-`SectionPacingMigration.js` form the locally simulated production candidate.
+`SectionPacingMigration.js` form the guarded production importer.
 The editor wrapper retains a placeholder confirmation and cannot run the live
 write successfully unless a separately authorized operator deliberately arms it.

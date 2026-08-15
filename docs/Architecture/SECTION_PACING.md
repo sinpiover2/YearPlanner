@@ -1,7 +1,7 @@
 # Section Pacing
 
-Status: proposed with a guarded, locally simulated importer; not deployed and
-not written to production.
+Status: initial Math 8 section pacing imported and independently verified in
+production on 2026-08-15.
 
 ## Decision
 
@@ -63,11 +63,24 @@ Before any write, a migration/import must:
 9. Roll back a newly created sheet, or clear only rows written into a previously
    validated empty sheet, if the write or verification fails.
 
-The first production authorization should cover only creating this sheet and
-writing this exact reviewed payload. Exposing it through `doGet` and projecting
-it into the planning interface should be a later, separately reviewed change.
+The initial production operation created the sheet and wrote only this reviewed
+payload. Exposing it through `doGet` and projecting it into the planning
+interface remains a later, separately reviewed change.
 
 The local production candidate is split between the generated immutable payload
 in `apps-script-planning/SectionPacingPayload.js` and the disarmed migration in
 `apps-script-planning/SectionPacingMigration.js`. Its Node tests use only
 in-memory spreadsheet fakes and never contact Google.
+
+## Production completion
+
+The guarded import completed successfully on 2026-08-15. Its execution report
+recorded `writesOccurred: true`, `success: true`, and exact post-write
+verification of 417 rows. A separate standalone verification returned
+`valid: true`, `rowCount: 417`. Independent range inspection confirmed the
+seven approved headers, 139 rows for each of `M8-P1`, `M8-P2`, and `M8-P3`,
+417 unique pacing IDs, and 417 unique section/date/sequence slots.
+
+The successful pre-write backup is `19xDWMMD8o_NMVAHWUh4Gt3PLhorQcV21qYGCtf66TU4`.
+The Apps Script editor wrapper was restored to its placeholder after execution,
+and remote source parity with the committed disarmed module was verified.
