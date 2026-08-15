@@ -52,7 +52,14 @@ function sectionPacingReadSheet_(spreadsheet, sheetName) {
 
 function sectionPacingRowsEqual_(left, right) {
   return left.length === right.length && left.every(function (row, rowIndex) {
-    return sectionPacingArraysEqual_(row, right[rowIndex]);
+    return row.length === right[rowIndex].length && row.every(function (value, columnIndex) {
+      const header = SECTION_PACING_HEADERS[columnIndex];
+      const expected = right[rowIndex][columnIndex];
+      if (header === "PlannedDate") return sectionPacingDateKey_(value) === sectionPacingDateKey_(expected);
+      if (header === "Sequence") return Number(value) === Number(expected);
+      if (header === "Locked") return sectionPacingIsTrue_(value) === sectionPacingIsTrue_(expected);
+      return String(value === null || value === undefined ? "" : value) === String(expected === null || expected === undefined ? "" : expected);
+    });
   });
 }
 
@@ -247,7 +254,7 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     SECTION_PACING_SHEET_NAME, SECTION_PACING_HEADERS, SECTION_PACING_EXPECTED_ROW_COUNT,
     SECTION_PACING_CONFIRMATION_PHRASE, SECTION_PACING_EDITOR_PLACEHOLDER,
-    sectionPacingIsTrue_, sectionPacingDateKey_, sectionPacingReadSheet_, sectionPacingBuildPlan_,
+    sectionPacingIsTrue_, sectionPacingDateKey_, sectionPacingRowsEqual_, sectionPacingReadSheet_, sectionPacingBuildPlan_,
     sectionPacingBuildLivePlan_, sectionPacingPlansMatch_, sectionPacingCreateBackup_, sectionPacingVerify_, sectionPacingExecuteLocked_,
   };
 }

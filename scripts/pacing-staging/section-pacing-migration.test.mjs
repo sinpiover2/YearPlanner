@@ -140,6 +140,30 @@ test("authorized execution creates, writes, and exactly verifies the initial she
   assert.deepEqual(spreadsheet.getSheetByName("SectionPacing").values, [migration.SECTION_PACING_HEADERS, ...SECTION_PACING_M8_ROWS]);
 });
 
+test("verification accepts Google Sheets native date-cell coercion without weakening content checks", () => {
+  const spreadsheet = createFakeSpreadsheetFromRawSheets(sourceSheets());
+  const spreadsheetApp = createFakeSpreadsheetApp(spreadsheet);
+  spreadsheetApp.flush = function () {
+    const sheet = spreadsheet.getSheetByName("SectionPacing");
+    for (let rowIndex = 1; rowIndex < sheet.values.length; rowIndex += 1) {
+      const [year, month, day] = sheet.values[rowIndex][2].split("-").map(Number);
+      sheet.values[rowIndex][2] = new Date(year, month - 1, day);
+    }
+  };
+  const report = migration.sectionPacingExecuteLocked_(migration.SECTION_PACING_CONFIRMATION_PHRASE, {
+    spreadsheetApp,
+    lockService: createFakeLockService(),
+    sheetId: "fake",
+    payload: SECTION_PACING_M8_ROWS,
+    formatTimestamp: () => "2026-08-15 120000",
+  });
+  assert.equal(report.success, true);
+  assert.equal(report.verification.valid, true);
+  const altered = SECTION_PACING_M8_ROWS.map((row) => row.slice());
+  altered[0][4] = "WRONG-LESSON";
+  assert.equal(migration.sectionPacingVerify_(spreadsheet, altered).valid, false);
+});
+
 test("a second execution is refused and preserves the first import exactly", () => {
   const spreadsheet = createFakeSpreadsheetFromRawSheets(sourceSheets({ includeTarget: true, targetRows: SECTION_PACING_M8_ROWS }));
   const before = spreadsheet.getSheetByName("SectionPacing").values.map((row) => row.slice());
