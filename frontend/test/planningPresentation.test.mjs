@@ -24,6 +24,7 @@ let renderUnitsComponent;
 let renderLessonTableComponent;
 let renderForecastCardsComponent;
 let renderYearTimelineComponent;
+let renderSessionTileComponent;
 let renderBuildDirectory;
 
 before(async () => {
@@ -38,6 +39,7 @@ before(async () => {
     import LessonTable from ${JSON.stringify(join(frontendRoot, "src/components/LessonTable.jsx"))};
     import ForecastSummaryCards from ${JSON.stringify(join(frontendRoot, "src/components/ForecastSummaryCards.jsx"))};
     import YearTimeline from ${JSON.stringify(join(frontendRoot, "src/components/YearTimeline.jsx"))};
+    import SessionTile from ${JSON.stringify(join(frontendRoot, "src/components/Planning/SessionTile.jsx"))};
     export const renderSidebarComponent = (props) =>
       renderToStaticMarkup(React.createElement(Sidebar, props));
     export const renderUnitsComponent = (props) =>
@@ -48,6 +50,8 @@ before(async () => {
       renderToStaticMarkup(React.createElement(ForecastSummaryCards, props));
     export const renderYearTimelineComponent = (props) =>
       renderToStaticMarkup(React.createElement(YearTimeline, props));
+    export const renderSessionTileComponent = (props) =>
+      renderToStaticMarkup(React.createElement(SessionTile, props));
   `);
   const result = await build({
     configFile: false,
@@ -63,7 +67,7 @@ before(async () => {
   const output = Array.isArray(result) ? result[0].output[0] : result.output[0];
   const bundlePath = join(renderBuildDirectory, "planning-render-bundle.mjs");
   await writeFile(bundlePath, output.code);
-  ({ renderSidebarComponent, renderUnitsComponent, renderLessonTableComponent, renderForecastCardsComponent, renderYearTimelineComponent } = await import(pathToFileURL(bundlePath)));
+  ({ renderSidebarComponent, renderUnitsComponent, renderLessonTableComponent, renderForecastCardsComponent, renderYearTimelineComponent, renderSessionTileComponent } = await import(pathToFileURL(bundlePath)));
 });
 
 after(async () => {
@@ -122,6 +126,32 @@ test("optional zero remains distinct from unknown and invalid", () => {
   assert.equal(getOptionalDaysPresentation(getUnitPlanningModel([], units[0])), "0d buffer");
   assert.equal(getOptionalDaysPresentation(getUnitPlanningModel([], { ...units[0], OptionalDays: "" })), "Buffer not planned");
   assert.equal(getOptionalDaysPresentation(getUnitPlanningModel([], { ...units[0], OptionalDays: -1 })), "Invalid buffer value");
+});
+
+test("planning tiles show scheduled pacing without presenting it as authored content", () => {
+  const unplanned = renderSessionTileComponent({
+    session: {
+      id: "M8-P1-2026-08-10",
+      planned: false,
+      scheduledLabel: "1.5 Turtle Crossing",
+    },
+  });
+  assert.match(unplanned, /Scheduled/);
+  assert.match(unplanned, /1\.5 Turtle Crossing/);
+  assert.match(unplanned, /\+ Plan lesson/);
+  assert.doesNotMatch(unplanned, /class="session-card-title"/);
+
+  const authored = renderSessionTileComponent({
+    session: {
+      id: "M8-P1-2026-08-10",
+      planned: true,
+      title: "My adjusted plan",
+      episodes: [],
+      scheduledLabel: "1.5 Turtle Crossing",
+    },
+  });
+  assert.match(authored, /My adjusted plan/);
+  assert.match(authored, /Scheduled · 1\.5 Turtle Crossing/);
 });
 
 test("fully planned Sidebar retains numeric progress, pace, zero buffer, lesson count, and navigation", () => {

@@ -11,6 +11,7 @@ function doGet(e) {
     dailyProgress: getSheetData("DailyProgress"),
     schedulePatterns: getSheetData("SchedulePatterns"),
     sections: getSheetData("Sections"),
+    sectionPacing: getSheetData("SectionPacing"),
     lastUpdated: new Date().toISOString(),
   };
 

@@ -160,6 +160,7 @@ function App() {
   const units = plannerData?.units ?? [];
   const schoolCalendar = plannerData?.schoolCalendar ?? [];
   const schedulePatterns = plannerData?.schedulePatterns ?? [];
+  const sectionPacing = plannerData?.sectionPacing ?? [];
   const sections = plannerData?.sections ?? [];
   const lessons = plannerData?.lessons ?? [];
   const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
@@ -313,6 +314,7 @@ function App() {
     lessons,
     schoolCalendar,
     schedulePatterns,
+    sectionPacing,
     referenceDate: planningReferenceDate,
   });
 

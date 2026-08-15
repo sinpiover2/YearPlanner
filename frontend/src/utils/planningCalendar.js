@@ -24,7 +24,7 @@ const ISO_DATE_PREFIX = /^(\d{4}-\d{2}-\d{2})/;
 // viewer's browser timezone. Never round-trip these through `new
 // Date(value)` + local getters or `toISOString()` — both can shift the
 // day depending on where the code runs.
-function toDateKey(value) {
+export function toDateKey(value) {
   if (value instanceof Date) {
     return formatLocalKey(value);
   }

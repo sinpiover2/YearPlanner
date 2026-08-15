@@ -64,8 +64,11 @@ Before any write, a migration/import must:
    validated empty sheet, if the write or verification fails.
 
 The initial production operation created the sheet and wrote only this reviewed
-payload. Exposing it through `doGet` and projecting it into the planning
-interface remains a later, separately reviewed change.
+payload. The local application now exposes it read-only through `doGet`, joins
+each row to its section meeting and curriculum item, and displays a quiet
+`Scheduled` cue in Planning. This projection never creates or overwrites the
+separately stored, teacher-authored Lesson Session. Deployment of that API and
+interface change remains separately authorized work.
 
 The local production candidate is split between the generated immutable payload
 in `apps-script-planning/SectionPacingPayload.js` and the disarmed migration in

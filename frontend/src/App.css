@@ -3512,6 +3512,42 @@ button.planning-day-heading.selected:focus-visible {
   font-weight: 500;
 }
 
+.session-card-scheduled-label {
+  color: #6f675b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.session-card-scheduled-title {
+  display: -webkit-box;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #26221c;
+  font-size: 13px;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.planning-session-card.unplanned .session-card-create {
+  margin-top: 8px;
+  color: #6f675b;
+}
+
+.session-card-scheduled {
+  display: -webkit-box;
+  margin-top: 8px;
+  overflow: hidden;
+  color: #6f675b;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
 .session-chip-row {
   display: flex;
   flex-wrap: wrap;
