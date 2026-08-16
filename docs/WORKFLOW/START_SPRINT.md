@@ -1,82 +1,78 @@
 # Start Sprint
 
-## Sprint 6.8 Objective
+## Sprint 6.9 Objective
 
-**Primary objective:** Finish the Math 8 planning-time lifecycle without
-inventing publisher data: review, deploy, and verify the committed publisher-
-summary and Unit-time UI; then begin entering teacher-owned required,
-optional, and lesson planning-day estimates through the application.
+**Primary objective:** Build a spreadsheet-first, source-grounded learning-goal
+pipeline for the 164 active Amplify Integrated Math 1 items, review the full
+course efficiently, and prepare one guarded batch update that changes only
+`Lessons.KeyOutcome`.
 
-Math 8's production curriculum import is complete. Sprint 6.8 is not an
-importer redesign and must not rewrite the 8 imported Units, 163 imported
-items, 9 archived legacy Units, or 50 preserved legacy Lessons.
+Math 8 is complete for this stage: 8 active Units, 163 items, 303 verified
+goals, and 417 section-specific required-item pacing rows are live. Sprint 6.9
+must reuse that proven provenance and guarded-write discipline without
+repeating its slow item-by-item production ceremony.
 
 ## Current Sprint Checkpoint
 
-The deployment and end-to-end write proof are complete. The composite Unit
-editor identity correction is live, and Unit planning values persist across
-reload. Teacher-owned estimates have been entered and verified for all 8 Math
-8 Units (147 required days plus 21 optional days) and all 163 imported items
-(currently one day each).
+Production currently has 7 active Amplify IM1 Units and 164 active items. All
+164 have publisher titles and summaries, but none has a stored learning goal.
+The only three IM1 goals in the database belong to two archived legacy lessons
+and are not part of the active Amplify curriculum.
 
-All 163 Math 8 items now have source-grounded, editable learning goals: 303
-goals in total, with multiple goals per lesson supported. The complete review
-and verification record is in `docs/Reference/AMPLIFY_M8_GOAL_REVIEW.md`.
-
-The current safe stopping point is after verified production data entry and a
-read-only local application spot-check. No importer, archive migration,
-curriculum source, or preserved historical data was changed.
+The approved direction is one spreadsheet row per source-grounded goal, with
+stable UnitID/LessonID identity, source references, and review status. Unit-sized
+review remains useful, but production should receive one exact, guarded batch
+after the full spreadsheet is approved.
 
 ## Working Context
 
-- **Terminal:** PROJECT for inspection; BUILD for verification; GIT only for
-  reviewed commits and pushes; DEV for browser validation.
-- **Deployment:** required for the already-committed Unit-time backend and
-  frontend presentation changes, but only after independent review.
-- **Apps Script project:** `apps-script-planning`; all Math 8 importer and
-  archive entry points remain `DISARMED` and are out of scope.
-- **Browser testing:** required against the existing production Netlify site.
-- **GitHub push:** required after review; preserve unrelated local files.
-- **Stopping point:** pause after deployment and one explicitly authorized,
-  real Unit-time save has survived reload. Do not bulk-enter planning time
-  until that end-to-end write is proven.
+- **Terminal:** PROJECT for inspection/extraction; BUILD for deterministic
+  validation; GIT only for reviewed commits and pushes.
+- **Deployment:** not required for spreadsheet construction or local preview;
+  required later only if a new guarded Apps Script adapter is approved.
+- **Apps Script project:** `apps-script-planning`; existing importer and
+  migration entry points remain `DISARMED` and out of scope.
+- **Browser testing:** not required until a production update is separately
+  authorized and deployed.
+- **GitHub push:** required for reviewed spreadsheet snapshots, validation
+  tooling, and handoff documentation.
+- **Stopping point:** pause after the complete spreadsheet and exact local
+  import preview are reviewed. Do not write production goals without separate
+  explicit authorization.
 
-## Completed First-Hour Plan
+## First-Hour Plan
 
-1. Read Layer 1 of `docs/History/SPRINT_HANDOFF_6.7.md`.
-2. Verify Git state and preserve the unrelated task-board, Obsidian, assets,
-   and curriculum-source files listed in the handoff.
-3. Independently review commit `f1c5199` together with `d269ba7` and
-   `6ee8830`; rerun frontend tests, import/migration regressions, scoped lint,
-   and the production build.
-4. Push the reviewed local commits and handoff documentation.
-5. Deploy the additive `updateUnitPlanning` Apps Script backend through a new
-   immutable version of the existing production deployment, then deploy the
-   matching frontend to the existing Netlify site.
-6. Verify publisher summaries, Math 8/IM1 course labels, archived curriculum,
-   `Not planned` states, and the Unit-time editor in the live UI.
-7. With separate write authorization, save one real Unit estimate, reload,
-   and confirm persistence before planning the remaining Units and Lessons.
-
-All seven steps are complete. Subsequent authorized work also entered and
-verified the remaining Unit and item estimates, reviewed all supplied Math 8
-source pages, and entered and verified 303 learning goals across all 163 items.
-
-## Next Work
-
-1. Verify and load the official school calendar.
-2. Load real rosters when district data is available.
-3. Continue classroom validation through actual planning and teaching.
+1. Read Layer 1 of `docs/History/SPRINT_HANDOFF_6.8.md`; preserve every dirty
+   or untracked user file listed there.
+2. Verify branch, origin parity, production build, focused tests, and the live
+   read-only count of 7 active IM1 Units, 164 items, and zero active goals.
+3. Inventory the saved IM1 source material and the canonical
+   `data/import-staging/amplify-im1.json` identities without editing curriculum
+   source files.
+4. Generate a spreadsheet scaffold containing all 164 active items and the
+   approved one-row-per-goal columns; do not invent goals for absent evidence.
+5. Extract and validate goals across Units 1–7, flagging missing evidence,
+   duplicate goals, lesson-title mismatches, and unreviewed rows.
+6. Save a durable repository snapshot of the reviewed table and generate an
+   exact before/after preview that changes only `KeyOutcome`.
+7. Present the complete validation report and request separate production-write
+   authorization before building or invoking the guarded batch execution.
 
 ## Success Criteria
 
-- Publisher summaries render when teacher outcomes are absent.
-- Unit required/optional time can be saved with authenticated writes and
-  survives reload.
-- Optimistic updates and rollback affect only the exact CourseID + UnitID.
-- Missing publisher durations remain unknown until the teacher enters them.
-- No importer, archive migration, curriculum source, or historical data is
-  changed.
+- Every one of the 164 active Amplify IM1 items appears exactly once in the
+  spreadsheet inventory, with any number of linked goal rows.
+- Every goal is traceable to supplied Amplify evidence; absence and uncertainty
+  are explicit rather than inferred away.
+- Multiple goals per item are preserved and deterministically serialize to the
+  existing pipe-separated `KeyOutcome` representation.
+- Validation blocks missing/duplicate identities, title mismatches, duplicate
+  goals, unreviewed rows, and changes to any field other than `KeyOutcome`.
+- The approved spreadsheet or exported CSV is retained as the permanent review
+  record.
+- No production write occurs without a read-only preview, full-spreadsheet
+  backup, lock, revalidation, exact read-back, rollback, standalone verify, and
+  separate explicit authorization.
 
 ## Permanent References
 
@@ -84,4 +80,4 @@ source pages, and entered and verified 303 learning goals across all 163 items.
 - `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`
 - `docs/Architecture/CURRICULUM_INFORMATION_MODEL.md`
 - `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md`
-- `docs/Development/CLASSROOM_READINESS.md`
+- `docs/Reference/AMPLIFY_M8_GOAL_REVIEW.md`
