@@ -15,6 +15,7 @@
       "CourseID": "IM1",
       "UnitNumber": 1,
       "UnitTitle": "Patterns and Sequences",
+      "UnitPurpose": "Students use tables, graphs, and expressions to make predictions about sequences. They determine if sequences are arithmetic, geometric, or neither. They write recursive and explicit definitions for sequences with constant differences and constant ratios and interpret parts of the definitions in context.",
       "RequiredDays": null,
       "OptionalDays": null,
       "SortOrder": 1
@@ -24,6 +25,7 @@
       "CourseID": "M8",
       "UnitNumber": 2,
       "UnitTitle": "Linear Equations and Inequalities",
+      "UnitPurpose": "Students revisit strategies to determine the solutions to one-variable linear equations and extend their knowledge to make sense of solving multi-variable linear equations. They create equivalent equations as they solve linear equations and interpret the different types of solutions such as infinitely many solutions and no solutions in context. They connect graphs, tables, and equations to the situations they represent and interpret key features such as the x-intercept and y-intercept. Students represent the same linear equation in point-slope form, standard form, or slope-intercept form. They determine the solution set to an inequality algebraically and use technology tools to strategically find the graphical solution region to inequalities, investigating real situations and modeling their constraints using equations and inequalities.",
       "RequiredDays": null,
       "OptionalDays": null,
       "SortOrder": 2
@@ -33,6 +35,7 @@
       "CourseID": "IM1",
       "UnitNumber": 3,
       "UnitTitle": "Systems (old placeholder title)",
+      "UnitPurpose": "Students solve systems of linear equations and inequalities, using elimination, substitution, and graphing. They graph systems of linear inequalities and identify solutions, and they write systems of linear equations and inequalities to represent real situations and interpret solutions in context. Students also prove the slope criteria for parallel and perpendicular lines and derive the distance formula, using coordinates, equations, and formulas to solve problems — including determining the perimeter and area of polygons.",
       "RequiredDays": 17,
       "OptionalDays": 3,
       "SortOrder": 3
@@ -42,6 +45,7 @@
       "CourseID": "IM1",
       "UnitNumber": 9,
       "UnitTitle": "Describing Functions",
+      "UnitPurpose": "Students determine whether a relationship is a function and interpret statements in function notation. They compare functions using function notation and make connections between a function's multiple representations (graphs, tables, equations, and situations). They describe functions using their key features, including average rate of change, domain, and range. They interpret, evaluate, graph, and write equations of absolute value functions. They analyze and represent sequences using function notation.",
       "RequiredDays": null,
       "OptionalDays": null,
       "SortOrder": 4
@@ -51,6 +55,7 @@
       "CourseID": "IM1",
       "UnitNumber": 99,
       "UnitTitle": "Exponential Functions (old placeholder title)",
+      "UnitPurpose": "Students compare and contrast features of a linear function and an exponential function by creating and exploring equations, tables, and graphs. They investigate situations that grow or decay by a percentage rate per unit interval called a growth factor, and use the growth factor to write exponential growth or exponential decay functions to model and solve real situations such as those involving compound interest. Students fit and interpret functions that model the data between two quantities using linear or exponential functions.",
       "RequiredDays": null,
       "OptionalDays": null,
       "SortOrder": 5

@@ -49,6 +49,7 @@ const AMPLIFY_IM1_REQUIRED_UNIT_HEADERS = [
   "RequiredDays",
   "OptionalDays",
   "SortOrder",
+  "UnitPurpose",
 ];
 
 // Type and PlacementRule do not exist on the production Lessons sheet as of
@@ -374,6 +375,9 @@ function amplifyIm1UnitPublisherFieldsDiffer_(artifactUnit, destinationUnit) {
   if (Number(destinationUnit.UnitNumber) !== artifactUnit.unitNumber) {
     diffs.push({ field: "UnitNumber", current: destinationUnit.UnitNumber, proposed: artifactUnit.unitNumber });
   }
+  if (amplifyIm1NormalizeBlankToNull_(destinationUnit.UnitPurpose) !== artifactUnit.purpose) {
+    diffs.push({ field: "UnitPurpose", current: amplifyIm1NormalizeBlankToNull_(destinationUnit.UnitPurpose), proposed: artifactUnit.purpose });
+  }
   return diffs;
 }
 
@@ -404,6 +408,7 @@ function amplifyIm1PlanUnit_(artifactUnit, destinationUnitsById, destinationLess
         CourseID: artifactUnit.courseId,
         UnitNumber: artifactUnit.unitNumber,
         UnitTitle: artifactUnit.title,
+        UnitPurpose: artifactUnit.purpose,
         RequiredDays: artifactUnit.requiredDays.status === "value_provided" ? artifactUnit.requiredDays.value : null,
         OptionalDays: artifactUnit.optionalDays.status === "value_provided" ? artifactUnit.optionalDays.value : null,
         SortOrder: artifactUnit.unitNumber,

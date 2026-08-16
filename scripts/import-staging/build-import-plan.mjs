@@ -164,6 +164,9 @@ function unitPublisherFieldsDiffer(artifactUnit, destinationUnit) {
   if (Number(destinationUnit.UnitNumber) !== artifactUnit.unitNumber) {
     diffs.push({ field: "UnitNumber", current: destinationUnit.UnitNumber, proposed: artifactUnit.unitNumber });
   }
+  if (normalizeBlankToNull(destinationUnit.UnitPurpose) !== artifactUnit.purpose) {
+    diffs.push({ field: "UnitPurpose", current: normalizeBlankToNull(destinationUnit.UnitPurpose), proposed: artifactUnit.purpose });
+  }
   return diffs;
 }
 
@@ -196,6 +199,7 @@ function planUnit(artifactUnit, destinationUnitsById, destinationLessonsById, bl
         CourseID: artifactUnit.courseId,
         UnitNumber: artifactUnit.unitNumber,
         UnitTitle: artifactUnit.title,
+        UnitPurpose: artifactUnit.purpose,
         // Populated only because there's no existing teacher value to
         // preserve yet. Still explicitly informational, not authoritative —
         // see the "informational only" note in the preview report.
