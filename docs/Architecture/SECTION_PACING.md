@@ -64,11 +64,10 @@ Before any write, a migration/import must:
    validated empty sheet, if the write or verification fails.
 
 The initial production operation created the sheet and wrote only this reviewed
-payload. The local application now exposes it read-only through `doGet`, joins
+payload. The application exposes it read-only through `doGet`, joins
 each row to its section meeting and curriculum item, and displays a quiet
 `Scheduled` cue in Planning. This projection never creates or overwrites the
-separately stored, teacher-authored Lesson Session. Deployment of that API and
-interface change remains separately authorized work.
+separately stored, teacher-authored Lesson Session.
 
 The local production candidate is split between the generated immutable payload
 in `apps-script-planning/SectionPacingPayload.js` and the disarmed migration in
@@ -87,3 +86,19 @@ seven approved headers, 139 rows for each of `M8-P1`, `M8-P2`, and `M8-P3`,
 The successful pre-write backup is `19xDWMMD8o_NMVAHWUh4Gt3PLhorQcV21qYGCtf66TU4`.
 The Apps Script editor wrapper was restored to its placeholder after execution,
 and remote source parity with the committed disarmed module was verified.
+
+## Read-only application deployment
+
+The read-only projection was deployed on 2026-08-15. The existing production
+Apps Script web-app deployment now runs immutable version 31, and a direct
+read-back from that endpoint returned exactly 417 `SectionPacing` rows: 139 for
+each of `M8-P1`, `M8-P2`, and `M8-P3`. The matching frontend was deployed to the
+existing Netlify production site as deploy `6a81001fc66dcdddab0d9338`.
+
+The exact production build was also exercised against the live API: Planning
+showed section-specific `Scheduled` curriculum cues for all three Math 8 rows
+in the sampled week, preserved non-meeting cells as `Open time`, and left the
+Math 1 sections unprojected. Netlify's protected production URL could not be
+visually inspected through the automation account because its access gate
+reported that account was not authorized; this does not affect the verified
+deployment artifact or live API read-back.
