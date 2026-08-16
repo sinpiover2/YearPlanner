@@ -64,10 +64,12 @@ Before any write, a migration/import must:
    validated empty sheet, if the write or verification fails.
 
 The initial production operation created the sheet and wrote only this reviewed
-payload. The application exposes it read-only through `doGet`, joins
-each row to its section meeting and curriculum item, and displays a quiet
-`Scheduled` cue in Planning. This projection never creates or overwrites the
-separately stored, teacher-authored Lesson Session.
+payload. The application exposes it read-only through `doGet` for forecast use.
+It must not render these projected placements as `Scheduled` commitments in
+Planning. Planning displays curriculum content only after the teacher saves a
+Lesson Session; until then, a real section meeting remains an available lesson
+slot. This preserves the boundary between forecast projection and authored
+intent.
 
 The local production candidate is split between the generated immutable payload
 in `apps-script-planning/SectionPacingPayload.js` and the disarmed migration in
@@ -89,16 +91,15 @@ and remote source parity with the committed disarmed module was verified.
 
 ## Read-only application deployment
 
-The read-only projection was deployed on 2026-08-15. The existing production
+The read-only data path was deployed on 2026-08-15. The existing production
 Apps Script web-app deployment now runs immutable version 31, and a direct
 read-back from that endpoint returned exactly 417 `SectionPacing` rows: 139 for
 each of `M8-P1`, `M8-P2`, and `M8-P3`. The matching frontend was deployed to the
 existing Netlify production site as deploy `6a81001fc66dcdddab0d9338`.
 
-The exact production build was also exercised against the live API: Planning
-showed section-specific `Scheduled` curriculum cues for all three Math 8 rows
-in the sampled week, preserved non-meeting cells as `Open time`, and left the
-Math 1 sections unprojected. Netlify's protected production URL could not be
-visually inspected through the automation account because its access gate
-reported that account was not authorized; this does not affect the verified
-deployment artifact or live API read-back.
+That first frontend presentation incorrectly surfaced projected rows as
+`Scheduled` in Planning. It was removed on 2026-08-16 in Netlify production
+deploy `6a821877b436ad29009d0bdd`. Planning now ignores `SectionPacing` when
+building its cells and shows lesson content only for saved, teacher-authored
+Lesson Sessions. The `SectionPacing` rows remain intact and available to
+Forecast; no production curriculum or pacing data was changed by the UI fix.

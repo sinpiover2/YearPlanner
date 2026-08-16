@@ -4,7 +4,6 @@ import test from "node:test";
 import vm from "node:vm";
 
 import {
-  buildSectionPacingIndex,
   getPlanningModel,
 } from "../src/utils/planningModel.js";
 
@@ -18,51 +17,7 @@ const lesson = {
   SortOrder: 5,
 };
 
-test("SectionPacing rows normalize Sheets dates, join lessons, and sort by sequence", () => {
-  const index = buildSectionPacingIndex(
-    [
-      {
-        PacingID: "later",
-        SectionID: "M8-P1",
-        PlannedDate: "2026-08-10T07:00:00.000Z",
-        Sequence: 2,
-        LessonID: "UNKNOWN",
-        Locked: false,
-      },
-      {
-        PacingID: "first",
-        SectionID: "M8-P1",
-        PlannedDate: "2026-08-10",
-        Sequence: "1",
-        LessonID: lesson.LessonID,
-        Locked: "TRUE",
-      },
-      { SectionID: "M8-P1", PlannedDate: "", LessonID: lesson.LessonID },
-    ],
-    [lesson],
-  );
-
-  assert.deepEqual(
-    index.get("M8-P1|2026-08-10").map((item) => ({
-      lessonId: item.lessonId,
-      sequence: item.sequence,
-      locked: item.locked,
-      label: item.label,
-    })),
-    [
-      {
-        lessonId: lesson.LessonID,
-        sequence: 1,
-        locked: true,
-        label: "1.5 Turtle Crossing",
-      },
-      { lessonId: "UNKNOWN", sequence: 2, locked: false, label: "UNKNOWN" },
-    ],
-  );
-  assert.equal(index.size, 1);
-});
-
-test("planning projects scheduled curriculum onto a real meeting without marking it authored", () => {
+test("planning ignores projected SectionPacing until a lesson session is authored", () => {
   const model = getPlanningModel({
     planningSections: [
       {
@@ -118,8 +73,8 @@ test("planning projects scheduled curriculum onto a real meeting without marking
   const session = model.sessions["M8-P1-2026-08-10"];
   assert.equal(session.planned, false);
   assert.equal(session.title, null);
-  assert.equal(session.scheduledLabel, "1.5 Turtle Crossing");
-  assert.equal(session.scheduledItems[0].lessonId, lesson.LessonID);
+  assert.equal(session.scheduledLabel, undefined);
+  assert.equal(session.scheduledItems, undefined);
 });
 
 test("read-only planning API includes SectionPacing", async () => {

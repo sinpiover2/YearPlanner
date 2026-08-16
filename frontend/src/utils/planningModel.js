@@ -3,13 +3,11 @@ import {
   buildCalendarIndex,
   buildScheduleIndex,
   buildSectionMeetingMaps,
-  toDateKey,
 } from "./planningCalendar.js";
 import {
   getActiveCurriculum,
   getSequencedItems,
   getItemType,
-  isTrue,
 } from "./plannerUtils.js";
 import { getLessonSessionSummary } from "./lessonSessionStorage.js";
 
@@ -37,46 +35,6 @@ function getCurriculumLessonLabel(lesson) {
 
 function getSectionLabel(section) {
   return section?.SectionName || section?.Period || section?.SectionID || "Section";
-}
-
-export function buildSectionPacingIndex(sectionPacing = [], lessons = []) {
-  const lessonsById = new Map(
-    lessons.map((lesson) => [String(lesson.LessonID || ""), lesson]),
-  );
-  const byMeeting = new Map();
-
-  sectionPacing.forEach((row) => {
-    const sectionId = String(row.SectionID || "").trim();
-    const lessonId = String(row.LessonID || "").trim();
-    if (!sectionId || !lessonId || !row.PlannedDate) return;
-    const dateKey = toDateKey(row.PlannedDate);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return;
-
-    const meetingKey = `${sectionId}|${dateKey}`;
-    const lesson = lessonsById.get(lessonId) ?? null;
-    const item = {
-      pacingId: String(row.PacingID || ""),
-      lessonId,
-      sequence: Number(row.Sequence) || 0,
-      locked: isTrue(row.Locked),
-      notes: String(row.Notes || ""),
-      label: lesson ? getCurriculumLessonLabel(lesson) : lessonId,
-      lesson,
-    };
-
-    if (!byMeeting.has(meetingKey)) byMeeting.set(meetingKey, []);
-    byMeeting.get(meetingKey).push(item);
-  });
-
-  byMeeting.forEach((items) => {
-    items.sort(
-      (left, right) =>
-        left.sequence - right.sequence ||
-        left.pacingId.localeCompare(right.pacingId),
-    );
-  });
-
-  return byMeeting;
 }
 
 // Resolves a single course's current unit/lesson into the shape sessions
@@ -140,7 +98,6 @@ export function getPlanningModel({
   lessons,
   schoolCalendar = [],
   schedulePatterns = [],
-  sectionPacing = [],
   referenceDate = new Date(),
 }) {
   const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
@@ -166,8 +123,6 @@ export function getPlanningModel({
     calendarIndex,
     scheduleIndex,
   );
-  const sectionPacingIndex = buildSectionPacingIndex(sectionPacing, lessons);
-
   const planningWeek = getPlanningWeek({ referenceDate, calendarIndex });
   const { weekDays, teachingDays } = planningWeek;
 
@@ -194,9 +149,8 @@ export function getPlanningModel({
   // true and the section's BlockGroup must meet that weekday per
   // SchedulePatterns. Non-meeting days simply have no entry, so the grid
   // renders its existing "open" empty state rather than inviting a lesson
-  // that can't happen. Imported pacing is projected as read-only scheduled
-  // context; authored Lesson Session content remains separately stored and
-  // is never created or overwritten by this model.
+  // that can't happen. Planning contains only teacher-authored Lesson Session
+  // content. Curriculum pacing projections belong exclusively to Forecast.
   const sessions = {};
 
   sections.forEach((section) => {
@@ -215,9 +169,6 @@ export function getPlanningModel({
         : null;
 
       const { currentUnit } = getCachedCourseContext(section.courseId);
-      const scheduledItems =
-        sectionPacingIndex.get(`${section.id}|${day.key}`) ?? [];
-
       sessions[sessionId] = {
         id: sessionId,
         sectionId: section.id,
@@ -234,8 +185,6 @@ export function getPlanningModel({
           .join(" "),
         ...summary,
         curriculumLabel: getCurriculumLessonLabel(curriculumLesson),
-        scheduledItems,
-        scheduledLabel: scheduledItems.map((item) => item.label).join(", "),
       };
     });
   });

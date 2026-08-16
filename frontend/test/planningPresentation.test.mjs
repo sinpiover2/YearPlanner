@@ -128,7 +128,7 @@ test("optional zero remains distinct from unknown and invalid", () => {
   assert.equal(getOptionalDaysPresentation(getUnitPlanningModel([], { ...units[0], OptionalDays: -1 })), "Invalid buffer value");
 });
 
-test("planning tiles show scheduled pacing without presenting it as authored content", () => {
+test("planning tiles never show projected pacing", () => {
   const unplanned = renderSessionTileComponent({
     session: {
       id: "M8-P1-2026-08-10",
@@ -136,9 +136,9 @@ test("planning tiles show scheduled pacing without presenting it as authored con
       scheduledLabel: "1.5 Turtle Crossing",
     },
   });
-  assert.match(unplanned, /Scheduled/);
-  assert.match(unplanned, /1\.5 Turtle Crossing/);
-  assert.match(unplanned, /\+ Plan lesson/);
+  assert.doesNotMatch(unplanned, /Scheduled/);
+  assert.doesNotMatch(unplanned, /1\.5 Turtle Crossing/);
+  assert.match(unplanned, /\+ Lesson/);
   assert.doesNotMatch(unplanned, /class="session-card-title"/);
 
   const authored = renderSessionTileComponent({
@@ -151,7 +151,7 @@ test("planning tiles show scheduled pacing without presenting it as authored con
     },
   });
   assert.match(authored, /My adjusted plan/);
-  assert.match(authored, /Scheduled · 1\.5 Turtle Crossing/);
+  assert.doesNotMatch(authored, /Scheduled|1\.5 Turtle Crossing/);
 });
 
 test("fully planned Sidebar retains numeric progress, pace, zero buffer, lesson count, and navigation", () => {

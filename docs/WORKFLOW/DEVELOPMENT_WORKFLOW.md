@@ -339,6 +339,21 @@ Visual changes follow this process:
 - Prefer one authoritative visual change rather than multiple compensating tweaks.
 - Validate across all major application views before accepting the change.
 
+## Cross-Workspace Meaning Check
+
+When data owned by one workspace is displayed in another, verify the meaning of
+the presentation as well as the technical read/write boundary.
+
+- Forecast projections must not look like teacher-authored Planning commitments.
+- Planning content must not imply that a lesson was saved when no Lesson Session exists.
+- Actual progress must not be inferred from either a projection or a plan.
+- Labels such as `Scheduled`, `Planned`, and `Completed` require corresponding
+  persisted records, not merely related source data.
+
+Add a regression test for the empty/unpersisted state whenever a new
+cross-workspace read is introduced. A read-only integration can still violate
+the information architecture through misleading presentation.
+
 ---
 
 # Architecture Review

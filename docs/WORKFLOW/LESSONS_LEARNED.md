@@ -8,6 +8,26 @@ It is not a changelog of features. Each entry should describe a lesson that gene
 
 ---
 
+## Sprint 6.9
+
+- **A forecast projection must never be presented as a teacher commitment.**
+  The first `SectionPacing` UI labeled projected curriculum as `Scheduled` in
+  Planning even though opening the day revealed no authored Lesson Session.
+  The data model had remained additive, but the presentation collapsed two
+  distinct meanings and made the interface contradict reality. Planning now
+  shows only saved teacher intent; projections remain in Forecast. Whenever a
+  new data source crosses workspace boundaries, verify not only that it avoids
+  writes, but also that its labels and placement cannot imply an action the
+  teacher did not take.
+- **Curriculum parity requires matching the complete presentation contract,
+  not merely importing records.** IM1 already had publisher summaries, but it
+  did not feel like Math 8 until unit purposes, lesson goals, item types, and
+  pacing values were populated and rendered through the same Units UI. Future
+  parity work should define the visible contract first, then validate every
+  required field against it before calling the import complete.
+
+---
+
 ## Sprint 6.7
 
 - **Temporary arming is a two-push transaction, not a one-push deployment.** Math 8 required several read-only previews and two guarded production writes while every live-facing wrapper remained normally `DISARMED`. The safe ceremony was consistent: prove local/remote parity, remove exactly one unconditional throw, push once, invoke exactly the authorized function, restore committed source immediately, push a second time, and prove remote parity and complete disarming. Stopping after the invocation would leave Apps Script HEAD armed even if the data operation itself succeeded. This procedure now lives in `DEVELOPMENT_WORKFLOW.md` under Temporary Source-Push Arming.

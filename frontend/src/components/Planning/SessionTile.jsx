@@ -21,17 +21,7 @@ function SessionTile({ session, selected = false, onSelect }) {
         onClick={() => onSelect?.(session)}
         aria-pressed={selected}
       >
-        {session.scheduledLabel ? (
-          <>
-            <span className="session-card-scheduled-label">Scheduled</span>
-            <strong className="session-card-scheduled-title">
-              {session.scheduledLabel}
-            </strong>
-            <span className="session-card-create">+ Plan lesson</span>
-          </>
-        ) : (
-          <span className="session-card-create">+ Lesson</span>
-        )}
+        <span className="session-card-create">+ Lesson</span>
         {selected ? (
           <span className="session-selected-tick" aria-hidden="true" />
         ) : null}
@@ -75,12 +65,6 @@ function SessionTile({ session, selected = false, onSelect }) {
       {session.curriculumLabel ? (
         <span className="session-card-curriculum">
           Curriculum · {session.curriculumLabel}
-        </span>
-      ) : null}
-
-      {session.scheduledLabel ? (
-        <span className="session-card-scheduled">
-          Scheduled · {session.scheduledLabel}
         </span>
       ) : null}
 
