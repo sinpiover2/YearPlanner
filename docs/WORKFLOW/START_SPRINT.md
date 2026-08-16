@@ -1,83 +1,73 @@
 # Start Sprint
 
-## Sprint 6.9 Objective
+## Sprint 7.0 Objective
 
-**Primary objective:** Build a spreadsheet-first, source-grounded learning-goal
-pipeline for the 164 active Amplify Integrated Math 1 items, review the full
-course efficiently, and prepare one guarded batch update that changes only
-`Lessons.KeyOutcome`.
+**Primary objective:** Reflect on the classroom-ready Year Planner, review the
+teacher's accumulated notes against the live product and permanent design
+principles, then produce a prioritized, evidence-based implementation plan.
 
-Math 8 is complete for this stage: 8 active Units, 163 items, 303 verified
-goals, and 417 section-specific required-item pacing rows are live. Sprint 6.9
-must reuse that proven provenance and guarded-write discipline without
-repeating its slow item-by-item production ceremony.
+This is a review and planning sprint first. Notes are observations and candidate
+work, not automatically approved requirements. Do not begin feature
+implementation until the notes have been clarified, grouped, prioritized, and
+the sprint scope has been explicitly approved.
 
 ## Current Sprint Checkpoint
 
-Production currently has 7 active Amplify IM1 Units and 164 active items. All
-164 have publisher titles and summaries, but none has a stored learning goal.
-The only three IM1 goals in the database belong to two archived legacy lessons
-and are not part of the active Amplify curriculum.
+Integrated Math 1 and Math 8 now use the same Units presentation. Production
+contains source-grounded unit purposes and lesson goals for all 164 active IM1
+items, with one planned day per item. Planning displays only teacher-authored
+Lesson Sessions; imported `SectionPacing` projections remain data for Forecast
+and do not appear as scheduled commitments in Planning.
 
-The approved direction is one spreadsheet row per source-grounded goal, with
-stable UnitID/LessonID identity, source references, and review status. Unit-sized
-review remains useful, but production should receive one exact, guarded batch
-after the full spreadsheet is approved.
+The teacher's working observations are currently in the protected, uncommitted
+`Notes` section of `docs/Development/VERSION_1_TASK_BOARD.md`. Preserve the file
+exactly until the teacher reviews those notes in conversation.
 
 ## Working Context
 
-- **Terminal:** PROJECT for inspection/extraction; BUILD for deterministic
-  validation; GIT only for reviewed commits and pushes.
-- **Deployment:** not required for spreadsheet construction or local preview;
-  required later only if a new guarded Apps Script adapter is approved.
-- **Apps Script project:** `apps-script-planning`; existing importer and
-  migration entry points remain `DISARMED` and out of scope.
-- **Browser testing:** not required until a production update is separately
-  authorized and deployed.
-- **GitHub push:** required for reviewed spreadsheet snapshots, validation
-  tooling, and handoff documentation.
-- **Stopping point:** pause after the complete spreadsheet and exact local
-  import preview are reviewed. Do not write production goals without separate
-  explicit authorization.
+- **Terminal:** PROJECT for inspection and note synthesis; BUILD only if a
+  later approved scope changes code; GIT only for reviewed commits and pushes.
+- **Deployment:** not required for reflection, prioritization, or planning.
+- **Apps Script project:** none during the review phase.
+- **Browser testing:** use the live application to confirm observations when
+  useful; do not mutate production merely to test an idea.
+- **GitHub push:** required only for reviewed planning/handoff documentation or
+  a separately approved implementation slice.
+- **Stopping point:** present the categorized notes, proposed priorities,
+  dependencies, and recommended sprint scope; wait for explicit approval before
+  implementation.
 
 ## First-Hour Plan
 
-1. Read Layer 1 of `docs/History/SPRINT_HANDOFF_6.8.md`; preserve every dirty
-   or untracked user file listed there.
-2. Verify branch, origin parity, production build, focused tests, and the live
-   read-only count of 7 active IM1 Units, 164 items, and zero active goals.
-3. Inventory the saved IM1 source material and the canonical
-   `data/import-staging/amplify-im1.json` identities without editing curriculum
-   source files.
-4. Generate a spreadsheet scaffold containing all 164 active items and the
-   approved one-row-per-goal columns; do not invent goals for absent evidence.
-5. Extract and validate goals across Units 1–7, flagging missing evidence,
-   duplicate goals, lesson-title mismatches, and unreviewed rows.
-6. Save a durable repository snapshot of the reviewed table and generate an
-   exact before/after preview that changes only `KeyOutcome`.
-7. Present the complete validation report and request separate production-write
-   authorization before building or invoking the guarded batch execution.
+1. Read Layer 1 of `docs/History/SPRINT_HANDOFF_6.9.md` and preserve every
+   dirty or untracked file listed there.
+2. Run the Sprint Startup Project Health Check and reconcile repository,
+   production, and documentation state before planning.
+3. Read the teacher's notes in `VERSION_1_TASK_BOARD.md` without editing them.
+4. Review the notes with the teacher one topic at a time; clarify the observed
+   problem, desired outcome, frequency, and classroom impact.
+5. Group the reviewed notes into bugs, workflow friction, enhancements,
+   research/design questions, and longer-term ideas.
+6. Compare each candidate with the live product and relevant architecture;
+   identify dependencies, conflicts, and the smallest useful slice.
+7. Propose a ranked backlog and one focused sprint goal with acceptance
+   criteria. Stop for explicit approval before implementation.
 
 ## Success Criteria
 
-- Every one of the 164 active Amplify IM1 items appears exactly once in the
-  spreadsheet inventory, with any number of linked goal rows.
-- Every goal is traceable to supplied Amplify evidence; absence and uncertainty
-  are explicit rather than inferred away.
-- Multiple goals per item are preserved and deterministically serialize to the
-  existing pipe-separated `KeyOutcome` representation.
-- Validation blocks missing/duplicate identities, title mismatches, duplicate
-  goals, unreviewed rows, and changes to any field other than `KeyOutcome`.
-- The approved spreadsheet or exported CSV is retained as the permanent review
-  record.
-- No production write occurs without a read-only preview, full-spreadsheet
-  backup, lock, revalidation, exact read-back, rollback, standalone verify, and
-  separate explicit authorization.
+- Every teacher note is preserved and assigned a clear category and disposition.
+- Bugs and classroom-blocking friction are distinguished from feature ideas.
+- Priorities reflect classroom impact, frequency, risk, dependencies, and
+  implementation effort rather than note order.
+- Any conflict with a core product principle is surfaced before scope approval.
+- The selected sprint is small enough to verify as a complete teacher workflow.
+- No code, production data, or deployment changes occur before the review and
+  prioritization decision is complete.
 
 ## Permanent References
 
 - `docs/Development/PROJECT_CONTEXT.md`
-- `docs/Development/CURRICULUM_IMPORT_WORKFLOW.md`
-- `docs/Architecture/CURRICULUM_INFORMATION_MODEL.md`
+- `docs/Architecture/PRINCIPLES.md`
+- `docs/Architecture/SUITE_ARCHITECTURE.md`
+- `docs/Architecture/SECTION_PACING.md`
 - `docs/WORKFLOW/DEVELOPMENT_WORKFLOW.md`
-- `docs/Reference/AMPLIFY_M8_GOAL_REVIEW.md`
