@@ -8,11 +8,26 @@ happened; priority and solutions can wait for review.
 Example:
 
 ```markdown
-### 2026-08-18
+### YYYY-MM-DD
 
 - Planning: The copy picker should remember the last destination class.
 - Lesson Planner: Printing cut off part of the materials section.
 ```
+
+### 2026-08-18
+
+- **Planning / preparation design reference — Connected Math Investigation
+  overview.** The scanned `Subtracting Integers` investigation overview is a
+  strong model of clarity: prominent investigation identity, a short narrative
+  explaining the instructional arc, a separate scannable list of mathematical
+  goals, and a problem-by-problem materials table that distinguishes student
+  needs from teacher preparation. Apply this pattern when designing the weekly
+  preparation table and `The Bullet`: instructional meaning first, logistics
+  second, both on one calm printable page. A Year Planner materials table could
+  map Problem to Lesson or Teaching Episode, `For students` to materials needed
+  in class, and `For the teacher` to items to prepare or photocopy, while adding
+  explicit quantities, direct PDF links, printed QR codes, and curriculum page
+  references. The source scan remains local in Downloads and is not committed.
 
 ## ?? Critical
 
