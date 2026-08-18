@@ -1,5 +1,19 @@
 # Version 1 Task Board
 
+## New Notes — Unreviewed
+
+Add new observations here under the date. Write the workspace and what
+happened; priority and solutions can wait for review.
+
+Example:
+
+```markdown
+### 2026-08-18
+
+- Planning: The copy picker should remember the last destination class.
+- Lesson Planner: Printing cut off part of the materials section.
+```
+
 ## ?? Critical
 
 - [ ] Improve lesson printing
