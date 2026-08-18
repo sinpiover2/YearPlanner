@@ -4,6 +4,7 @@ import { buildLessonPrintPayload } from "../utils/lessonPrintPayload";
 import { printLessonSession } from "../utils/combinedPrint";
 import { classifyLessonCurriculumReference } from "../utils/lessonCurriculumReference";
 import RosterSortToggle from "./Planning/RosterSortToggle";
+import { createIndependentLessonSessionCopy } from "../utils/lessonSessionCopy";
 
 const STORAGE_KEY = LESSON_SESSION_STORAGE_KEY;
 const LEGACY_STORAGE_KEY = "year-planner.lesson-session-items.prototype.v1";
@@ -450,6 +451,23 @@ function LessonSessionView({
     useState(false);
   const [isAddEpisodeMenuOpen, setIsAddEpisodeMenuOpen] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
+  const copyDayKeys = [...new Set((copyTargets ?? []).map((target) => target.dayKey))];
+  const defaultCopyDayKey =
+    copyDayKeys.find((dayKey) => dayKey > (activeLessonContext?.date ?? "")) ??
+    copyDayKeys[0] ??
+    "";
+  const [copyDayKey, setCopyDayKey] = useState(defaultCopyDayKey);
+  const [copyTargetId, setCopyTargetId] = useState("");
+  const selectedCopyDayKey = copyDayKeys.includes(copyDayKey)
+    ? copyDayKey
+    : defaultCopyDayKey;
+  const copyDayTargets = (copyTargets ?? []).filter(
+    (target) => target.dayKey === selectedCopyDayKey,
+  );
+  const selectedCopyTarget =
+    copyDayTargets.find((target) => target.id === copyTargetId) ??
+    copyDayTargets[0] ??
+    null;
   const [hasEpisodeClipboard, setHasEpisodeClipboard] = useState(() => {
     if (typeof window === "undefined") return false;
 
@@ -672,44 +690,6 @@ function LessonSessionView({
     };
   }, [undo, redo]);
 
-  function createIndependentPlannerCopy(sourceState) {
-    const episodeIdMap = new Map();
-    const deliverableIdMap = new Map();
-
-    sourceState.episodes.forEach((episode) => {
-      episodeIdMap.set(episode.id, createId("episode"));
-    });
-
-    sourceState.deliverables.forEach((deliverable) => {
-      deliverableIdMap.set(
-        deliverable.id,
-        createId("deliverable"),
-      );
-    });
-
-    return {
-      curriculumLessonId: sourceState.curriculumLessonId ?? null,
-      episodes: sourceState.episodes.map((episode) => ({
-        ...episode,
-        id: episodeIdMap.get(episode.id),
-        blocks: episode.blocks.map((block) => ({
-          ...block,
-          id: createId("block"),
-          deliverableId: block.deliverableId
-            ? deliverableIdMap.get(block.deliverableId) ?? null
-            : null,
-        })),
-      })),
-      deliverables: sourceState.deliverables.map((deliverable) => ({
-        ...deliverable,
-        id: deliverableIdMap.get(deliverable.id),
-        originatingEpisodeId: deliverable.originatingEpisodeId
-          ? episodeIdMap.get(deliverable.originatingEpisodeId) ?? null
-          : null,
-      })),
-    };
-  }
-
   function copyPlanToSession(target) {
     const destinationKey = getSessionStorageKey(
       STORAGE_KEY,
@@ -727,7 +707,10 @@ function LessonSessionView({
     }
 
     try {
-      const copiedState = createIndependentPlannerCopy(plannerState);
+      const copiedState = createIndependentLessonSessionCopy(
+        plannerState,
+        createId,
+      );
 
       window.localStorage.setItem(
         destinationKey,
@@ -1895,26 +1878,57 @@ function LessonSessionView({
                   </summary>
 
                   <div className="lesson-session-copy-options">
-                    {copyTargets.map((target) => (
-                      <button
-                        type="button"
-                        key={target.id}
-                        onClick={(event) => {
-                          copyPlanToSession({
-                            sessionId: target.id,
-                            sectionId: target.sectionId,
-                            sectionLabel: target.sectionLabel,
-                            date: target.dayKey,
-                          });
-                          event.currentTarget
-                            .closest("details")
-                            ?.removeAttribute("open");
+                    <label>
+                      <span>Destination day</span>
+                      <select
+                        value={selectedCopyDayKey}
+                        onChange={(event) => {
+                          setCopyDayKey(event.target.value);
+                          setCopyTargetId("");
                         }}
                       >
-                        <strong>{target.sectionLabel}</strong>
-                        <span>{formatSessionDate(target.dayKey)}</span>
-                      </button>
-                    ))}
+                        {copyDayKeys.map((dayKey) => (
+                          <option value={dayKey} key={dayKey}>
+                            {formatSessionDate(dayKey)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      <span>Destination class</span>
+                      <select
+                        value={selectedCopyTarget?.id ?? ""}
+                        onChange={(event) =>
+                          setCopyTargetId(event.target.value)
+                        }
+                      >
+                        {copyDayTargets.map((target) => (
+                          <option value={target.id} key={target.id}>
+                            {target.sectionLabel}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <button
+                      className="lesson-session-copy-submit"
+                      type="button"
+                      disabled={!selectedCopyTarget}
+                      onClick={(event) => {
+                        copyPlanToSession({
+                          sessionId: selectedCopyTarget.id,
+                          sectionId: selectedCopyTarget.sectionId,
+                          sectionLabel: selectedCopyTarget.sectionLabel,
+                          date: selectedCopyTarget.dayKey,
+                        });
+                        event.currentTarget
+                          .closest("details")
+                          ?.removeAttribute("open");
+                      }}
+                    >
+                      Copy plan
+                    </button>
                   </div>
                 </details>
               ) : (
@@ -2655,70 +2669,10 @@ function LessonSessionView({
                               return;
                             }
 
-                            if (
-                              event.key === "ArrowUp" &&
-                              !event.metaKey &&
-                              !event.ctrlKey &&
-                              !event.altKey
-                            ) {
-                              const visibleBlocks = episode.blocks.filter(
-                                (currentBlock) =>
-                                  !hiddenBlockIds.has(currentBlock.id),
-                              );
-                              const visibleIndex = visibleBlocks.findIndex(
-                                (currentBlock) =>
-                                  currentBlock.id === block.id,
-                              );
-                              const previousBlock =
-                                visibleBlocks[visibleIndex - 1];
-
-                              if (previousBlock) {
-                                event.preventDefault();
-                                const input = inputRefs.current.get(
-                                  previousBlock.id,
-                                );
-
-                                if (input) {
-                                  input.focus();
-                                  const end = input.value.length;
-                                  input.setSelectionRange(end, end);
-                                }
-                              }
-
-                              return;
-                            }
-
-                            if (
-                              event.key === "ArrowDown" &&
-                              !event.metaKey &&
-                              !event.ctrlKey &&
-                              !event.altKey
-                            ) {
-                              const visibleBlocks = episode.blocks.filter(
-                                (currentBlock) =>
-                                  !hiddenBlockIds.has(currentBlock.id),
-                              );
-                              const visibleIndex = visibleBlocks.findIndex(
-                                (currentBlock) =>
-                                  currentBlock.id === block.id,
-                              );
-                              const nextBlock =
-                                visibleBlocks[visibleIndex + 1];
-
-                              if (nextBlock) {
-                                event.preventDefault();
-                                const input = inputRefs.current.get(
-                                  nextBlock.id,
-                                );
-
-                                if (input) {
-                                  input.focus();
-                                  input.setSelectionRange(0, 0);
-                                }
-                              }
-
-                              return;
-                            }
+                            // Plain arrow keys retain the textarea's native
+                            // cursor behavior. Reordering is an explicit action
+                            // through the adjacent controls; authoring should
+                            // never move focus out of the line unexpectedly.
 
                             if (event.key === "Escape") {
                               event.preventDefault();

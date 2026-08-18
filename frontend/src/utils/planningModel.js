@@ -173,6 +173,7 @@ export function getPlanningModel({
         id: sessionId,
         sectionId: section.id,
         sectionLabel: section.label,
+        courseId: section.courseId,
         dayKey: day.key,
         schoolDayNumber: day.schoolDayNumber,
         courseSessionNumber,

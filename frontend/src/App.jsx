@@ -37,6 +37,7 @@ import {
 } from "./api";
 import { loadRosterSortBy, saveRosterSortBy } from "./utils/rosterSortPreference";
 import { saveUnitPlanningOptimistically } from "./utils/unitPlanningMutation";
+import { getLessonSessionCopyTargets } from "./utils/lessonSessionCopy";
 
 function getLessonProgress(lessonId, dailyProgress) {
   const entries = dailyProgress.filter((entry) => entry.LessonID === lessonId);
@@ -919,13 +920,15 @@ function App() {
       )
     : [];
 
-  const lessonSessionCopyTargets = Object.values(
-    planningModel.sessions,
-  ).filter(
-    (session) =>
-      session.dayKey === activeLessonContext?.date &&
-      session.sectionId !== activeLessonContext?.sectionId,
-  );
+  const activeSession = activeLessonContext?.sessionId
+    ? planningModel.sessions[activeLessonContext.sessionId]
+    : null;
+
+  const lessonSessionCopyTargets = getLessonSessionCopyTargets({
+    sessions: planningModel.sessions,
+    sourceSessionId: activeLessonContext?.sessionId,
+    sourceCourseId: activeSession?.courseId,
+  });
 
   // "Bump" targets are later meetings of the *same* section — the only
   // sessions a Teaching Episode can be moved forward into within this
@@ -937,10 +940,6 @@ function App() {
         session.dayKey > (activeLessonContext?.date ?? ""),
     )
     .sort((a, b) => (a.dayKey < b.dayKey ? -1 : a.dayKey > b.dayKey ? 1 : 0));
-
-  const activeSession = activeLessonContext?.sessionId
-    ? planningModel.sessions[activeLessonContext.sessionId]
-    : null;
 
   const lessonSessionWorkspaceModel = {
     activeLessonContext,
