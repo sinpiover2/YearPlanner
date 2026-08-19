@@ -109,12 +109,14 @@ Rosters
 	Darker on the grid lines
 	Every 5th line, make that extra dark
 	I want class day and school day printed in the top header under the date.
+	8/19 I need to update the rosters. Probably a good time to think about a system for this.
 Units
 	I want the lessons numbered: Unit 1, lesson 1 becomes 1.1.
 	I want to get **practice** into the units somehow. Design question. They do need to be deliverables that eventually can be passed to a gradebook.
 	Snapshots: I want to extract those somehow and get them available in the unit planner.
 	We have to have a faster way to get curriculum into the planner. Spreadsheet template and import? It should be fast. This took DAYS!
 	I want to get materials needed into each lesson. The goal here is to have a fast way to see what I need to make sure I have on Sunday.
+	8/18 I want an icon on the lessons that require paper components. I want to be able to hover over this icon and see what they need. A link to PDF's would be great. Careful of our boundaries-- YP is not a curriculum, it is a thinking and organizing tool to support delivery of the curriculum. Smallest slice is probably a check box next to the title.
 Forecast
 	I need to review the Forecast workflow now that it is live and see how it fits with my workflow. Right now it says I need to log. The log shows up in the Units, but I think it needs to show up in the Lesson so that logging captures the day it is done and notes for the specific class.
 Future Work
@@ -128,6 +130,8 @@ The Bullet
 	This is a computer/paper/hybrid
 	Materials you need to prepare are …
 	Materials you need available are (like tracing paper, scissors, dice, …)
+Plan and Prep (8/18)
+	I want something like "Let's Prep Unit 1" that helps me get ready with very structured guidance, PDF's available, directions for what needs to be printed.
 
 ---
 
@@ -167,6 +171,18 @@ Status key:
 
 ### Prioritized — Not Started
 
+#### Next overall priority — Update and maintain Rosters
+
+1. Export the current Year Planner rosters into a spreadsheet template.
+2. Support additions, removals, class-period moves, student-information
+   changes, and roster ordering in that spreadsheet.
+3. Upload the revised spreadsheet and preview every proposed change before
+   applying it.
+4. Require explicit confirmation before changing roster data.
+
+This is urgent because the current rosters are already inaccurate. It precedes
+the previously ranked workflow packages below.
+
 #### 1. Reuse and edit lesson plans efficiently
 
 1. Rework the Curriculum Lesson action menu.
@@ -184,12 +200,20 @@ Status key:
 #### 3. Prepare curriculum and materials
 
 1. Add Amplify lesson snapshots to Units.
-2. Build a printable weekly photocopy list showing lesson, required quantity,
-   clickable PDF links on screen, and QR codes in print.
-3. Later extend the same preparation data into a complete weekly table and a
-   tomorrow-focused `The Bullet` view.
-4. Number lessons as `1.1`, `1.2`, and so on.
-5. Build a spreadsheet template and import workflow for new curricula.
+2. Add a curriculum-lesson checkbox meaning `This lesson includes a paper
+   component`. Show a paper icon plus `Paper required` in Units, Planning,
+   Lesson Planner, and the printed lesson plan. Missing this preparation can
+   prevent the lesson from proceeding as planned.
+3. Build a guided `Let's Prep Unit 1` readiness workflow used before the unit
+   and during weekly preparation. Combine unit purpose, lesson sequence, key
+   ideas, paper/PDF needs, quantities, and materials to gather. Use imported
+   curriculum information where available and teacher entry for what is
+   missing.
+4. Make unit prep, the printable weekly photocopy list, and `The Bullet` three
+   views of the same preparation data. The first printable slice shows lesson,
+   required quantity, clickable PDF links on screen, and QR codes in print.
+5. Number lessons as `1.1`, `1.2`, and so on.
+6. Build a spreadsheet template and import workflow for new curricula.
 
 #### 4. Record what happened
 
