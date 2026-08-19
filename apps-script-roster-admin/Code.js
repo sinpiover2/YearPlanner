@@ -47,6 +47,15 @@ const ROSTER_SCHEMAS = {
 };
 
 function doGet(e) {
+  const view = String((e && e.parameter && e.parameter.view) || "").trim();
+
+  if (view === "manage") {
+    return HtmlService.createTemplateFromFile("RosterManager")
+      .evaluate()
+      .setTitle("Year Planner Roster Manager")
+      .addMetaTag("viewport", "width=device-width, initial-scale=1");
+  }
+
   const sectionId = normalizeSectionId_(
     e && e.parameter && e.parameter.sectionId,
   );

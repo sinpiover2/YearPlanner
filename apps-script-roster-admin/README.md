@@ -104,9 +104,40 @@ messages, test fixtures, screenshots, or any other source-controlled file.
 The test suite for `RosterImport.js` uses fictional names only, run locally
 outside the repository.
 
+## Roster Manager CSV round trip
+
+Open the authenticated web app with `?view=manage` to update existing rosters.
+The page downloads a complete CSV containing stable `StudentID` and
+`EnrollmentID` values. Preserve those IDs while editing existing rows.
+
+- `KEEP`: retains the enrollment. Editing its name fields updates the student;
+  editing `SectionID` moves the enrollment to that section.
+- `ADD`: creates a student and enrollment. Both ID cells must remain blank.
+- `REMOVE`: deactivates the enrollment and records its end date. It does not
+  delete the durable student record.
+
+The upload first produces a complete, categorized preview. Unknown sections,
+altered or duplicate IDs, conflicting student names, malformed rows, and
+missing active enrollments block the entire batch. A missing row is never
+treated as a removal.
+
+Applying requires the exact confirmation phrase shown by the page. The server
+then acquires the roster-project lock, verifies the roster fingerprint from
+the preview, creates a complete spreadsheet backup, rechecks the fingerprint,
+and only then writes. Student CSV data remains inside this `MYSELF`-restricted
+Apps Script application; it never passes through the anonymous planner API or
+browser storage.
+
+The CSV round trip intentionally retains alphabetical print ordering. A future
+custom hand-order feature requires a new canonical ordering field and is not
+part of this first roster-update slice.
+
 ## Requests
 
-`doGet` (roster only, `RosterPrint.html`) accepts:
+`doGet` accepts:
+
+- `view=manage`: authenticated Roster Manager CSV workflow.
+- Otherwise, the roster-only `RosterPrint.html` route:
 
 - `sectionId`: required to resolve a roster; validated server-side.
 - `sessionDate`: optional ISO date (`YYYY-MM-DD`) used only in the print heading.

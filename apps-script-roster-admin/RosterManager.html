@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body{font:16px system-ui,sans-serif;color:#172033;background:#f5f7fb;margin:0}.wrap{max-width:850px;margin:32px auto;padding:28px;background:white;border:1px solid #dce3ee;border-radius:16px}h1{margin-top:0}.steps{display:grid;gap:20px}.card{border:1px solid #dce3ee;border-radius:12px;padding:18px}button,.button{display:inline-block;border:0;border-radius:9px;padding:10px 14px;background:#284b7a;color:white;font-weight:700;cursor:pointer}.secondary{background:#e9eef6;color:#28415f}input[type=file],input[type=text]{display:block;margin:12px 0;width:min(100%,560px)}input[type=text]{box-sizing:border-box;padding:10px;border:1px solid #aab7c8;border-radius:8px}.muted{color:#61718a}.error{color:#9d2525}.success{color:#17633a}.changes{padding-left:22px}button:disabled{opacity:.5;cursor:not-allowed}code{background:#eef2f7;padding:2px 5px;border-radius:4px}
+  </style>
+</head>
+<body><main class="wrap">
+  <h1>Roster Manager</h1>
+  <p class="muted">Download a complete roster, edit it, then preview every change before anything is applied.</p>
+  <div class="steps">
+    <section class="card"><h2>1. Download</h2><p>Keep existing IDs unchanged. Use <code>KEEP</code>, <code>ADD</code>, or <code>REMOVE</code>. Missing rows are never removals.</p><button id="download">Download current rosters</button><p id="sections" class="muted"></p></section>
+    <section class="card"><h2>2. Upload and preview</h2><input id="file" type="file" accept=".csv,text/csv"><button id="preview" disabled>Preview changes</button><div id="previewResult"></div></section>
+    <section class="card"><h2>3. Confirm and apply</h2><p>Available only after a clean preview. Type <code>APPLY ROSTER CHANGES</code>.</p><input id="confirmation" type="text" autocomplete="off"><button id="apply" disabled>Apply roster changes</button><div id="applyResult"></div></section>
+  </div>
+</main><script>
+  let csvText="", preview=null;
+  const el=id=>document.getElementById(id);
+  function failure(target,error){target.innerHTML='<p class="error">'+escapeHtml(error.message||String(error))+'</p>'}
+  function escapeHtml(value){const node=document.createElement('div');node.textContent=value;return node.innerHTML}
+  el('download').onclick=()=>{el('download').disabled=true;google.script.run.withSuccessHandler(result=>{const blob=new Blob([result.csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=result.filename;a.click();URL.revokeObjectURL(a.href);el('sections').textContent='Sections: '+result.sections.map(s=>s.sectionId+' ('+s.label+')').join(', ');el('download').disabled=false}).withFailureHandler(error=>{failure(el('sections'),error);el('download').disabled=false}).getRosterUpdateTemplate()};
+  el('file').onchange=async event=>{preview=null;el('apply').disabled=true;csvText=event.target.files[0]?await event.target.files[0].text():'';el('preview').disabled=!csvText;el('previewResult').textContent=''};
+  el('preview').onclick=()=>{el('preview').disabled=true;el('previewResult').textContent='Checking every row…';google.script.run.withSuccessHandler(result=>{preview=result;if(!result.ok){el('previewResult').innerHTML='<h3 class="error">Nothing can be applied</h3><ul class="error">'+result.errors.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul>'}else{const s=result.summary;el('previewResult').innerHTML='<h3>Preview</h3><p>'+s.additions+' additions · '+s.removals+' removals · '+s.moves+' moves · '+s.nameChanges+' name changes</p>'+(result.changes.length?'<ol class="changes">'+result.changes.map(x=>'<li>'+escapeHtml(x.description)+'</li>').join('')+'</ol>':'<p class="muted">No changes found.</p>');el('apply').disabled=!result.changes.length}el('preview').disabled=false}).withFailureHandler(error=>{failure(el('previewResult'),error);el('preview').disabled=false}).previewRosterUpdateCsv(csvText)};
+  el('confirmation').oninput=()=>{el('apply').disabled=!(preview&&preview.ok&&preview.changes.length&&el('confirmation').value===preview.confirmationPhrase)};
+  el('apply').onclick=()=>{el('apply').disabled=true;el('applyResult').textContent='Creating backup and rechecking roster…';google.script.run.withSuccessHandler(result=>{el('applyResult').innerHTML='<p class="success">'+escapeHtml(result.message)+'</p>'+(result.backupUrl?'<p><a href="'+result.backupUrl+'" target="_blank">Open safety backup</a></p>':'');preview=null;el('confirmation').value=''}).withFailureHandler(error=>failure(el('applyResult'),error)).applyRosterUpdateCsv(csvText,preview.fingerprint,el('confirmation').value)};
+</script></body></html>

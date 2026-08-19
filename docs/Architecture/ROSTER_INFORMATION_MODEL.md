@@ -168,5 +168,15 @@ earlier in the same staging batch — is skipped, never duplicated. Any
 rejected or ambiguous row blocks the entire import batch before any roster
 mutation; nothing is partially imported.
 
-Deactivating an enrollment (a drop) is intentionally out of scope for this
-capability — see `docs/Development/CLASSROOM_READINESS.md` for that gap.
+The authenticated Roster Manager (`?view=manage`, implemented by
+`RosterUpdate.js` and `RosterManager.html`) extends this with a guarded full
+CSV round trip. Exported rows retain `StudentID` and `EnrollmentID`; explicit
+`KEEP`, `ADD`, and `REMOVE` actions support student-information changes,
+section moves, additions, and enrollment deactivation. Missing rows never
+mean removal. Upload is preview-only until the exact confirmation phrase is
+entered. Apply is lock-protected, fingerprinted against the preview, backed up
+before mutation, and fingerprinted again after backup immediately before the
+write. Student CSV data remains inside the `MYSELF`-restricted app.
+
+Custom hand-ordering remains out of scope because the canonical roster model
+does not yet contain a persistent student/enrollment order field.

@@ -169,19 +169,27 @@ Status key:
   Plain arrow keys in Year Planner also retain native cursor behavior instead
   of moving focus to another outline line.
 
-### Prioritized — Not Started
-
-#### Next overall priority — Update and maintain Rosters
+#### Roster spreadsheet round trip — completed and deployed 8/19
 
 1. Export the current Year Planner rosters into a spreadsheet template.
-2. Support additions, removals, class-period moves, student-information
-   changes, and roster ordering in that spreadsheet.
+2. Support additions, removals, class-period moves, and student-information
+   changes in that spreadsheet.
 3. Upload the revised spreadsheet and preview every proposed change before
    applying it.
 4. Require explicit confirmation before changing roster data.
 
-This is urgent because the current rosters are already inaccurate. It precedes
-the previously ranked workflow packages below.
+Implemented in the authenticated Roster Admin Apps Script and deployed as
+version 29. The workflow uses stable student/enrollment IDs, explicit actions,
+complete-batch validation, stale-preview detection, locking, and a full
+spreadsheet backup before applying changes. Missing rows are never removals.
+
+### Prioritized — Not Started
+
+#### Add persistent custom roster ordering
+
+The CSV workflow retains alphabetical first-name/last-name print sorting.
+Custom hand-ordering requires a new canonical order field and remains a
+separate, lower-priority enhancement.
 
 #### 1. Reuse and edit lesson plans efficiently
 
