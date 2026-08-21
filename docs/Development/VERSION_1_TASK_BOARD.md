@@ -273,7 +273,9 @@ Implemented in the frontend and deployed to production as Netlify deploy
 passed. Teacher verification completed 8/21: assignment grouping, course
 filtering, the single assignment-level title copy action, period-specific
 controls, and remembered view/filter preferences all worked in the live
-workflow.
+workflow. Follow-up polish adds immediate in-place feedback: a successfully
+used title or date copy button changes to `✓ Copied` for two seconds, so the
+teacher does not need to look back at the top-of-window status message.
 
 ### Prioritized — Not Started
 

@@ -47,6 +47,7 @@ function DeliverablesWindow({ sections }) {
   const [courseFilter, setCourseFilter] = useState(() => loadPreference(COURSE_STORAGE_KEY, "all"));
   const [revision, setRevision] = useState(0);
   const [copyStatus, setCopyStatus] = useState("");
+  const [copiedControlId, setCopiedControlId] = useState("");
 
   useEffect(() => {
     function handleStorage(event) {
@@ -88,12 +89,17 @@ function DeliverablesWindow({ sections }) {
     }
   }
 
-  async function copyText(text, label) {
+  async function copyText(text, label, controlId) {
     try {
       await navigator.clipboard.writeText(text);
       setCopyStatus(`${label} copied.`);
+      setCopiedControlId(controlId);
+      window.setTimeout(() => {
+        setCopiedControlId((current) => current === controlId ? "" : current);
+      }, 2000);
     } catch {
       setCopyStatus("Could not copy automatically. Select the text and copy it.");
+      setCopiedControlId("");
     }
   }
 
@@ -124,7 +130,9 @@ function DeliverablesWindow({ sections }) {
 
         {showTitle ? (
           <div className="deliverables-copy-actions">
-            <button type="button" onClick={() => copyText(item.title, "Title")}>Copy title</button>
+            <button type="button" onClick={() => copyText(item.title, "Title", `title:${item.id}`)}>
+              {copiedControlId === `title:${item.id}` ? "✓ Copied" : "Copy title"}
+            </button>
           </div>
         ) : <span aria-hidden="true" />}
 
@@ -142,9 +150,9 @@ function DeliverablesWindow({ sections }) {
           <button
             type="button"
             disabled={!item.dueDate}
-            onClick={() => copyText(formatCopyDate(item.dueDate), "Due date")}
+            onClick={() => copyText(formatCopyDate(item.dueDate), "Due date", `date:${item.id}`)}
           >
-            Copy date
+            {copiedControlId === `date:${item.id}` ? "✓ Copied" : "Copy date"}
           </button>
         </div>
 
@@ -222,7 +230,12 @@ function DeliverablesWindow({ sections }) {
                   <span>Most recent due date · {formatDate(assignment.mostRecentDate)}</span>
                 </div>
                 <div className="deliverables-copy-actions">
-                  <button type="button" onClick={() => copyText(assignment.title, "Title")}>Copy title</button>
+                  <button
+                    type="button"
+                    onClick={() => copyText(assignment.title, "Title", `assignment:${course.courseId}:${assignment.title}`)}
+                  >
+                    {copiedControlId === `assignment:${course.courseId}:${assignment.title}` ? "✓ Copied" : "Copy title"}
+                  </button>
                 </div>
               </header>
               <div className="deliverables-list">
