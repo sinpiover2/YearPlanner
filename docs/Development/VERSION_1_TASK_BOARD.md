@@ -105,6 +105,8 @@ Planning
 	**Big issue**: when typing, it jumps out every few seconds; I have to click back to where I was typing and continue.
 	**I need to be able to copy lessons across days.** At the moment, I can only copy lessons inside a day. One main issue with that is that, for Monday, for example, I can't copy over a lesson for Math 8 p.1 to Math 8 p.2 since Monday/Tuesday are block days, and I do not see Math 8 p.2 on Mondays. Same issue for Math 1 p.5
 	I want a list of what I need to prep for the week that I can at least screenshot and print. I'm thinking a simple table with headers: Lesson, Key Ideas (what we want to make sure we get to), when this is an online lesson I want to know how to pace the screens, and key is what materials I have to have on hand and what I need to print out. For eaxmple, activity cards-- how many (1 per students?) and a link I can click on to get those PDF's to print.
+	8/21 I want a way to delete a whole lesson in the week view-- right in the top right of each lesson pill
+	8/21 Bullets or something to delineate between each deliverable. Hover over to see due date (once we put due dates on deliverables)
 Rosters
 	Darker on the grid lines
 	Every 5th line, make that extra dark
@@ -117,6 +119,7 @@ Units
 	We have to have a faster way to get curriculum into the planner. Spreadsheet template and import? It should be fast. This took DAYS!
 	I want to get materials needed into each lesson. The goal here is to have a fast way to see what I need to make sure I have on Sunday.
 	8/18 I want an icon on the lessons that require paper components. I want to be able to hover over this icon and see what they need. A link to PDF's would be great. Careful of our boundaries-- YP is not a curriculum, it is a thinking and organizing tool to support delivery of the curriculum. Smallest slice is probably a check box next to the title.
+	8/20 Lesson Takeaways-- I need a place to put these. They should be different than goals, should have prominent display
 Forecast
 	I need to review the Forecast workflow now that it is live and see how it fits with my workflow. Right now it says I need to log. The log shows up in the Units, but I think it needs to show up in the Lesson so that logging captures the day it is done and notes for the specific class.
 Future Work
@@ -182,6 +185,9 @@ Implemented in the authenticated Roster Admin Apps Script and deployed as
 version 29. The workflow uses stable student/enrollment IDs, explicit actions,
 complete-batch validation, stale-preview detection, locking, and a full
 spreadsheet backup before applying changes. Missing rows are never removals.
+Teacher production run completed successfully on 8/21: 34 reviewed roster
+changes were applied (15 additions and 19 enrollment removals), and the
+workflow produced its pre-change safety backup.
 
 ### Prioritized — Not Started
 
