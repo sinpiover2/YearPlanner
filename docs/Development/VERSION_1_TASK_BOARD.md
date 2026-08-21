@@ -195,7 +195,7 @@ Teacher production run completed successfully on 8/21: 34 reviewed roster
 changes were applied (15 additions and 19 enrollment removals), and the
 workflow produced its pre-change safety backup.
 
-### Implemented — Awaiting Teacher Verification
+### Completed — Teacher Verified
 
 #### Deliverables list for Synergy grade entry — deployed 8/21
 
@@ -228,8 +228,9 @@ to the student view or gradebook remains separate work.
 Implemented in the frontend and deployed to the existing Netlify production
 site as deploy `6a888180b6389ca5e71e28f1`. Automated tests, production build,
 local empty-state rendering, separate-window launch, and browser console checks
-passed. Final verification must use the teacher's normal browser because
-Lesson Sessions and the new metadata remain local to that browser.
+passed. Teacher verification completed 8/21 in the normal Chrome workflow: the
+separate Deliverables window opened successfully, and both an edited due date
+and the `Entered in Synergy` checkbox persisted after closing and reopening it.
 
 ### Prioritized — Not Started
 
