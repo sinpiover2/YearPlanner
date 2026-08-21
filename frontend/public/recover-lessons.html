@@ -23,7 +23,7 @@
   <body>
     <main>
       <h1>Restore Year Planner lessons</h1>
-      <p>Select the recovery file prepared for you. The file stays in this browser. Existing sessions are preserved; this recovery only fills missing sessions.</p>
+      <p>Select the recovery file prepared for you. The file stays in this browser. Before restoring, the page downloads a backup of any lesson sessions Chrome currently exposes.</p>
       <input id="file" type="file" accept="application/json,.json" />
       <button id="restore" type="button" disabled>Restore missing lessons</button>
       <div id="status" role="status">Choose the recovery file to preview it.</div>
@@ -64,18 +64,34 @@
       restoreButton.addEventListener("click", () => {
         if (!sessions) return;
         let restored = 0;
-        let preserved = 0;
         try {
+          const currentSessions = {};
+          for (let index = 0; index < localStorage.length; index += 1) {
+            const key = localStorage.key(index);
+            if (!key?.startsWith(PREFIX)) continue;
+            try {
+              currentSessions[key.slice(PREFIX.length)] = JSON.parse(localStorage.getItem(key));
+            } catch {
+              currentSessions[key.slice(PREFIX.length)] = localStorage.getItem(key);
+            }
+          }
+          if (Object.keys(currentSessions).length) {
+            const blob = new Blob(
+              [JSON.stringify({ backedUpAt: new Date().toISOString(), sessions: currentSessions }, null, 2)],
+              { type: "application/json" },
+            );
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Year Planner browser backup before recovery.json";
+            link.click();
+            URL.revokeObjectURL(link.href);
+          }
           for (const [id, value] of Object.entries(sessions)) {
             const key = PREFIX + id;
-            if (localStorage.getItem(key) !== null) {
-              preserved += 1;
-              continue;
-            }
             localStorage.setItem(key, JSON.stringify(value));
             restored += 1;
           }
-          setStatus(`Recovery complete.\n${restored} sessions restored; ${preserved} existing sessions preserved.`, "success");
+          setStatus(`Recovery complete.\n${restored} validated sessions restored.`, "success");
           restoreButton.disabled = true;
         } catch (error) {
           setStatus(`Recovery stopped: ${error.message}`, "error");
