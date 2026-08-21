@@ -249,6 +249,28 @@ passed. Teacher verification completed 8/21 in the normal Chrome workflow: the
 separate Deliverables window opened successfully, and both an edited due date
 and the `Entered in Synergy` checkbox persisted after closing and reopening it.
 
+### Implemented — Awaiting Teacher Verification
+
+#### Assignment-first Deliverables entry — deployed 8/21
+
+Support the teacher's Synergy workflow of entering one assignment across all
+periods before moving to the next assignment.
+
+1. Add remembered `By assignment` and `By class` views.
+2. Add a remembered course filter for All courses, Math 1, or Math 8.
+3. In assignment view, organize Course → exact matching assignment title →
+   period rows. Do not automatically merge similar or differently cased titles.
+4. Sort assignment groups by their most recent effective due date and period
+   rows by period number.
+5. Put one `Copy title` action on the assignment heading while keeping each
+   period's independent date, `Copy date`, Lesson Session link, and
+   `Entered in Synergy` checkbox.
+6. Leave room for explicit manual grouping later without treating fuzzy title
+   matching as assignment identity.
+
+Implemented in the frontend with grouping/model tests. Awaiting teacher
+verification in the normal two-window Synergy workflow.
+
 ### Prioritized — Not Started
 
 #### Add persistent custom roster ordering

@@ -477,6 +477,15 @@ lost. The Deliverables utility is a same-origin secondary window; it reads and
 writes those records and synchronizes changes across open Year Planner windows
 through browser storage events.
 
+The utility supports two teacher workflow projections over the same records:
+`By class` preserves the section-first list, while `By assignment` groups exact
+trimmed episode titles within each course and then orders their section rows by
+period. Assignment groups sort by their most recent effective date. The view
+and course filter are device-local preferences; grouping does not create a new
+assignment identity or merge differently named titles. A future manual-grouping
+feature can add explicit identity without changing the current exact-title
+rule.
+
 Working principle:
 
 > **Student work should not be modeled as disposable text. It should be modeled as an instructional object capable of traveling throughout the system.**
