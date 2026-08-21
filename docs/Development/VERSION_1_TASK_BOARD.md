@@ -29,6 +29,12 @@ Example:
   explicit quantities, direct PDF links, printed QR codes, and curriculum page
   references. The source scan remains local in Downloads and is not committed.
 
+### 2026-08-21
+
+- **Deliverables overview.** Add a teacher-facing list of deliverables grouped
+  first by class and then chronologically by date. This should make it easy to
+  see what each class has coming up without opening individual Lesson Sessions.
+
 ## ?? Critical
 
 - [ ] Improve lesson printing
