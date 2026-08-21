@@ -8,6 +8,27 @@ It is not a changelog of features. Each entry should describe a lesson that gene
 
 ---
 
+## Sprint 7.0
+
+- **Browser local storage is not durable storage for primary teacher-authored
+  work.** Clearing or changing browser access state made 50 Lesson Sessions
+  disappear from the UI even though their LevelDB records remained
+  recoverable. Recovery required a profile-specific storage snapshot, validated
+  extraction, and a same-origin restore page. Before any browser-profile,
+  origin, cookie, or site-data change, export teacher-authored local data and
+  verify the export. Primary plans need server synchronization, visible save
+  state, conflict handling, and a teacher-controlled export/restore path.
+- **A browser-bundled token is not a secret once its frontend becomes public.**
+  Netlify's private-project gate had previously limited who could download the
+  Vite bundle containing `VITE_PLANNING_WRITE_TOKEN`. Making the project public
+  solved daily access friction but exposed that credential to anyone with the
+  URL. Before changing hosting visibility, audit what the frontend bundle and
+  anonymous backend reveal, rotate affected credentials, and move privileged
+  authorization behind identity-aware server enforcement rather than relying
+  on a client-shipped token.
+
+---
+
 ## Sprint 6.9
 
 - **A forecast projection must never be presented as a teacher commitment.**

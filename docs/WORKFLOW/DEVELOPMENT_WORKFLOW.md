@@ -573,6 +573,27 @@ If it will happen again, fix the workflow documents before ending the sprint —
 
 For lessons worth preserving beyond the sprint that produced them, record them in LESSONS_LEARNED.md.
 
+## Browser Storage and Hosting-Visibility Safety Check
+
+Before clearing site data, changing browser profiles or origins, or changing a
+hosted frontend from private to public:
+
+1. Inventory every teacher-authored record still stored only in browser local
+   storage.
+2. Create and validate an export before changing browser or hosting state.
+3. Confirm which browser profile and exact origin own the records; localStorage
+   does not follow the user between profiles, hosts, or ports.
+4. Inspect the production frontend bundle for embedded credentials and inspect
+   anonymous backend responses for private data.
+5. Treat every `VITE_*` value as public client code, even when its source file
+   is gitignored. Never rely on it as the sole authorization boundary for a
+   public frontend.
+6. If visibility changes, rotate any credential whose former safety depended
+   on the hosting gate and verify the new identity-aware server boundary before
+   sharing the URL.
+7. Verify both data presence and write authorization in the intended daily-use
+   browser after the change.
+
 ---
 
 # Periodic Architecture Review
