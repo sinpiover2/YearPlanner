@@ -249,7 +249,7 @@ passed. Teacher verification completed 8/21 in the normal Chrome workflow: the
 separate Deliverables window opened successfully, and both an edited due date
 and the `Entered in Synergy` checkbox persisted after closing and reopening it.
 
-### Implemented — Awaiting Teacher Verification
+### Completed — Teacher Verified
 
 #### Assignment-first Deliverables entry — deployed 8/21
 
@@ -268,8 +268,12 @@ periods before moving to the next assignment.
 6. Leave room for explicit manual grouping later without treating fuzzy title
    matching as assignment identity.
 
-Implemented in the frontend with grouping/model tests. Awaiting teacher
-verification in the normal two-window Synergy workflow.
+Implemented in the frontend and deployed to production as Netlify deploy
+`6a88cd550332ff11af748e4a`; all 88 frontend tests and the production build
+passed. Teacher verification completed 8/21: assignment grouping, course
+filtering, the single assignment-level title copy action, period-specific
+controls, and remembered view/filter preferences all worked in the live
+workflow.
 
 ### Prioritized — Not Started
 
