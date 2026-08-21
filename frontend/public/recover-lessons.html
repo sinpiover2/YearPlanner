@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Year Planner Lesson Recovery</title>
+    <style>
+      :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #172033; background: #f4f6f8; }
+      body { margin: 0; padding: 32px 18px; }
+      main { max-width: 680px; margin: 0 auto; padding: 32px; background: white; border: 1px solid #d8e0ea; border-radius: 20px; box-shadow: 0 12px 32px #17203312; }
+      h1 { margin-top: 0; }
+      p { line-height: 1.55; }
+      input { display: block; width: 100%; margin: 24px 0; }
+      button, a { font: inherit; }
+      button { border: 0; border-radius: 10px; padding: 12px 18px; background: #24558a; color: white; font-weight: 700; cursor: pointer; }
+      button:disabled { opacity: .45; cursor: default; }
+      #status { margin-top: 22px; padding: 14px; border-radius: 10px; background: #eef3f8; white-space: pre-line; }
+      .success { color: #126b39; background: #eaf7ef !important; }
+      .error { color: #9b2c2c; background: #fff0f0 !important; }
+      .return { display: inline-block; margin-top: 18px; color: #24558a; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Restore Year Planner lessons</h1>
+      <p>Select the recovery file prepared for you. The file stays in this browser. Existing sessions are preserved; this recovery only fills missing sessions.</p>
+      <input id="file" type="file" accept="application/json,.json" />
+      <button id="restore" type="button" disabled>Restore missing lessons</button>
+      <div id="status" role="status">Choose the recovery file to preview it.</div>
+      <a class="return" href="/">Return to Year Planner</a>
+    </main>
+    <script>
+      const PREFIX = "year-planner.lesson-session.prototype.v2.";
+      const fileInput = document.querySelector("#file");
+      const restoreButton = document.querySelector("#restore");
+      const status = document.querySelector("#status");
+      let sessions = null;
+
+      function setStatus(message, type = "") {
+        status.textContent = message;
+        status.className = type;
+      }
+
+      fileInput.addEventListener("change", async () => {
+        sessions = null;
+        restoreButton.disabled = true;
+        try {
+          const file = fileInput.files[0];
+          if (!file) return setStatus("Choose the recovery file to preview it.");
+          const parsed = JSON.parse(await file.text());
+          const entries = Object.entries(parsed.sessions || {});
+          if (!entries.length || entries.some(([id, value]) => !id || !Array.isArray(value?.episodes))) {
+            throw new Error("This is not a valid Year Planner lesson recovery file.");
+          }
+          sessions = Object.fromEntries(entries);
+          const existing = entries.filter(([id]) => localStorage.getItem(PREFIX + id) !== null).length;
+          setStatus(`Ready: ${entries.length} recovered sessions found.\n${existing} already exist; ${entries.length - existing} are missing.`);
+          restoreButton.disabled = false;
+        } catch (error) {
+          setStatus(error.message || "The recovery file could not be read.", "error");
+        }
+      });
+
+      restoreButton.addEventListener("click", () => {
+        if (!sessions) return;
+        let restored = 0;
+        let preserved = 0;
+        try {
+          for (const [id, value] of Object.entries(sessions)) {
+            const key = PREFIX + id;
+            if (localStorage.getItem(key) !== null) {
+              preserved += 1;
+              continue;
+            }
+            localStorage.setItem(key, JSON.stringify(value));
+            restored += 1;
+          }
+          setStatus(`Recovery complete.\n${restored} sessions restored; ${preserved} existing sessions preserved.`, "success");
+          restoreButton.disabled = true;
+        } catch (error) {
+          setStatus(`Recovery stopped: ${error.message}`, "error");
+        }
+      });
+    </script>
+  </body>
+</html>
