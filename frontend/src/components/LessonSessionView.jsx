@@ -5,6 +5,7 @@ import { printLessonSession } from "../utils/combinedPrint";
 import { classifyLessonCurriculumReference } from "../utils/lessonCurriculumReference";
 import RosterSortToggle from "./Planning/RosterSortToggle";
 import { createIndependentLessonSessionCopy } from "../utils/lessonSessionCopy";
+import { getNextInstructionalDate } from "../utils/deliverablesOverview.js";
 
 const STORAGE_KEY = LESSON_SESSION_STORAGE_KEY;
 const LEGACY_STORAGE_KEY = "year-planner.lesson-session-items.prototype.v1";
@@ -132,6 +133,8 @@ function createBlankEpisode() {
     minutes: null,
     curriculumLessonId: null,
     isDeliverable: false,
+    deliverableDueDate: null,
+    enteredInSynergy: false,
     blocks: [createBlock()],
   };
 }
@@ -219,6 +222,8 @@ function normalizeStoredState(value) {
         title: episode.title ?? "",
         curriculumLessonId: episode.curriculumLessonId ?? null,
         isDeliverable: Boolean(episode.isDeliverable),
+        deliverableDueDate: episode.deliverableDueDate ?? null,
+        enteredInSynergy: Boolean(episode.enteredInSynergy),
         minutes:
           Number.isFinite(Number(episode.minutes)) &&
           Number(episode.minutes) > 0
@@ -419,6 +424,7 @@ function LessonSessionView({
   unitLabel,
   rosterSortBy,
   onRosterSortByChange,
+  schoolCalendar = [],
 }) {
   const {
     state: plannerState,
@@ -481,7 +487,7 @@ function LessonSessionView({
   const inputRefs = useRef(new Map());
   const addEpisodeMenuRef = useRef(null);
 
-  const { curriculumLessonId, episodes, deliverables } = plannerState;
+  const { curriculumLessonId, episodes } = plannerState;
   // Legacy: earlier versions attached a curriculum lesson to the whole
   // Lesson Session. Connections are now made per Teaching Episode; this
   // session-level value is kept only so older saved plans still show a
@@ -559,6 +565,32 @@ function LessonSessionView({
       console.warn("Could not save the local Lesson Planner draft.", error);
     }
   }, [activeLessonContext?.sessionId, plannerState]);
+
+  useEffect(() => {
+    const storageKey = getSessionStorageKey(
+      STORAGE_KEY,
+      activeLessonContext?.sessionId,
+    );
+
+    function handleStorage(event) {
+      if (event.key !== storageKey || !event.newValue) return;
+      try {
+        const incoming = normalizeStoredState(JSON.parse(event.newValue));
+        setPlannerState(
+          (current) =>
+            JSON.stringify(current) === JSON.stringify(incoming)
+              ? current
+              : incoming,
+          { record: false },
+        );
+      } catch {
+        // Ignore malformed writes from another tab; preserve this draft.
+      }
+    }
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [activeLessonContext?.sessionId, setPlannerState]);
 
   useEffect(() => {
     try {
@@ -710,6 +742,12 @@ function LessonSessionView({
       const copiedState = createIndependentLessonSessionCopy(
         plannerState,
         createId,
+        {
+          deliverableDueDate: getNextInstructionalDate(
+            target.dayKey,
+            schoolCalendar,
+          ),
+        },
       );
 
       window.localStorage.setItem(
@@ -793,6 +831,10 @@ function LessonSessionView({
       const pastedEpisode = {
         ...sourceEpisode,
         id: pastedEpisodeId,
+        deliverableDueDate: sourceEpisode.isDeliverable
+          ? getNextInstructionalDate(activeLessonContext?.date, schoolCalendar)
+          : null,
+        enteredInSynergy: false,
         blocks: sourceEpisode.blocks.map((block) => ({
           ...block,
           id: createId("block"),
@@ -860,6 +902,10 @@ function LessonSessionView({
     const duplicatedEpisode = {
       ...sourceEpisode,
       id: duplicatedEpisodeId,
+      deliverableDueDate: sourceEpisode.isDeliverable
+        ? getNextInstructionalDate(activeLessonContext?.date, schoolCalendar)
+        : null,
+      enteredInSynergy: false,
       title: sourceEpisode.title
         ? `${sourceEpisode.title} copy`
         : "Untitled Teaching Episode copy",
@@ -952,6 +998,10 @@ function LessonSessionView({
     const movedEpisode = {
       ...sourceEpisode,
       id: movedEpisodeId,
+      deliverableDueDate: sourceEpisode.isDeliverable
+        ? getNextInstructionalDate(target.dayKey, schoolCalendar)
+        : null,
+      enteredInSynergy: false,
       blocks: sourceEpisode.blocks.map((block) => ({
         ...block,
         id: createId("block"),
@@ -1218,7 +1268,18 @@ function LessonSessionView({
       ...current,
       episodes: current.episodes.map((episode) =>
         episode.id === episodeId
-          ? { ...episode, isDeliverable: !episode.isDeliverable }
+          ? {
+              ...episode,
+              isDeliverable: !episode.isDeliverable,
+              deliverableDueDate: episode.isDeliverable
+                ? episode.deliverableDueDate ?? null
+                : episode.deliverableDueDate ??
+                  getNextInstructionalDate(
+                    activeLessonContext?.date,
+                    schoolCalendar,
+                  ),
+              enteredInSynergy: Boolean(episode.enteredInSynergy),
+            }
           : episode,
       ),
     }));
@@ -2086,6 +2147,26 @@ function LessonSessionView({
                   )}
 
                   <div className="episode-spine-meta">
+                    {episode.isDeliverable ? (
+                      <label className="episode-deliverable-due-date">
+                        <span>Due</span>
+                        <input
+                          type="date"
+                          value={episode.deliverableDueDate ?? ""}
+                          aria-label={`Due date for ${
+                            episode.title || DEFAULT_EPISODE_TITLE_DISPLAY
+                          }`}
+                          onClick={(event) => event.stopPropagation()}
+                          onChange={(event) =>
+                            updateEpisode(episode.id, (current) => ({
+                              ...current,
+                              deliverableDueDate:
+                                event.target.value || null,
+                            }))
+                          }
+                        />
+                      </label>
+                    ) : null}
                     {hasDeliverable ? (
                       <span
                         className="episode-deliverable-mark"

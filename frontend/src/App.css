@@ -4346,6 +4346,190 @@ body {
   background: #f8fafc;
 }
 
+.episode-deliverable-due-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #65738a;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.episode-deliverable-due-date input {
+  width: 8.4rem;
+  border: 1px solid #ced7e4;
+  border-radius: 0.45rem;
+  padding: 0.3rem 0.4rem;
+  color: #263650;
+  background: #fff;
+}
+
+/* Secondary, same-origin utility opened beside Synergy. */
+.deliverables-window {
+  min-height: 100vh;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  color: #18243a;
+  background: #f5f7fb;
+}
+
+.deliverables-window-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 76rem;
+  margin: 0 auto 1.25rem;
+}
+
+.deliverables-window-header h1 {
+  margin: 0.15rem 0 0.3rem;
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+}
+
+.deliverables-window-header p {
+  margin: 0;
+  color: #63718a;
+}
+
+.deliverables-limit-control {
+  display: grid;
+  gap: 0.3rem;
+  color: #56657d;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.deliverables-limit-control select {
+  border: 1px solid #cbd5e3;
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.7rem;
+  background: #fff;
+  color: #243550;
+}
+
+.deliverables-copy-status,
+.deliverables-class,
+.deliverables-empty {
+  max-width: 76rem;
+  margin-inline: auto;
+}
+
+.deliverables-copy-status {
+  margin-block: 0 1rem;
+  color: #1b6840;
+  font-weight: 700;
+}
+
+.deliverables-class {
+  margin-bottom: 1rem;
+  border: 1px solid #d8e0ec;
+  border-radius: 0.9rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.deliverables-class h2 {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #e3e8f0;
+  background: #f9fafc;
+  font-size: 1.05rem;
+}
+
+.deliverables-item {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) auto minmax(11rem, auto) auto minmax(10rem, auto);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.deliverables-item:last-child {
+  border-bottom: 0;
+}
+
+.deliverables-item-main {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.deliverables-title {
+  width: fit-content;
+  border: 0;
+  padding: 0;
+  color: #214f83;
+  background: transparent;
+  font: inherit;
+  font-weight: 750;
+  text-align: left;
+  cursor: pointer;
+}
+
+.deliverables-title:hover {
+  text-decoration: underline;
+}
+
+.deliverables-source,
+.deliverables-date span {
+  color: #6b7890;
+  font-size: 0.75rem;
+}
+
+.deliverables-date {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.deliverables-date input {
+  border: 1px solid #cbd5e3;
+  border-radius: 0.45rem;
+  padding: 0.42rem 0.5rem;
+  background: #fff;
+}
+
+.deliverables-copy-actions button {
+  border: 1px solid #c7d2e1;
+  border-radius: 0.45rem;
+  padding: 0.42rem 0.6rem;
+  color: #3e526f;
+  background: #f5f7fa;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.deliverables-copy-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.deliverables-synergy-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.deliverables-empty {
+  border: 1px dashed #c8d3e2;
+  border-radius: 0.9rem;
+  padding: 2rem;
+  background: #fff;
+}
+
+@media (max-width: 900px) {
+  .deliverables-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .deliverables-date,
+  .deliverables-synergy-check {
+    grid-column: 1 / -1;
+  }
+}
+
 .episode-hover-controls {
   display: flex;
   gap: 3px;

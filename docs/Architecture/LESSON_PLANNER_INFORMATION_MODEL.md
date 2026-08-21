@@ -455,6 +455,28 @@ A Deliverable should eventually include:
 - optional grading status
 - optional resource link
 
+## Current Synergy workflow implementation (Sprint 7.0)
+
+The teacher-facing Synergy utility consumes only Teaching Episodes explicitly
+marked `isDeliverable`; it does not treat every block whose support type is
+`deliverable` as a separate gradebook item. In the current local Lesson Session
+prototype, each marked episode carries two class/session-specific fields:
+
+- `deliverableDueDate` — an ISO school date. Newly marked and independently
+  copied deliverables default to the next instructional day; pre-existing
+  marked episodes migrate with this blank and therefore fall back to their
+  Lesson Session date.
+- `enteredInSynergy` — the teacher's persistent local confirmation that the
+  item has been entered into the SIS.
+
+These fields intentionally live in the same local Lesson Session record as the
+episode until Lesson Sessions themselves gain server persistence. Splitting
+only the due date and SIS status into a separate server store would create two
+competing sources of truth and leave metadata orphaned if a local session were
+lost. The Deliverables utility is a same-origin secondary window; it reads and
+writes those records and synchronizes changes across open Year Planner windows
+through browser storage events.
+
 Working principle:
 
 > **Student work should not be modeled as disposable text. It should be modeled as an instructional object capable of traveling throughout the system.**

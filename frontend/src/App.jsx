@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import ApplicationShell from "./components/ApplicationShell";
 import WorkspaceHost from "./components/WorkspaceHost";
@@ -38,6 +38,16 @@ import {
 import { loadRosterSortBy, saveRosterSortBy } from "./utils/rosterSortPreference";
 import { saveUnitPlanningOptimistically } from "./utils/unitPlanningMutation";
 import { getLessonSessionCopyTargets } from "./utils/lessonSessionCopy";
+import DeliverablesWindow from "./components/DeliverablesWindow";
+import {
+  buildCalendarIndex,
+  buildScheduleIndex,
+  buildSectionMeetingMaps,
+} from "./utils/planningCalendar.js";
+import { resolveSessionIdentity } from "./utils/deliverablesOverview.js";
+import { getLessonSessionState } from "./utils/lessonSessionStorage.js";
+
+const EMPTY_LIST = [];
 
 function getLessonProgress(lessonId, dailyProgress) {
   const entries = dailyProgress.filter((entry) => entry.LessonID === lessonId);
@@ -139,6 +149,9 @@ function App() {
   const [planningSelectedDayKey, setPlanningSelectedDayKey] = useState(null);
   const [activeLessonContext, setActiveLessonContext] = useState(null);
   const [rosterSortBy, setRosterSortBy] = useState(() => loadRosterSortBy());
+  const deepLinkOpenedRef = useRef(false);
+  const isDeliverablesUtility =
+    new URLSearchParams(window.location.search).get("utility") === "deliverables";
 
   function handleRosterSortByChange(sortBy) {
     setRosterSortBy(sortBy);
@@ -157,13 +170,13 @@ function App() {
       });
   }, []);
 
-  const courses = plannerData?.courses ?? [];
-  const units = plannerData?.units ?? [];
-  const schoolCalendar = plannerData?.schoolCalendar ?? [];
-  const schedulePatterns = plannerData?.schedulePatterns ?? [];
-  const sectionPacing = plannerData?.sectionPacing ?? [];
-  const sections = plannerData?.sections ?? [];
-  const lessons = plannerData?.lessons ?? [];
+  const courses = plannerData?.courses ?? EMPTY_LIST;
+  const units = plannerData?.units ?? EMPTY_LIST;
+  const schoolCalendar = plannerData?.schoolCalendar ?? EMPTY_LIST;
+  const schedulePatterns = plannerData?.schedulePatterns ?? EMPTY_LIST;
+  const sectionPacing = plannerData?.sectionPacing ?? EMPTY_LIST;
+  const sections = plannerData?.sections ?? EMPTY_LIST;
+  const lessons = plannerData?.lessons ?? EMPTY_LIST;
   const { activeUnits, activeLessons } = getActiveCurriculum(units, lessons);
   const dailyProgress = plannerData?.dailyProgress ?? [];
 
@@ -302,10 +315,10 @@ function App() {
   const selectedPrepareNext =
     selectedCourseId === "IM1" ? math1PrepareNext : math8PrepareNext;
 
-  const planningNavigationByCourse = {
-    M8: math8Navigation,
-    IM1: math1Navigation,
-  };
+  const planningNavigationByCourse = useMemo(
+    () => ({ M8: math8Navigation, IM1: math1Navigation }),
+    [math8Navigation, math1Navigation],
+  );
 
   const planningModel = getPlanningModel({
     planningSections,
@@ -318,6 +331,59 @@ function App() {
     sectionPacing,
     referenceDate: planningReferenceDate,
   });
+
+  useEffect(() => {
+    if (!plannerData || deepLinkOpenedRef.current || isDeliverablesUtility) return;
+    const sessionId = new URLSearchParams(window.location.search).get("session");
+    if (!sessionId) return;
+
+    const identity = resolveSessionIdentity(sessionId, planningSections);
+    if (!identity) return;
+    const { section, dateKey } = identity;
+    const storedSession = getLessonSessionState(sessionId);
+    const linkedLessonId = storedSession?.episodes?.find(
+      (episode) => episode.curriculumLessonId,
+    )?.curriculumLessonId;
+    const sessionUnitId =
+      lessons.find((lesson) => lesson.LessonID === linkedLessonId)?.UnitID ??
+      planningNavigationByCourse[section.CourseID]?.currentUnit?.UnitID ??
+      null;
+    const calendarIndex = buildCalendarIndex(schoolCalendar);
+    const meetingMaps = buildSectionMeetingMaps(
+      planningSections,
+      calendarIndex,
+      buildScheduleIndex(schedulePatterns),
+    );
+    deepLinkOpenedRef.current = true;
+    const openTimer = window.setTimeout(() => {
+      setSelectedCourseId(section.CourseID);
+      setSelectedUnitId(sessionUnitId);
+      setPlanningReferenceDate(new Date(`${dateKey}T00:00:00`));
+      setPlanningSelectedDayKey(dateKey);
+      setActiveLessonContext({
+        sessionId,
+        sectionId: section.SectionID,
+        sectionLabel: section.SectionName || section.Period || section.SectionID,
+        unitId: sessionUnitId,
+        date: dateKey,
+        schoolDayNumber: calendarIndex.get(dateKey)?.schoolDayNumber ?? null,
+        courseSessionNumber:
+          meetingMaps.get(section.SectionID)?.get(dateKey) ?? null,
+        source: "deliverables",
+      });
+      setActiveView("lesson");
+    }, 0);
+
+    return () => window.clearTimeout(openTimer);
+  }, [
+    isDeliverablesUtility,
+    plannerData,
+    planningNavigationByCourse,
+    planningSections,
+    lessons,
+    schedulePatterns,
+    schoolCalendar,
+  ]);
 
   const forecastWorkspaceModel = buildForecastModel({
     sections,
@@ -896,6 +962,12 @@ function App() {
       setPlanningReferenceDate(new Date(`${dateKey}T00:00:00`)),
     rosterSortBy,
     onRosterSortByChange: handleRosterSortByChange,
+    onOpenDeliverables: () => {
+      const url = new URL(window.location.href);
+      url.search = "";
+      url.searchParams.set("utility", "deliverables");
+      window.open(url.toString(), "year-planner-deliverables");
+    },
   };
 
   // Scoped to the whole course, not just activeLessonContext.unitId (the
@@ -953,7 +1025,12 @@ function App() {
     unitLabel: activeSession?.unitLabel ?? "",
     rosterSortBy,
     onRosterSortByChange: handleRosterSortByChange,
+    schoolCalendar,
   };
+
+  if (isDeliverablesUtility) {
+    return <DeliverablesWindow sections={planningSections} />;
+  }
 
   return (
     <main className="app">

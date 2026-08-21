@@ -13,6 +13,7 @@ function PlanningHeader({
   canPrintDay,
   printDayLabel,
   onOpenWeeklyCommunication,
+  onOpenDeliverables,
   sections,
   onPrintRosters,
   rosterSortBy,
@@ -90,6 +91,13 @@ function PlanningHeader({
             onClick={onOpenWeeklyCommunication}
           >
             <span aria-hidden="true">✉</span> Weekly communication
+          </button>
+          <button
+            type="button"
+            className="planning-secondary-action"
+            onClick={onOpenDeliverables}
+          >
+            <span aria-hidden="true">▢</span> Deliverables
           </button>
           <button
             type="button"

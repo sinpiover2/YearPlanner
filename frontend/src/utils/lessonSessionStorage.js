@@ -18,9 +18,51 @@ export function getLessonSessionState(sessionId) {
     );
 
     return stored ? JSON.parse(stored) : null;
-  } catch (error) {
+  } catch {
     return null;
   }
+}
+
+export function getAllLessonSessionStates() {
+  if (typeof window === "undefined") return [];
+
+  const prefix = `${LESSON_SESSION_STORAGE_KEY}.`;
+  const entries = [];
+
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (!key?.startsWith(prefix)) continue;
+
+    try {
+      const state = JSON.parse(window.localStorage.getItem(key));
+      entries.push({ sessionId: key.slice(prefix.length), state });
+    } catch {
+      // One malformed draft must not hide every other deliverable.
+    }
+  }
+
+  return entries;
+}
+
+export function updateLessonSessionEpisode(sessionId, episodeId, patch) {
+  const state = getLessonSessionState(sessionId);
+  if (!state || !Array.isArray(state.episodes)) return false;
+
+  const episodeExists = state.episodes.some((episode) => episode.id === episodeId);
+  if (!episodeExists) return false;
+
+  const nextState = {
+    ...state,
+    episodes: state.episodes.map((episode) =>
+      episode.id === episodeId ? { ...episode, ...patch } : episode,
+    ),
+  };
+
+  window.localStorage.setItem(
+    getLessonSessionStorageKey(sessionId),
+    JSON.stringify(nextState),
+  );
+  return true;
 }
 
 function hasAuthoredContent(state) {

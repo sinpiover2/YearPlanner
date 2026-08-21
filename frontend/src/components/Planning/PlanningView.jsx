@@ -27,6 +27,7 @@ function PlanningView({
   onSelectDay,
   rosterSortBy,
   onRosterSortByChange,
+  onOpenDeliverables,
 }) {
   const { title, schoolDaysLabel, weekDays, sections, sessions, dateBounds } =
     planningModel;
@@ -149,6 +150,7 @@ function PlanningView({
             : "Day"
         }
         onOpenWeeklyCommunication={() => setWeeklyCommunicationOpen(true)}
+        onOpenDeliverables={onOpenDeliverables}
         sections={sections}
         onPrintRosters={handlePrintRosters}
         rosterSortBy={rosterSortBy}

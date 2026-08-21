@@ -68,6 +68,7 @@ test("copied plans preserve content while receiving independent identities", () 
       {
         id: "episode-source",
         title: "Launch",
+        isDeliverable: true,
         curriculumLessonId: "M8-U1-L1",
         blocks: [
           {
@@ -91,6 +92,7 @@ test("copied plans preserve content while receiving independent identities", () 
   const copy = createIndependentLessonSessionCopy(
     source,
     (prefix) => `${prefix}-copy-${++nextId}`,
+    { deliverableDueDate: "2026-08-24" },
   );
 
   assert.equal(copy.curriculumLessonId, source.curriculumLessonId);
@@ -102,6 +104,8 @@ test("copied plans preserve content while receiving independent identities", () 
   assert.notEqual(copy.episodes[0].id, source.episodes[0].id);
   assert.notEqual(copy.episodes[0].blocks[0].id, source.episodes[0].blocks[0].id);
   assert.notEqual(copy.deliverables[0].id, source.deliverables[0].id);
+  assert.equal(copy.episodes[0].deliverableDueDate, "2026-08-24");
+  assert.equal(copy.episodes[0].enteredInSynergy, false);
   assert.equal(
     copy.episodes[0].blocks[0].deliverableId,
     copy.deliverables[0].id,

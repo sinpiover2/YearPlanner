@@ -20,7 +20,11 @@ export function getLessonSessionCopyTargets({
     });
 }
 
-export function createIndependentLessonSessionCopy(sourceState, createId) {
+export function createIndependentLessonSessionCopy(
+  sourceState,
+  createId,
+  { deliverableDueDate = null } = {},
+) {
   const episodeIdMap = new Map();
   const deliverableIdMap = new Map();
 
@@ -37,6 +41,8 @@ export function createIndependentLessonSessionCopy(sourceState, createId) {
     episodes: sourceState.episodes.map((episode) => ({
       ...episode,
       id: episodeIdMap.get(episode.id),
+      deliverableDueDate: episode.isDeliverable ? deliverableDueDate : null,
+      enteredInSynergy: false,
       blocks: episode.blocks.map((block) => ({
         ...block,
         id: createId("block"),
