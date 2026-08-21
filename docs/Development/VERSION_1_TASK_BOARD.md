@@ -195,9 +195,9 @@ Teacher production run completed successfully on 8/21: 34 reviewed roster
 changes were applied (15 additions and 19 enrollment removals), and the
 workflow produced its pre-change safety backup.
 
-### Prioritized — Not Started
+### Implemented — Awaiting Teacher Verification
 
-#### Next overall priority — Deliverables list for Synergy grade entry
+#### Deliverables list for Synergy grade entry — deployed 8/21
 
 Build a secondary teacher utility for transferring Year Planner deliverables
 into Synergy. It is urgent and important because grade-entry catch-up is a
@@ -224,6 +224,14 @@ current classroom need.
 
 This is a teacher workflow, not a student assignment page. Future propagation
 to the student view or gradebook remains separate work.
+
+Implemented in the frontend and deployed to the existing Netlify production
+site as deploy `6a888180b6389ca5e71e28f1`. Automated tests, production build,
+local empty-state rendering, separate-window launch, and browser console checks
+passed. Final verification must use the teacher's normal browser because
+Lesson Sessions and the new metadata remain local to that browser.
+
+### Prioritized — Not Started
 
 #### Add persistent custom roster ordering
 
