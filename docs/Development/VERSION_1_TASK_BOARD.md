@@ -34,6 +34,23 @@ Example:
 - **Deliverables overview.** Add a teacher-facing list of deliverables grouped
   first by class and then chronologically by date. This should make it easy to
   see what each class has coming up without opening individual Lesson Sessions.
+- **Lesson Session durability / recovery.** After Netlify project visibility
+  was changed from private to public, the Planning view appeared empty in both
+  Chrome profiles even though the visibility change itself does not delete app
+  data. The Lesson Sessions were still recoverable from the SVUSD Chrome
+  profile's local-storage database. A read-only storage snapshot and validated
+  JSON recovery file were created; 50 production sessions were recovered (10
+  each for M8-P1, M8-P2, M8-P3, IM1-P5, and IM1-P6, dated August 6–21). A
+  temporary same-origin recovery page first backs up anything the browser
+  currently exposes and then restores the validated sessions. Teacher
+  verification confirmed that all lessons returned.
+- **New need — durable Lesson Session storage.** Browser-only local storage is
+  too fragile for primary teacher-authored plans. Review a durable persistence
+  and recovery design that survives browser-profile changes, cleared site data,
+  and device failure. It should include automatic server-side synchronization
+  or backup, a visible last-saved state, safe conflict handling, and an easy
+  teacher-controlled export/restore path. This is recorded for review and has
+  not yet been prioritized or implemented.
 
 ## ?? Critical
 
