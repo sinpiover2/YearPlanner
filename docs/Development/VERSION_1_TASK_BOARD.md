@@ -197,6 +197,34 @@ workflow produced its pre-change safety backup.
 
 ### Prioritized — Not Started
 
+#### Next overall priority — Deliverables list for Synergy grade entry
+
+Build a secondary teacher utility for transferring Year Planner deliverables
+into Synergy. It is urgent and important because grade-entry catch-up is a
+current classroom need.
+
+1. Add a small `Deliverables` utility button in Planning. It opens a separate
+   window so Deliverables and Synergy can remain side by side; it does not have
+   the navigation weight of Planning, Lesson Planner, Units, or Forecast.
+2. Include only Lesson Planner items marked `Deliverable`. Organize the window
+   as stacked class sections and hide classes with no matching deliverables.
+3. Default to the 10 most recent past deliverables per class, with controls for
+   5, 10, 20, or all historical deliverables.
+4. Show title, effective date, source Lesson Session, and whether the effective
+   date is the lesson date or an entered due date. Clicking a row opens its
+   Lesson Planner session.
+5. Add a class-specific due date to deliverables. Make it editable in both
+   Lesson Planner and inline in this utility. New deliverables default to the
+   next school day; until a due date exists, the list falls back to lesson
+   date.
+6. Add separate one-click controls to copy the title and copy the due date for
+   pasting into Synergy.
+7. Add a persistent `Entered in Synergy` checkbox. Checked deliverables remain
+   visible in chronological order rather than disappearing.
+
+This is a teacher workflow, not a student assignment page. Future propagation
+to the student view or gradebook remains separate work.
+
 #### Add persistent custom roster ordering
 
 The CSV workflow retains alphabetical first-name/last-name print sorting.
