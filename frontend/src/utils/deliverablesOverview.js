@@ -70,12 +70,18 @@ export function buildDeliverablesOverview({
       const dueDate = episode.deliverableDueDate || null;
       const effectiveDate = dueDate || identity.dateKey;
       if (effectiveDate > todayKey) return;
+      const learningGoals = [...new Set(
+        (episode.blocks ?? [])
+          .filter((block) => block.type === "learning" && block.text?.trim())
+          .map((block) => block.text.trim()),
+      )];
 
       group.items.push({
         id: `${sessionId}:${episode.id}`,
         sessionId,
         episodeId: episode.id,
         title: episode.title.trim(),
+        learningGoals,
         lessonDate: identity.dateKey,
         dueDate,
         effectiveDate,
@@ -138,6 +144,9 @@ export function buildDeliverablesAssignmentOverview(classGroups = []) {
       assignments: [...course.assignments.values()]
         .map((assignment) => ({
           ...assignment,
+          learningGoals: [...new Set(
+            assignment.items.flatMap((item) => item.learningGoals ?? []),
+          )],
           items: assignment.items.sort((left, right) =>
             Number(left.period ?? Infinity) - Number(right.period ?? Infinity) ||
             left.sectionLabel.localeCompare(right.sectionLabel),

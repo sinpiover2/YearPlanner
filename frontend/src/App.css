@@ -4593,6 +4593,26 @@ body {
   font-size: 0.75rem;
 }
 
+.deliverables-learning-goals {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.25rem 0 0;
+  padding-left: 1.15rem;
+  color: #43536d;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.deliverables-assignment-header .deliverables-learning-goals {
+  margin-top: 0.4rem;
+}
+
+.deliverables-copy-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 .deliverables-date {
   display: grid;
   gap: 0.2rem;

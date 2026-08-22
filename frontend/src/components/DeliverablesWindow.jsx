@@ -129,6 +129,11 @@ function DeliverablesWindow({ sections }) {
           <span className="deliverables-source">
             Lesson Session · {formatDate(item.lessonDate)}
           </span>
+          {showTitle && item.learningGoals.length ? (
+            <ul className="deliverables-learning-goals">
+              {item.learningGoals.map((goal) => <li key={goal}>{goal}</li>)}
+            </ul>
+          ) : null}
         </div>
 
         {showTitle ? (
@@ -139,6 +144,13 @@ function DeliverablesWindow({ sections }) {
               onClick={() => copyText(item.title, "Title", `title:${item.id}`)}
             >
               {copiedControlId === `title:${item.id}` ? "✓ Copied" : "Copy title"}
+            </button>
+            <button
+              type="button"
+              disabled={!item.learningGoals.length || item.skipSynergy}
+              onClick={() => copyText(item.learningGoals.join("\n"), "I can's", `goals:${item.id}`)}
+            >
+              {copiedControlId === `goals:${item.id}` ? "✓ Copied" : "Copy I can's"}
             </button>
           </div>
         ) : <span aria-hidden="true" />}
@@ -238,6 +250,11 @@ function DeliverablesWindow({ sections }) {
                 <div>
                   <h3>{assignment.title}</h3>
                   <span>Most recent due date · {formatDate(assignment.mostRecentDate)}</span>
+                  {assignment.learningGoals.length ? (
+                    <ul className="deliverables-learning-goals">
+                      {assignment.learningGoals.map((goal) => <li key={goal}>{goal}</li>)}
+                    </ul>
+                  ) : null}
                   {assignment.items.every((item) => item.skipSynergy) ? (
                     <strong className="deliverables-not-graded">Not graded in Synergy</strong>
                   ) : null}
@@ -249,6 +266,17 @@ function DeliverablesWindow({ sections }) {
                     onClick={() => copyText(assignment.title, "Title", `assignment:${course.courseId}:${assignment.title}`)}
                   >
                     {copiedControlId === `assignment:${course.courseId}:${assignment.title}` ? "✓ Copied" : "Copy title"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!assignment.learningGoals.length || assignment.items.every((item) => item.skipSynergy)}
+                    onClick={() => copyText(
+                      assignment.learningGoals.join("\n"),
+                      "I can's",
+                      `assignment-goals:${course.courseId}:${assignment.title}`,
+                    )}
+                  >
+                    {copiedControlId === `assignment-goals:${course.courseId}:${assignment.title}` ? "✓ Copied" : "Copy I can's"}
                   </button>
                 </div>
               </header>

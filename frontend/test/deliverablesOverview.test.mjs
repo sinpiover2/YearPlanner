@@ -50,8 +50,8 @@ test("assignment overview groups exact titles by course and orders period rows",
     todayKey: "2026-08-21",
     limit: 10,
     sessionStates: [
-      { sessionId: "M8-P3-2026-08-20", state: { episodes: [{ id: "p3", title: "Transformers", isDeliverable: true }] } },
-      { sessionId: "M8-P1-2026-08-21", state: { episodes: [{ id: "p1", title: "Transformers", isDeliverable: true }] } },
+      { sessionId: "M8-P3-2026-08-20", state: { episodes: [{ id: "p3", title: "Transformers", isDeliverable: true, blocks: [{ type: "learning", text: "I can describe a transformation." }] }] } },
+      { sessionId: "M8-P1-2026-08-21", state: { episodes: [{ id: "p1", title: "Transformers", isDeliverable: true, blocks: [{ type: "learning", text: "I can describe a transformation." }, { type: "learning", text: "I can justify my answer." }] }] } },
       { sessionId: "IM1-P5-2026-08-19", state: { episodes: [{ id: "im1", title: "Transformers", isDeliverable: true }] } },
     ],
   });
@@ -61,6 +61,10 @@ test("assignment overview groups exact titles by course and orders period rows",
   assert.equal(result[1].assignments[0].title, "Transformers");
   assert.deepEqual(result[1].assignments[0].items.map((item) => item.period), [1, 3]);
   assert.equal(result[1].assignments[0].mostRecentDate, "2026-08-21");
+  assert.deepEqual(result[1].assignments[0].learningGoals, [
+    "I can describe a transformation.",
+    "I can justify my answer.",
+  ]);
 });
 
 test("assignment overview does not merge differently-cased or differently-named titles", () => {
@@ -88,7 +92,11 @@ test("overview includes only marked past deliverables and groups by class", () =
       {
         sessionId: "M8-P1-2026-08-18",
         state: { episodes: [
-          { id: "e1", title: "Practice 1", isDeliverable: true, deliverableDueDate: "2026-08-20", enteredInSynergy: true },
+          { id: "e1", title: "Practice 1", isDeliverable: true, deliverableDueDate: "2026-08-20", enteredInSynergy: true, blocks: [
+            { type: "learning", text: " I can explain my reasoning. " },
+            { type: "learning", text: "I can explain my reasoning." },
+            { type: "text", text: "Teacher note" },
+          ] },
           { id: "e2", title: "Teacher demo", isDeliverable: false },
         ] },
       },
@@ -106,6 +114,7 @@ test("overview includes only marked past deliverables and groups by class", () =
   assert.equal(result[0].items[0].enteredInSynergy, true);
   assert.equal(result[0].items[0].skipSynergy, false);
   assert.equal(result[0].items[0].synergyStatus, "recorded");
+  assert.deepEqual(result[0].items[0].learningGoals, ["I can explain my reasoning."]);
 });
 
 test("not-graded deliverables remain visible in class and assignment overviews", () => {
