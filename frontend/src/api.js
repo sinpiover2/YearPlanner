@@ -1,18 +1,16 @@
-const API_URL =
+const READ_API_URL =
   "https://script.google.com/macros/s/AKfycbz8lBGl75prYnpy9YT32XK2bVgUaZi96zl8NbQw6n7E-PSx7SIT6mP79-McBfrVvBhA/exec";
+const WRITE_API_URL = "/.netlify/functions/planning-write";
 
-// Required for every write action (see apps-script-planning/Code.js,
-// isAuthorizedWrite_). Reads (fetchPlannerData) stay anonymous — only writes
-// are gated. Sourced from an env var, never committed, so the token can be
-// rotated without a code change. See frontend/.env.example.
-const WRITE_TOKEN = import.meta.env?.VITE_PLANNING_WRITE_TOKEN ?? "";
-
-export function buildPlanningWritePayload(action, payload, token = WRITE_TOKEN) {
-  return { ...payload, action, token };
+export function buildPlanningWritePayload(action, payload) {
+  const safePayload = { ...payload };
+  delete safePayload.action;
+  delete safePayload.token;
+  return { ...safePayload, action };
 }
 
 export async function fetchPlannerData() {
-  const response = await fetch(API_URL);
+  const response = await fetch(READ_API_URL);
 
   if (!response.ok) {
     throw new Error("Failed to fetch planner data");
@@ -21,25 +19,21 @@ export async function fetchPlannerData() {
   return response.json();
 }
 
-// Single write path for every planning mutation. "Content-Type:
-// text/plain;charset=utf-8" keeps the request a CORS "simple request" (Apps
-// Script does not implement doOptions, so a preflight-triggering
-// Content-Type like application/json would break the request entirely).
-// Every caller gets the same behavior: a real, readable response, and a
-// thrown Error whenever the write did not actually succeed server-side —
-// there is no fire-and-forget path left for any planning write.
+// Single write path for every planning mutation. The same-origin Netlify
+// Function verifies the signed-in teacher and adds the Apps Script token on
+// the server. No write credential is shipped to the browser.
 export async function postPlanningAction(
   action,
   payload,
   failureMessage,
-  { token = WRITE_TOKEN, fetchImpl = fetch } = {},
+  { fetchImpl = fetch } = {},
 ) {
-  const response = await fetchImpl(API_URL, {
+  const response = await fetchImpl(WRITE_API_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "text/plain;charset=utf-8",
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(buildPlanningWritePayload(action, payload, token)),
+    body: JSON.stringify(buildPlanningWritePayload(action, payload)),
   });
 
   if (!response.ok) {

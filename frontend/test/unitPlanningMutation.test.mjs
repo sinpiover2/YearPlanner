@@ -32,7 +32,7 @@ test("Unit planning form submission accepts documented decimal policies", () => 
   assert.equal(buildUnitPlanningSubmission(1, -0.25).ok, false);
 });
 
-test("planning write payload includes the canonical action and token", () => {
+test("planning write payload includes the canonical action without a token", () => {
   assert.deepEqual(
     buildPlanningWritePayload(
       "updateUnitPlanning",
@@ -44,11 +44,9 @@ test("planning write payload includes the canonical action and token", () => {
         requiredDays: 12,
         optionalDays: 0,
       },
-      "expected-token",
     ),
     {
       action: "updateUnitPlanning",
-      token: "expected-token",
       unitId: "AMP-M8-U1",
       courseId: "M8",
       requiredDays: 12,
@@ -57,14 +55,13 @@ test("planning write payload includes the canonical action and token", () => {
   );
 });
 
-test("frontend planning request sends the canonical token and action", async () => {
+test("frontend planning request sends the canonical action to the protected proxy", async () => {
   let recorded;
   const result = await postPlanningAction(
     "updateUnitPlanning",
     { unitId: "U1", courseId: "M8", requiredDays: 12, optionalDays: 0 },
     "failed",
     {
-      token: "expected-token",
       fetchImpl: async (url, options) => {
         recorded = { url, options };
         return { ok: true, json: async () => ({ ok: true }) };
@@ -73,6 +70,7 @@ test("frontend planning request sends the canonical token and action", async () 
   );
 
   assert.deepEqual(result, { ok: true });
+  assert.equal(recorded.url, "/.netlify/functions/planning-write");
   assert.equal(recorded.options.method, "POST");
   assert.deepEqual(JSON.parse(recorded.options.body), {
     unitId: "U1",
@@ -80,7 +78,6 @@ test("frontend planning request sends the canonical token and action", async () 
     requiredDays: 12,
     optionalDays: 0,
     action: "updateUnitPlanning",
-    token: "expected-token",
   });
 });
 
