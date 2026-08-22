@@ -43,6 +43,7 @@ export function createIndependentLessonSessionCopy(
       id: episodeIdMap.get(episode.id),
       deliverableDueDate: episode.isDeliverable ? deliverableDueDate : null,
       enteredInSynergy: false,
+      skipSynergy: Boolean(episode.skipSynergy),
       blocks: episode.blocks.map((block) => ({
         ...block,
         id: createId("block"),

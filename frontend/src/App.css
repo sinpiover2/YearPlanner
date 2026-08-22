@@ -4364,6 +4364,23 @@ body {
   background: #fff;
 }
 
+.episode-deliverable-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.episode-skip-synergy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #6b4f1d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* Secondary, same-origin utility opened beside Synergy. */
 .deliverables-window {
   min-height: 100vh;
@@ -4601,6 +4618,17 @@ body {
   font-size: 0.82rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.deliverables-skip-check,
+.deliverables-not-graded {
+  color: #805b16;
+}
+
+.deliverables-not-graded {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
 }
 
 .deliverables-empty {

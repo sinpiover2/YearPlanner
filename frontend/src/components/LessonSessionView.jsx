@@ -135,6 +135,7 @@ function createBlankEpisode() {
     isDeliverable: false,
     deliverableDueDate: null,
     enteredInSynergy: false,
+    skipSynergy: false,
     blocks: [createBlock()],
   };
 }
@@ -224,6 +225,7 @@ function normalizeStoredState(value) {
         isDeliverable: Boolean(episode.isDeliverable),
         deliverableDueDate: episode.deliverableDueDate ?? null,
         enteredInSynergy: Boolean(episode.enteredInSynergy),
+        skipSynergy: Boolean(episode.skipSynergy),
         minutes:
           Number.isFinite(Number(episode.minutes)) &&
           Number(episode.minutes) > 0
@@ -2148,24 +2150,43 @@ function LessonSessionView({
 
                   <div className="episode-spine-meta">
                     {episode.isDeliverable ? (
-                      <label className="episode-deliverable-due-date">
-                        <span>Due</span>
-                        <input
-                          type="date"
-                          value={episode.deliverableDueDate ?? ""}
-                          aria-label={`Due date for ${
-                            episode.title || DEFAULT_EPISODE_TITLE_DISPLAY
-                          }`}
-                          onClick={(event) => event.stopPropagation()}
-                          onChange={(event) =>
-                            updateEpisode(episode.id, (current) => ({
-                              ...current,
-                              deliverableDueDate:
-                                event.target.value || null,
-                            }))
-                          }
-                        />
-                      </label>
+                      <div className="episode-deliverable-controls">
+                        <label className="episode-deliverable-due-date">
+                          <span>Due</span>
+                          <input
+                            type="date"
+                            value={episode.deliverableDueDate ?? ""}
+                            aria-label={`Due date for ${
+                              episode.title || DEFAULT_EPISODE_TITLE_DISPLAY
+                            }`}
+                            onClick={(event) => event.stopPropagation()}
+                            onChange={(event) =>
+                              updateEpisode(episode.id, (current) => ({
+                                ...current,
+                                deliverableDueDate:
+                                  event.target.value || null,
+                              }))
+                            }
+                          />
+                        </label>
+                        <label className="episode-skip-synergy">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(episode.skipSynergy)}
+                            onClick={(event) => event.stopPropagation()}
+                            onChange={(event) =>
+                              updateEpisode(episode.id, (current) => ({
+                                ...current,
+                                skipSynergy: event.target.checked,
+                                enteredInSynergy: event.target.checked
+                                  ? false
+                                  : current.enteredInSynergy,
+                              }))
+                            }
+                          />
+                          Not graded in Synergy
+                        </label>
+                      </div>
                     ) : null}
                     {hasDeliverable ? (
                       <span

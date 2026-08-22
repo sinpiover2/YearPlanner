@@ -130,7 +130,11 @@ function DeliverablesWindow({ sections }) {
 
         {showTitle ? (
           <div className="deliverables-copy-actions">
-            <button type="button" onClick={() => copyText(item.title, "Title", `title:${item.id}`)}>
+            <button
+              type="button"
+              disabled={item.skipSynergy}
+              onClick={() => copyText(item.title, "Title", `title:${item.id}`)}
+            >
               {copiedControlId === `title:${item.id}` ? "✓ Copied" : "Copy title"}
             </button>
           </div>
@@ -149,20 +153,33 @@ function DeliverablesWindow({ sections }) {
         <div className="deliverables-copy-actions">
           <button
             type="button"
-            disabled={!item.dueDate}
+            disabled={!item.dueDate || item.skipSynergy}
             onClick={() => copyText(formatCopyDate(item.dueDate), "Due date", `date:${item.id}`)}
           >
             {copiedControlId === `date:${item.id}` ? "✓ Copied" : "Copy date"}
           </button>
         </div>
 
+        <label className="deliverables-synergy-check deliverables-skip-check">
+          <input
+            type="checkbox"
+            checked={item.skipSynergy}
+            onChange={(event) => updateItem(item, {
+              skipSynergy: event.target.checked,
+              enteredInSynergy: event.target.checked ? false : item.enteredInSynergy,
+            })}
+          />
+          Not graded in Synergy
+        </label>
+
         <label className="deliverables-synergy-check">
           <input
             type="checkbox"
             checked={item.enteredInSynergy}
+            disabled={item.skipSynergy}
             onChange={(event) => updateItem(item, { enteredInSynergy: event.target.checked })}
           />
-          Entered in Synergy
+          {item.skipSynergy ? "Synergy entry skipped" : "Entered in Synergy"}
         </label>
       </article>
     );
@@ -228,10 +245,14 @@ function DeliverablesWindow({ sections }) {
                 <div>
                   <h3>{assignment.title}</h3>
                   <span>Most recent due date · {formatDate(assignment.mostRecentDate)}</span>
+                  {assignment.items.every((item) => item.skipSynergy) ? (
+                    <strong className="deliverables-not-graded">Not graded in Synergy</strong>
+                  ) : null}
                 </div>
                 <div className="deliverables-copy-actions">
                   <button
                     type="button"
+                    disabled={assignment.items.every((item) => item.skipSynergy)}
                     onClick={() => copyText(assignment.title, "Title", `assignment:${course.courseId}:${assignment.title}`)}
                   >
                     {copiedControlId === `assignment:${course.courseId}:${assignment.title}` ? "✓ Copied" : "Copy title"}

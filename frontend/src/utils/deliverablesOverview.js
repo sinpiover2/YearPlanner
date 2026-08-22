@@ -68,6 +68,7 @@ export function buildDeliverablesOverview({
         effectiveDate,
         dateSource: dueDate ? "Due date" : "Lesson date",
         enteredInSynergy: Boolean(episode.enteredInSynergy),
+        skipSynergy: Boolean(episode.skipSynergy),
         sectionId: identity.section.SectionID,
         sectionLabel: identity.section.SectionName || identity.section.Period || identity.section.SectionID,
         courseId: identity.section.CourseID || "other",

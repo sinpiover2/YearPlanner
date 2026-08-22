@@ -84,6 +84,29 @@ test("overview includes only marked past deliverables and groups by class", () =
   assert.equal(result[0].items[0].effectiveDate, "2026-08-20");
   assert.equal(result[0].items[0].dateSource, "Due date");
   assert.equal(result[0].items[0].enteredInSynergy, true);
+  assert.equal(result[0].items[0].skipSynergy, false);
+});
+
+test("not-graded deliverables remain visible in class and assignment overviews", () => {
+  const classGroups = buildDeliverablesOverview({
+    sections,
+    todayKey: "2026-08-21",
+    limit: 10,
+    sessionStates: [{
+      sessionId: "M8-P1-2026-08-20",
+      state: { episodes: [{
+        id: "practice",
+        title: "Ungraded practice",
+        isDeliverable: true,
+        skipSynergy: true,
+      }] },
+    }],
+  });
+
+  assert.equal(classGroups[0].items[0].skipSynergy, true);
+  const assignments = buildDeliverablesAssignmentOverview(classGroups);
+  assert.equal(assignments[0].assignments[0].title, "Ungraded practice");
+  assert.equal(assignments[0].assignments[0].items[0].skipSynergy, true);
 });
 
 test("blank due dates fall back to lesson date and per-class limit is enforced", () => {
