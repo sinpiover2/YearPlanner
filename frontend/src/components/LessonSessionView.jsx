@@ -5,7 +5,11 @@ import { printLessonSession } from "../utils/combinedPrint";
 import { classifyLessonCurriculumReference } from "../utils/lessonCurriculumReference";
 import RosterSortToggle from "./Planning/RosterSortToggle";
 import { createIndependentLessonSessionCopy } from "../utils/lessonSessionCopy";
-import { getNextInstructionalDate } from "../utils/deliverablesOverview.js";
+import {
+  getNextInstructionalDate,
+  getSynergyStatus,
+  getSynergyStatusPatch,
+} from "../utils/deliverablesOverview.js";
 
 const STORAGE_KEY = LESSON_SESSION_STORAGE_KEY;
 const LEGACY_STORAGE_KEY = "year-planner.lesson-session-items.prototype.v1";
@@ -2169,22 +2173,22 @@ function LessonSessionView({
                             }
                           />
                         </label>
-                        <label className="episode-skip-synergy">
-                          <input
-                            type="checkbox"
-                            checked={Boolean(episode.skipSynergy)}
+                        <label className="episode-synergy-status">
+                          <span>Synergy</span>
+                          <select
+                            value={getSynergyStatus(episode)}
                             onClick={(event) => event.stopPropagation()}
                             onChange={(event) =>
                               updateEpisode(episode.id, (current) => ({
                                 ...current,
-                                skipSynergy: event.target.checked,
-                                enteredInSynergy: event.target.checked
-                                  ? false
-                                  : current.enteredInSynergy,
+                                ...getSynergyStatusPatch(event.target.value),
                               }))
                             }
-                          />
-                          Not graded in Synergy
+                          >
+                            <option value="will-record">Will record</option>
+                            <option value="recorded">Recorded</option>
+                            <option value="not-recorded">Not going to record</option>
+                          </select>
                         </label>
                       </div>
                     ) : null}

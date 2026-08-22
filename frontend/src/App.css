@@ -4371,7 +4371,7 @@ body {
   flex-wrap: wrap;
 }
 
-.episode-skip-synergy {
+.episode-synergy-status {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -4379,6 +4379,15 @@ body {
   font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.episode-synergy-status select {
+  border: 1px solid #cbd5e3;
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.4rem;
+  background: #fff;
+  color: #40516b;
+  font: inherit;
 }
 
 /* Secondary, same-origin utility opened beside Synergy. */
@@ -4611,16 +4620,28 @@ body {
   cursor: not-allowed;
 }
 
-.deliverables-synergy-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
+.deliverables-synergy-status {
+  display: grid;
+  gap: 0.2rem;
   font-size: 0.82rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
-.deliverables-skip-check,
+.deliverables-synergy-status span {
+  color: #6b7890;
+  font-size: 0.75rem;
+}
+
+.deliverables-synergy-status select {
+  border: 1px solid #cbd5e3;
+  border-radius: 0.45rem;
+  padding: 0.42rem 0.5rem;
+  background: #fff;
+  color: #31445f;
+  font: inherit;
+}
+
 .deliverables-not-graded {
   color: #805b16;
 }
@@ -4653,7 +4674,7 @@ body {
   }
 
   .deliverables-date,
-  .deliverables-synergy-check {
+  .deliverables-synergy-status {
     grid-column: 1 / -1;
   }
 }

@@ -4,6 +4,8 @@ import {
   buildDeliverablesAssignmentOverview,
   buildDeliverablesOverview,
   getNextInstructionalDate,
+  getSynergyStatus,
+  getSynergyStatusPatch,
   resolveSessionIdentity,
 } from "../src/utils/deliverablesOverview.js";
 
@@ -19,6 +21,24 @@ test("next instructional date skips weekends and non-school days", () => {
     { Date: "2026-08-24T07:00:00.000Z", InstructionalDay: true },
   ];
   assert.equal(getNextInstructionalDate("2026-08-21", calendar), "2026-08-24");
+});
+
+test("Synergy status defaults to will-record and preserves both explicit outcomes", () => {
+  assert.equal(getSynergyStatus({}), "will-record");
+  assert.equal(getSynergyStatus({ enteredInSynergy: true }), "recorded");
+  assert.equal(getSynergyStatus({ skipSynergy: true }), "not-recorded");
+  assert.deepEqual(getSynergyStatusPatch("will-record"), {
+    enteredInSynergy: false,
+    skipSynergy: false,
+  });
+  assert.deepEqual(getSynergyStatusPatch("recorded"), {
+    enteredInSynergy: true,
+    skipSynergy: false,
+  });
+  assert.deepEqual(getSynergyStatusPatch("not-recorded"), {
+    enteredInSynergy: false,
+    skipSynergy: true,
+  });
 });
 
 test("assignment overview groups exact titles by course and orders period rows", () => {
@@ -85,6 +105,7 @@ test("overview includes only marked past deliverables and groups by class", () =
   assert.equal(result[0].items[0].dateSource, "Due date");
   assert.equal(result[0].items[0].enteredInSynergy, true);
   assert.equal(result[0].items[0].skipSynergy, false);
+  assert.equal(result[0].items[0].synergyStatus, "recorded");
 });
 
 test("not-graded deliverables remain visible in class and assignment overviews", () => {

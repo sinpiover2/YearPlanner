@@ -3,8 +3,11 @@ import {
   getAllLessonSessionStates,
   updateLessonSessionEpisode,
 } from "../utils/lessonSessionStorage.js";
-import { buildDeliverablesOverview } from "../utils/deliverablesOverview.js";
-import { buildDeliverablesAssignmentOverview } from "../utils/deliverablesOverview.js";
+import {
+  buildDeliverablesAssignmentOverview,
+  buildDeliverablesOverview,
+  getSynergyStatusPatch,
+} from "../utils/deliverablesOverview.js";
 
 const VIEW_STORAGE_KEY = "year-planner.deliverables.view.v1";
 const COURSE_STORAGE_KEY = "year-planner.deliverables.course-filter.v1";
@@ -160,26 +163,16 @@ function DeliverablesWindow({ sections }) {
           </button>
         </div>
 
-        <label className="deliverables-synergy-check deliverables-skip-check">
-          <input
-            type="checkbox"
-            checked={item.skipSynergy}
-            onChange={(event) => updateItem(item, {
-              skipSynergy: event.target.checked,
-              enteredInSynergy: event.target.checked ? false : item.enteredInSynergy,
-            })}
-          />
-          Not graded in Synergy
-        </label>
-
-        <label className="deliverables-synergy-check">
-          <input
-            type="checkbox"
-            checked={item.enteredInSynergy}
-            disabled={item.skipSynergy}
-            onChange={(event) => updateItem(item, { enteredInSynergy: event.target.checked })}
-          />
-          {item.skipSynergy ? "Synergy entry skipped" : "Entered in Synergy"}
+        <label className="deliverables-synergy-status">
+          <span>Synergy</span>
+          <select
+            value={item.synergyStatus}
+            onChange={(event) => updateItem(item, getSynergyStatusPatch(event.target.value))}
+          >
+            <option value="will-record">Will record</option>
+            <option value="recorded">Recorded</option>
+            <option value="not-recorded">Not going to record</option>
+          </select>
         </label>
       </article>
     );

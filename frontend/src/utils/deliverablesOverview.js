@@ -1,5 +1,18 @@
 import { toDateKey } from "./planningCalendar.js";
 
+export function getSynergyStatus(episode) {
+  if (episode?.skipSynergy) return "not-recorded";
+  if (episode?.enteredInSynergy) return "recorded";
+  return "will-record";
+}
+
+export function getSynergyStatusPatch(status) {
+  return {
+    enteredInSynergy: status === "recorded",
+    skipSynergy: status === "not-recorded",
+  };
+}
+
 export function getNextInstructionalDate(dateKey, schoolCalendar = []) {
   return (
     schoolCalendar
@@ -69,6 +82,7 @@ export function buildDeliverablesOverview({
         dateSource: dueDate ? "Due date" : "Lesson date",
         enteredInSynergy: Boolean(episode.enteredInSynergy),
         skipSynergy: Boolean(episode.skipSynergy),
+        synergyStatus: getSynergyStatus(episode),
         sectionId: identity.section.SectionID,
         sectionLabel: identity.section.SectionName || identity.section.Period || identity.section.SectionID,
         courseId: identity.section.CourseID || "other",
